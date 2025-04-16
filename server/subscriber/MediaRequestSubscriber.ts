@@ -58,14 +58,17 @@ export class MediaRequestSubscriber
     // Find all seasons in the related media entity
     // and see if they are available, then we can check
     // if the request contains the same seasons
-    const isMediaAvailable = entity.media.seasons
-      .filter(
-        (season) =>
-          season[entity.is4k ? 'status4k' : 'status'] === MediaStatus.AVAILABLE
-      )
-      .every((seasonRequest) =>
-        entity.seasons.find(
-          (season) => season.seasonNumber === seasonRequest.seasonNumber
+    const availableSeasons = entity.media.seasons.filter(
+      (season) =>
+        season[entity.is4k ? 'status4k' : 'status'] === MediaStatus.AVAILABLE
+    );
+
+    const isMediaAvailable =
+      availableSeasons.length > 0 &&
+      availableSeasons.every((availableSeason) =>
+        entity.seasons?.some(
+          (entitySeason) =>
+            entitySeason.seasonNumber === availableSeason.seasonNumber
         )
       );
 
