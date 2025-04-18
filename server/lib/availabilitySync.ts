@@ -355,6 +355,7 @@ class AvailabilitySync {
         );
       }
 
+      media.lastSeasonChange = new Date();
       await mediaRepository.save(media);
 
       logger.info(
