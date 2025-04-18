@@ -31,7 +31,11 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
     }
   }
 
-  private async updateRelatedMediaRequest(event: Media, is4k: boolean) {
+  private async updateRelatedMediaRequest(
+    event: Media,
+    databaseEvent: Media,
+    is4k: boolean
+  ) {
     const requestRepository = getRepository(MediaRequest);
     const seasonRequestRepository = getRepository(SeasonRequest);
 
@@ -67,17 +71,39 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
               (mediaSeason) =>
                 mediaSeason.seasonNumber === requestSeason.seasonNumber
             );
+            const matchingOldSeason = databaseEvent.seasons.find(
+              (oldSeason) =>
+                oldSeason.seasonNumber === requestSeason.seasonNumber
+            );
 
             if (!matchingSeason) {
               return false;
             }
 
-            return (
-              matchingSeason[request.is4k ? 'status4k' : 'status'] ===
-                MediaStatus.AVAILABLE ||
-              matchingSeason[request.is4k ? 'status4k' : 'status'] ===
-                MediaStatus.DELETED
-            );
+            const currentSeasonStatus =
+              matchingSeason[request.is4k ? 'status4k' : 'status'];
+            const previousSeasonStatus =
+              matchingOldSeason?.[request.is4k ? 'status4k' : 'status'];
+
+            const hasStatusChanged =
+              currentSeasonStatus !== previousSeasonStatus;
+
+            const shouldUpdate =
+              (hasStatusChanged ||
+                requestSeason.status === MediaRequestStatus.COMPLETED) &&
+              (currentSeasonStatus === MediaStatus.AVAILABLE ||
+                currentSeasonStatus === MediaStatus.DELETED);
+
+            if (shouldUpdate) {
+              // Handle season requests and mark them completed when
+              // that specific season becomes available
+              seasonRequestRepository.update(requestSeason.id, {
+                status: MediaRequestStatus.COMPLETED,
+              });
+              return true;
+            }
+
+            return false;
           });
 
           shouldComplete = allSeasonsReady;
@@ -90,38 +116,6 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
       });
 
       await requestRepository.save(completedRequests);
-
-      // Handle season requests and mark them completed when
-      // that specific season becomes available
-      if (event.mediaType === 'tv') {
-        const seasonsToUpdate = relatedRequests.flatMap((request) => {
-          return request.seasons.filter((requestSeason) => {
-            const matchingSeason = event.seasons.find(
-              (mediaSeason) =>
-                mediaSeason.seasonNumber === requestSeason.seasonNumber
-            );
-
-            if (!matchingSeason) {
-              return false;
-            }
-
-            return (
-              matchingSeason[request.is4k ? 'status4k' : 'status'] ===
-                MediaStatus.AVAILABLE ||
-              matchingSeason[request.is4k ? 'status4k' : 'status'] ===
-                MediaStatus.DELETED
-            );
-          });
-        });
-
-        await Promise.all(
-          seasonsToUpdate.map((season) =>
-            seasonRequestRepository.update(season.id, {
-              status: MediaRequestStatus.COMPLETED,
-            })
-          )
-        );
-      }
     }
   }
 
@@ -173,7 +167,7 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
 
         return (
           season[is4k ? 'status4k' : 'status'] !==
-          previousSeason[is4k ? 'status4k' : 'status']
+          previousSeason?.[is4k ? 'status4k' : 'status']
         );
       });
     };
@@ -184,7 +178,11 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
           seasonStatusCheck(false))) &&
       validStatuses.includes(event.entity.status)
     ) {
-      this.updateRelatedMediaRequest(event.entity as Media, false);
+      this.updateRelatedMediaRequest(
+        event.entity as Media,
+        event.databaseEntity as Media,
+        false
+      );
     }
 
     if (
@@ -192,7 +190,11 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
         (event.entity.mediaType === MediaType.TV && seasonStatusCheck(true))) &&
       validStatuses.includes(event.entity.status4k)
     ) {
-      this.updateRelatedMediaRequest(event.entity as Media, true);
+      this.updateRelatedMediaRequest(
+        event.entity as Media,
+        event.databaseEntity as Media,
+        true
+      );
     }
   }
 
