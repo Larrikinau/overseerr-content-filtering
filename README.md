@@ -54,6 +54,13 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - **Permission-Based**: Uses standard admin permissions for consistency
 - **Setting Preservation**: Existing rating preferences maintained during upgrade
 
+### 🔧 **Enhanced Docker Support (v1.1.1)**
+- **Automatic Migrations**: Database migrations run automatically in Docker environments
+- **Environment Detection**: Smart detection of development vs production environments
+- **Comprehensive Logging**: Detailed migration status and error reporting
+- **Troubleshooting Guide**: Complete `DOCKER_TROUBLESHOOTING.md` documentation
+- **Build Fixes**: Resolved TypeScript compilation and build system issues
+
 ### 🔒 **Smart Content Filtering**
 - **Movie Ratings**: Admin-configurable limits from G through NC-17
 - **TV Ratings**: Admin-configurable limits from TV-Y through TV-MA

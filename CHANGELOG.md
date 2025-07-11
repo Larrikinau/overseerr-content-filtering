@@ -5,6 +5,43 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-07-11
+
+### Fixed
+- **🐛 TypeScript Compilation**: Fixed bash command substitution syntax in database migration file
+- **🔧 Docker Migration**: Enhanced migration logic to run automatically in Docker environments
+- **📚 Build Documentation**: Updated installation guides with corrected procedures
+- **🛠️ Build System**: Resolved tar command parameter ordering in release scripts
+- **📦 GitHub Releases**: Fixed file size limits by using GitHub Releases for large binaries
+
+### Enhanced
+- **🐳 Docker Support**: Added `RUN_MIGRATIONS=true` environment variable for explicit migration control
+- **📋 Migration Logging**: Comprehensive database migration status logging
+- **🔍 Environment Detection**: Automatic detection of development vs production environments
+- **📖 User Documentation**: Added `DOCKER_TROUBLESHOOTING.md` with comprehensive solution guide
+- **⚡ Installation Process**: Improved error handling and user feedback during setup
+
+### Technical Improvements
+- Fixed `AddUserRatingPreferences1751780113000` migration class naming
+- Enhanced `server/index.ts` with better migration detection and logging
+- Updated Dockerfile with production environment variables
+- Improved build system reliability and error reporting
+- Added comprehensive troubleshooting documentation
+
+### User Experience
+- **✅ Simplified Docker Deployment**: Containers now handle migrations automatically
+- **🛡️ Prevention Strategies**: Documentation to avoid future migration issues
+- **🔧 Multiple Resolution Paths**: Environment variables, manual procedures, fresh setup options
+- **📞 Community Support**: Responsive issue resolution with working solutions
+
+### Distribution
+- **📦 GitHub Releases**: Pre-compiled packages now distributed via GitHub Releases
+- **🔒 Repository Management**: Large binary files excluded from Git history
+- **📋 Installation Instructions**: Updated guides reflect latest installation procedures
+- **🎯 User Communication**: Clear release notes and upgrade instructions
+
+---
+
 ## [1.1.0] - 2025-07-07
 
 ### Added
