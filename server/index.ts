@@ -48,11 +48,24 @@ app
   .then(async () => {
     const dbConnection = await dataSource.initialize();
 
-    // Run migrations in production
-    if (process.env.NODE_ENV === 'production') {
+    // Run migrations in production or when explicitly requested (Docker support)
+    // This ensures migrations run in Docker containers and production environments
+    if (process.env.NODE_ENV === 'production' || process.env.RUN_MIGRATIONS === 'true') {
+      if (process.env.RUN_MIGRATIONS === 'true') {
+        logger.info('Running database migrations...', { label: 'Database' });
+      }
       await dbConnection.query('PRAGMA foreign_keys=OFF');
       await dbConnection.runMigrations();
       await dbConnection.query('PRAGMA foreign_keys=ON');
+      if (process.env.RUN_MIGRATIONS === 'true') {
+        logger.info('Database migrations completed successfully', { label: 'Database' });
+      }
+    } else if (process.env.NODE_ENV !== 'production') {
+      // In development, check if migrations are needed and log a warning
+      const pendingMigrations = await dbConnection.showMigrations();
+      if (pendingMigrations.length > 0) {
+        logger.warn(`Database has ${pendingMigrations.length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
+      }
     }
 
     // Load Settings
