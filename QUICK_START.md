@@ -79,10 +79,11 @@ Replace `YOUR_SERVER_IP` with your server's IP address (e.g., `http://192.168.1.
 
 ## 📦 Latest Release
 
-**Current Version**: v1.1.1 (TypeScript Build Fix)
-- ✅ Fixed Docker build compilation errors
-- ✅ Resolved TypeScript migration issues
-- ✅ Improved build reliability
+**Current Version**: v1.1.2 (Critical Fixes)
+- 🔧 **FIXED**: Search results now properly filtered based on rating preferences
+- 🔧 **FIXED**: Database migrations work automatically in Docker (no manual SQL required)
+- ✅ Enhanced Docker support with sqlite3 and proper user permissions
+- ✅ Improved error handling and migration logging
 
 ## 🛠️ Service Management
 
