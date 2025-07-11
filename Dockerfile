@@ -44,7 +44,8 @@ FROM node:18.18.2-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache tzdata tini && rm -rf /tmp/*
+# Install sqlite3 for database operations and other dependencies
+RUN apk add --no-cache tzdata tini sqlite && rm -rf /tmp/*
 
 # copy from build image
 COPY --from=build_image /app ./
@@ -52,6 +53,16 @@ COPY --from=build_image /app ./
 # Set production environment and ensure migrations run
 ENV NODE_ENV=production
 ENV RUN_MIGRATIONS=true
+
+# Create a non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S overseerr -u 1001
+
+# Ensure config directory exists and has proper permissions
+RUN mkdir -p /app/config && chown -R overseerr:nodejs /app/config
+
+# Switch to non-root user
+USER overseerr
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 CMD [ "yarn", "start" ]

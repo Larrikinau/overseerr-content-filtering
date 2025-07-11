@@ -42,17 +42,25 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 ## ✨ Enhanced Features
 
-### 🛡️ **Global Adult Content Blocking (v1.1.0)**
+### 🛡️ **Global Adult Content Blocking (v1.1.1)**
 - **Zero Tolerance**: Adult content never appears regardless of user settings
 - **Global Enforcement**: Applied to all discovery, search, and genre browsing
 - **TMDb API Override**: Hardcoded filtering bypasses API inconsistencies
 - **Family-Safe Discovery**: All genre images and content safe for all ages
 
-### 👥 **Admin-Only Content Controls (v1.1.0)**
-- **Centralized Management**: Only admins can modify content rating settings
-- **User Protection**: Regular users cannot bypass or change rating restrictions
+### 👥 **Admin-Only Content Controls (v1.1.1)**
+- **Centralized Management**: Only admins can modify content rating settings for any user
+- **Per-User Configuration**: Admins can set different rating limits for each individual user
+- **User Protection**: Regular users cannot see or change their own rating restrictions
 - **Permission-Based**: Uses standard admin permissions for consistency
 - **Setting Preservation**: Existing rating preferences maintained during upgrade
+
+### 🔧 **Enhanced Docker Support (v1.1.1)**
+- **Automatic Migrations**: Database migrations run automatically in Docker environments
+- **Environment Detection**: Smart detection of development vs production environments
+- **Comprehensive Logging**: Detailed migration status and error reporting
+- **Troubleshooting Guide**: Complete `DOCKER_TROUBLESHOOTING.md` documentation
+- **Build Fixes**: Resolved TypeScript compilation and build system issues
 
 ### 🔒 **Smart Content Filtering**
 - **Movie Ratings**: Admin-configurable limits from G through NC-17
@@ -164,12 +172,17 @@ yarn start
 ### Content Filtering Setup
 **Admin Users Only:**
 1. Navigate to **Settings** → **Users** → **User Settings**
-2. Configure **Rating Preferences** for users:
-   - **Max Movie Rating**: Set maximum allowed movie rating
-   - **Max TV Rating**: Set maximum allowed TV show rating
-3. Save settings - filtering applies immediately
+2. Select the user you want to configure
+3. Configure **Rating Preferences** for that specific user:
+   - **Max Movie Rating**: Set maximum allowed movie rating for this user
+   - **Max TV Rating**: Set maximum allowed TV show rating for this user
+4. Save settings - filtering applies immediately to that user
 
-**Note**: Only administrators can modify content rating settings. Regular users cannot see or change these controls.
+**Important Notes:**
+- **Admin Control**: Only administrators can modify content rating settings for any user
+- **Per-User Settings**: Admins can set different rating limits for each individual user
+- **User Restrictions**: Regular users cannot see or change their own rating restrictions
+- **Centralized Management**: All content filtering decisions are made by administrators
 
 ### Rating System
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)

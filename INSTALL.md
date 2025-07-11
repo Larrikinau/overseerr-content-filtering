@@ -47,13 +47,13 @@ If you prefer to install manually, follow these steps:
 2. **Download the package**:
    ```bash
    cd /tmp
-curl -L -o overseerr-filtering.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/latest/download/overseerr-filtering-v1.0.0.tar.gz
+curl -L -o overseerr-content-filtering-ubuntu.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/latest/download/overseerr-content-filtering-ubuntu.tar.gz
    ```
 
 3. **Extract and install**:
    ```bash
    sudo mkdir -p /opt/overseerr-filtering
-   sudo tar -xzf overseerr-filtering.tar.gz -C /opt/overseerr-filtering --strip-components=1
+   sudo tar -xzf overseerr-content-filtering-ubuntu.tar.gz -C /opt/overseerr-filtering --strip-components=1
    sudo chown -R overseerr:overseerr /opt/overseerr-filtering
    sudo chmod +x /opt/overseerr-filtering/start.sh
    ```
@@ -149,12 +149,12 @@ To update to a newer version:
 2. **Download the new package**:
    ```bash
    cd /tmp
-curl -L -o overseerr-filtering.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/latest/download/overseerr-filtering-v1.0.0.tar.gz
+curl -L -o overseerr-content-filtering-ubuntu.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/latest/download/overseerr-content-filtering-ubuntu.tar.gz
    ```
 
 3. **Extract and replace**:
    ```bash
-   sudo tar -xzf overseerr-filtering.tar.gz -C /opt/overseerr-filtering --strip-components=1
+   sudo tar -xzf overseerr-content-filtering-ubuntu.tar.gz -C /opt/overseerr-filtering --strip-components=1
    sudo chown -R overseerr:overseerr /opt/overseerr-filtering
    sudo chmod +x /opt/overseerr-filtering/start.sh
    ```

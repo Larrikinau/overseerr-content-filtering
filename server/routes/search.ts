@@ -108,11 +108,15 @@ searchRoutes.get('/', async (req, res, next) => {
       results.results.map((result) => result.id)
     );
 
+    // Apply content filtering based on user preferences
+    const user = req.user as User;
+    const filteredResults = filterResultsByRating(results.results, user);
+    
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
-      totalResults: results.total_results,
-      results: mapSearchResults(results.results, media),
+      totalResults: filteredResults.length,
+      results: mapSearchResults(filteredResults, media),
     });
   } catch (e) {
     logger.debug('Something went wrong retrieving search results', {

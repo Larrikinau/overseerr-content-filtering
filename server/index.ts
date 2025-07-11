@@ -62,9 +62,13 @@ app
       }
     } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
       // In development, check if migrations are needed and log a warning
-      const pendingMigrations = await dbConnection.showMigrations();
-      if (pendingMigrations.length > 0) {
-        logger.warn(`Database has ${pendingMigrations.length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
+      try {
+        const hasPendingMigrations = await dbConnection.showMigrations();
+        if (hasPendingMigrations) {
+          logger.warn('Database has pending migrations. Set RUN_MIGRATIONS=true to apply them.', { label: 'Database' });
+        }
+      } catch (error) {
+        logger.warn('Could not check migration status', { label: 'Database', error: error.message });
       }
     }
 
