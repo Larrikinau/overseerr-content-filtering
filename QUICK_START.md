@@ -77,6 +77,13 @@ Once installed, access from any device on your network:
 
 Replace `YOUR_SERVER_IP` with your server's IP address (e.g., `http://192.168.1.100:5055`)
 
+## 📦 Latest Release
+
+**Current Version**: v1.1.1 (TypeScript Build Fix)
+- ✅ Fixed Docker build compilation errors
+- ✅ Resolved TypeScript migration issues
+- ✅ Improved build reliability
+
 ## 🛠️ Service Management
 
 ### Check Status
