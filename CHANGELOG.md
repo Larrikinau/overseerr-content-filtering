@@ -5,11 +5,13 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1] - 2025-07-11
+## [1.1.2] - 2025-07-11
 
 ### Fixed
+- **🚨 CRITICAL: Search Results Filtering**: Fixed search results not being filtered for inappropriate content despite rating restrictions
+- **🚨 CRITICAL: Database Migration Issues**: Enhanced migration error handling and Docker environment support
 - **🐛 TypeScript Compilation**: Fixed bash command substitution syntax in database migration file
-- **🔧 Docker Migration**: Enhanced migration logic to run automatically in Docker environments
+- **🔧 Docker Migration**: Enhanced migration logic to run automatically in Docker environments with sqlite3 support
 - **📚 Build Documentation**: Updated installation guides with corrected procedures
 - **🛠️ Build System**: Resolved tar command parameter ordering in release scripts
 - **📦 GitHub Releases**: Fixed file size limits by using GitHub Releases for large binaries
