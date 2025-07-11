@@ -60,7 +60,7 @@ app
       if (process.env.RUN_MIGRATIONS === 'true') {
         logger.info('Database migrations completed successfully', { label: 'Database' });
       }
-    } else if (process.env.NODE_ENV !== 'production') {
+    } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
       // In development, check if migrations are needed and log a warning
       const hasPendingMigrations = await dbConnection.showMigrations();
       if (hasPendingMigrations) {
