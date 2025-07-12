@@ -21,7 +21,7 @@ LOG_DIR="/var/log/overseerr-content-filtering"
 DATA_DIR="/var/lib/overseerr-content-filtering"
 BACKUP_DIR="/var/backups/overseerr-content-filtering"
 RELEASE_URL="https://github.com/larrikinau/overseerr-content-filtering/releases/download/v1.1.3"
-TARBALL_NAME="overseerr-content-filtering-v1.1.3-ubuntu.tar.gz"
+TARBALL_NAME="overseerr-content-filtering-ubuntu.tar.gz"
 
 # Default configuration
 DEFAULT_PORT=5055
