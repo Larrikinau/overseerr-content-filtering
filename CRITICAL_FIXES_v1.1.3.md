@@ -1,4 +1,4 @@
-# Critical Bug Fixes for Overseerr Content Filtering v1.1.2
+# Critical Bug Fixes for Overseerr Content Filtering v1.1.3
 
 ## Overview
 
@@ -152,7 +152,7 @@ Results should respect configured content rating limits.
 
 ## Release Notes
 
-### Version 1.1.2 - Critical Bug Fixes
+### Version 1.1.3 - Critical Bug Fixes
 
 **Fixed**:
 - 🔧 **Search Filtering**: Search results now properly filtered based on user rating preferences
