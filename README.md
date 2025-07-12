@@ -42,20 +42,20 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 ## ✨ Enhanced Features
 
-### 🛡️ **Global Adult Content Blocking (v1.1.2)**
+### 🛡️ **Global Adult Content Blocking (v1.1.3)**
 - **Zero Tolerance**: Adult content never appears regardless of user settings
 - **Global Enforcement**: Applied to all discovery, search, and genre browsing
 - **TMDb API Override**: Hardcoded filtering bypasses API inconsistencies
 - **Family-Safe Discovery**: All genre images and content safe for all ages
 
-### 👥 **Admin-Only Content Controls (v1.1.2)**
+### 👥 **Admin-Only Content Controls (v1.1.3)**
 - **Centralized Management**: Only admins can modify content rating settings for any user
 - **Per-User Configuration**: Admins can set different rating limits for each individual user
 - **User Protection**: Regular users cannot see or change their own rating restrictions
 - **Permission-Based**: Uses standard admin permissions for consistency
 - **Setting Preservation**: Existing rating preferences maintained during upgrade
 
-### 🔧 **Enhanced Docker Support (v1.1.2)**
+### 🔧 **Enhanced Docker Support (v1.1.3)**
 - **Automatic Migrations**: Database migrations run automatically in Docker environments
 - **Environment Detection**: Smart detection of development vs production environments
 - **Comprehensive Logging**: Detailed migration status and error reporting

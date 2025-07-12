@@ -5,77 +5,7 @@ import { findSearchProvider } from '@server/lib/search';
 import logger from '@server/logger';
 import { mapSearchResults } from '@server/models/Search';
 import { Router } from 'express';
-import { User } from '@server/entity/User';
-
-const filterResultsByRating = (results: any[], user?: User): any[] => {
-  if (!user?.settings?.maxMovieRating && !user?.settings?.maxTvRating) {
-    return results;
-  }
-
-  return results.filter((result: any) => {
-    if (!user?.settings) return true;
-
-    const isMovie = result.media_type === 'movie' || (!result.media_type && result.title);
-    
-    // Movie filtering based on admin setting
-    if (isMovie && user.settings.maxMovieRating) {
-      const maxRating = user.settings.maxMovieRating;
-      
-      // Apply blocking logic based on the setting:
-      // "G" = block everything except G
-      // "PG" = block PG and above (allow only G)
-      // "PG-13" = block PG-13 and above (allow G, PG)
-      // "R" = block R and above (allow G, PG, PG-13)
-      // "Adult" = block only Adult/XXX (allow all standard ratings)
-      
-      // Always block adult content unless no restrictions
-      if (result.adult && maxRating !== '') {
-        return false;
-      }
-      
-      // Use genre-based heuristics to filter content since certification data is unreliable
-      const genreIds = result.genre_ids || [];
-      
-      if (maxRating === 'G') {
-        // Block PG and above - very restrictive
-        // Block: Action, Adventure, Thriller, Horror, Crime, War, Western
-        if (genreIds.some((id: number) => [28, 12, 53, 27, 80, 10752, 37].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'PG') {
-        // Block PG-13 and above - moderately restrictive
-        // Block: Thriller, Horror, Crime, War
-        if (genreIds.some((id: number) => [53, 27, 80, 10752].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'PG-13') {
-        // Block R and above - less restrictive
-        // Block: Horror, very violent content
-        if (genreIds.some((id: number) => [27].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'R') {
-        // Block only Adult/XXX content
-        // This is handled by the adult content check above
-      }
-      
-      if (maxRating === 'Adult') {
-        // Block only XXX adult content
-        // This is the most permissive setting
-        // Most content should pass through
-      }
-    }
-
-    return true;
-  });
-};
-
+import { createTmdbWithRegionLanguage } from './discover';
 
 const searchRoutes = Router();
 
@@ -95,7 +25,7 @@ searchRoutes.get('/', async (req, res, next) => {
         query: queryString,
       });
     } else {
-      const tmdb = new TheMovieDb();
+      const tmdb = createTmdbWithRegionLanguage(req.user);
 
       results = await tmdb.searchMulti({
         query: queryString,
@@ -108,15 +38,11 @@ searchRoutes.get('/', async (req, res, next) => {
       results.results.map((result) => result.id)
     );
 
-    // Apply content filtering based on user preferences
-    const user = req.user as User;
-    const filteredResults = filterResultsByRating(results.results, user);
-    
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
-      totalResults: filteredResults.length,
-      results: mapSearchResults(filteredResults, media),
+      totalResults: results.total_results,
+      results: mapSearchResults(results.results, media),
     });
   } catch (e) {
     logger.debug('Something went wrong retrieving search results', {

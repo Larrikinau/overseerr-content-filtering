@@ -5,6 +5,30 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-07-12
+
+### Enhanced
+- **🎯 Certification-Based Filtering**: Improved content blocking logic to rely on TMDb's built-in certification and adult content filtering
+- **🌐 Regional Compatibility**: Enhanced filtering system to work consistently across different geographical regions
+- **⚡ Performance Optimization**: Streamlined search and discovery routes to use consistent TMDb API integration
+- **🔍 Search Accuracy**: Refined content classification to reduce false positives while maintaining strict content standards
+- **🛡️ Reliable Content Control**: Enhanced adult content blocking using TMDb's `include_adult: false` parameter
+
+### Technical Improvements
+- Updated search routes to use consistent TMDb instance with proper user preference application
+- Improved discover routes to leverage TMDb's native certification filtering
+- Enhanced content classification accuracy by focusing on official content ratings
+- Optimized API calls to reduce redundant filtering operations
+- Strengthened Docker build compatibility and reduced build artifacts
+
+### User Experience
+- **✅ Consistent Filtering**: Content blocking now works reliably regardless of geographic location
+- **🎯 Accurate Results**: Reduced over-blocking of legitimate content while maintaining safety standards
+- **🚀 Better Performance**: Faster search and discovery with optimized filtering logic
+- **🌍 Global Compatibility**: Improved support for international users and content ratings
+
+---
+
 ## [1.1.2] - 2025-07-11
 
 ### Fixed
