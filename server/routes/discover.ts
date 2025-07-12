@@ -727,7 +727,7 @@ discoverRoutes.get<{ keywordId: string }>(
 discoverRoutes.get<{ language: string }, GenreSliderItem[]>(
   '/genreslider/movie',
   async (req, res, next) => {
-    const tmdb = new TheMovieDb();
+    const tmdb = createTmdbWithRegionLanguage(req.user);
 
     try {
       const mappedGenres: GenreSliderItem[] = [];
@@ -771,7 +771,7 @@ discoverRoutes.get<{ language: string }, GenreSliderItem[]>(
 discoverRoutes.get<{ language: string }, GenreSliderItem[]>(
   '/genreslider/tv',
   async (req, res, next) => {
-    const tmdb = new TheMovieDb();
+    const tmdb = createTmdbWithRegionLanguage(req.user);
 
     try {
       const mappedGenres: GenreSliderItem[] = [];
