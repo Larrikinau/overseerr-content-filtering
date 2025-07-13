@@ -15,18 +15,18 @@ The system uses two primary quality indicators from TMDB:
 Users can toggle between two discovery experiences:
 
 #### **Standard Mode** (Default)
-- Shows all available content exactly as the original TMDB website does
-- Uses TMDB's default sorting and filtering behavior
-- No additional quality filtering applied to discovery results
-- Identical to browsing movies/TV shows directly on themoviedb.org
-- Search results remain unfiltered
+- Shows content with all existing safety controls and age rating filters active
+- Uses TMDB's default sorting and popularity algorithms
+- No additional quality-based filtering beyond safety and rating controls
+- All admin-configured age rating restrictions still fully enforced
+- Search results include all content allowed by admin rating settings
 
 #### **Curated Mode** (New)
+- Includes all Standard mode safety controls PLUS quality-based filtering
 - Allows administrators to be more granular with quality variables I set
-- Applies admin-configured quality thresholds to filter content
-- Only shows movies/TV shows meeting minimum vote count and rating standards
+- Applies admin-configured quality thresholds (vote counts, ratings) on top of existing filters
+- Only shows movies/TV shows meeting both age rating AND quality standards
 - Enhanced recommendations using quality filtering based on admin preferences
-- Search results remain comprehensive (unfiltered)
 
 ### **Where Filtering Applies**
 

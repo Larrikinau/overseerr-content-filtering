@@ -32,13 +32,13 @@ This major release introduces an entirely new content discovery paradigm:
 Overseerr with TMDB Curated Discovery provides a refined content experience:
 
 ### Key Features:
-- **Standard Discovery Mode**: Shows all content exactly as the TMDB website does with no additional filtering
-- **Curated Discovery Mode**: Allows administrators to be more granular with quality variables I set (vote counts, ratings)
+- **Standard Discovery Mode**: Shows content with all existing safety and age rating controls active (no quality filtering)
+- **Curated Discovery Mode**: Adds quality-based filtering on top of existing safety controls (vote counts, ratings)
 - Separate TV rating filters for precise content control
-- Search offers comprehensive, raw results devoid of curated filtering
+- Search offers results within admin-configured safety boundaries
 - Discovery and recommendations incorporate curated quality filtering when enabled
 
-Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' (TMDB website behavior) and 'Curated' (admin-controlled quality filtering) discovery modes for a personalized viewing experience.
+Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls) discovery modes.
 
 1. **User Preference Storage**: Individual rating limits stored in user settings
 2. **Multi-Layer Protection**: Combined API-level and application-level filtering
@@ -88,11 +88,11 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - **Professional implementation**: Dual-layer filtering architecture for reliability
 
 ### 🎯 **TMDB Curated Discovery (v1.1.5)**
-- **Standard Mode**: Shows content exactly as the TMDB website does with no additional filtering
-- **Curated Mode**: Admin-configurable minimum vote counts and ratings allow granular quality control
-- **Discovery vs Search**: Search returns comprehensive results; discovery applies admin-configured quality filters in curated mode
+- **Standard Mode**: Shows content with all existing safety and age rating controls (no quality filtering added)
+- **Curated Mode**: Adds admin-configurable quality thresholds on top of existing safety controls
+- **Discovery vs Search**: Search returns results within safety boundaries; discovery applies additional quality filters in curated mode
 - **Recommendation Enhancement**: Movie/TV recommendations and similar content use curated filtering when enabled
-- **User Control**: Toggle between 'Standard' (TMDB website behavior) and 'Curated' (admin quality variables) discovery modes
+- **User Control**: Toggle between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls)
 - **Admin Configuration**: Set global quality thresholds that I define (default: 3000+ votes, 6.0+ rating)
 - **Performance Optimized**: Intelligent parameter combination minimizes API calls
 
@@ -237,7 +237,7 @@ yarn start
 **User Configuration:**
 1. Navigate to **Settings** → **General** (if allowed by admin)
 2. Configure **Discovery Preferences**:
-   - **Discovery Mode**: Choose between 'Standard' (TMDB website behavior) and 'Curated' (admin-controlled quality filtering)
+   - **Discovery Mode**: Choose between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls)
    - **Custom Thresholds**: Adjust personal quality preferences within admin-defined ranges (if enabled)
 
 ### Rating System
