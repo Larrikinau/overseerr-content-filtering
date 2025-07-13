@@ -444,7 +444,12 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      return [];
+      return {
+        page: 1,
+        total_results: 0,
+        total_pages: 0,
+        results: [],
+      };
     }
   };
 
@@ -475,7 +480,12 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      return [];
+      return {
+        page: 1,
+        total_results: 0,
+        total_pages: 0,
+        results: [],
+      };
     }
   };
 
@@ -532,7 +542,12 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      return [];
+      return {
+        page: 1,
+        total_results: 0,
+        total_pages: 0,
+        results: [],
+      };
     }
   };
 
@@ -560,7 +575,12 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      return [];
+      return {
+        page: 1,
+        total_results: 0,
+        total_pages: 0,
+        results: [],
+      };
     }
   };
 
