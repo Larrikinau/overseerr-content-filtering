@@ -81,21 +81,21 @@ movieRoutes.get('/:id/similar', async (req, res, next) => {
   const tmdb = new TheMovieDb();
 
   try {
-    const results = await tmdb.getMovieSimilar({
+    const results = await tmdb.getSimilarMovies({
       movieId: Number(req.params.id),
       page: Number(req.query.page),
       language: (req.query.language as string) ?? req.locale,
     });
 
     const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
+  results.results.map((result: any) => result.id)
     );
 
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
       totalResults: results.total_results,
-      results: results.results.map((result) =>
+      results: results.results.map((result: any) =>
         mapMovieResult(
           result,
           media.find(
