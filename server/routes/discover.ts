@@ -48,6 +48,9 @@ export const createTmdbWithRegionLanguage = (user?: User): TheMovieDb => {
     originalLanguage,
     maxMovieRating: user?.settings?.maxMovieRating,
     maxTvRating: user?.settings?.maxTvRating,
+    tmdbSortingMode: user?.settings?.tmdbSortingMode,
+    curatedMinVotes: settings.main.curatedMinVotes,
+    curatedMinRating: settings.main.curatedMinRating,
   });
 };
 

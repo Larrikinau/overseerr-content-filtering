@@ -133,6 +133,16 @@ export class UserSettings {
   @Column({ nullable: true })
   public maxTvRating?: string; // e.g., "TV-14", "TV-MA", etc.
 
+  // TMDB Curated Discovery Mode - Enhanced content quality control
+  @Column({ nullable: true, default: "curated" })
+  public tmdbSortingMode?: string = "curated";
+
+  @Column({ nullable: true, type: "int", default: 3000 })
+  public curatedMinVotes?: number = 3000;
+
+  @Column({ nullable: true, type: "float", default: 6.0 })
+  public curatedMinRating?: number = 6.0;
+
   public hasNotificationType(
     key: NotificationAgentKey,
     type: Notification

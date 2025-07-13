@@ -104,6 +104,8 @@ export interface MainSettings {
   trustProxy: boolean;
   partialRequestsEnabled: boolean;
   locale: string;
+  curatedMinVotes: number;
+  curatedMinRating: number | null;
 }
 
 interface PublicSettings {
@@ -301,6 +303,8 @@ class Settings {
         trustProxy: false,
         partialRequestsEnabled: true,
         locale: 'en',
+        curatedMinVotes: 3000,
+        curatedMinRating: null,
       },
       plex: {
         name: '',

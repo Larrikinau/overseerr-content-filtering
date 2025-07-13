@@ -18,6 +18,9 @@ export interface UserSettingsGeneralResponse {
   watchlistSyncTv?: boolean;
   maxMovieRating?: string;
   maxTvRating?: string;
+  tmdbSortingMode?: string;
+  curatedMinVotes?: number;
+  curatedMinRating?: number;
 }
 
 export type NotificationAgentTypes = Record<NotificationAgentKey, number>;

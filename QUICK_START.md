@@ -1,6 +1,18 @@
 # 🚀 Quick Start Guide
 
-Get Overseerr Content Filtering running in minutes!
+Get Overseerr Content Filtering **v1.1.5** running in minutes!
+
+## 🎉 **Major Release: v1.1.5 - TMDB Curated Discovery**
+
+**This is a significant update** that transforms how you discover content! Version 1.1.5 introduces:
+
+- 🎯 **Quality-First Discovery**: Only show high-quality content based on vote counts and ratings
+- 🔄 **Dual Discovery Modes**: Toggle between 'Standard' and 'Curated' experiences
+- 🎬 **Smart Recommendations**: Enhanced movie/TV suggestions using quality filtering
+- ⚙️ **Admin Control**: Set global quality thresholds with granular permissions
+- 🚀 **Performance Optimized**: Intelligent API usage for faster discovery
+
+Plus all existing content filtering features for family-safe media management!
 
 ## ⚡ 30-Second Install
 
@@ -79,11 +91,13 @@ Replace `YOUR_SERVER_IP` with your server's IP address (e.g., `http://192.168.1.
 
 ## 📦 Latest Release
 
-**Current Version**: v1.1.3 (Enhanced Certification Filtering)
-- 🔧 **FIXED**: Search results now properly filtered based on rating preferences
-- 🔧 **FIXED**: Database migrations work automatically in Docker (no manual SQL required)
-- ✅ Enhanced Docker support with sqlite3 and proper user permissions
-- ✅ Improved error handling and migration logging
+**Current Version**: v1.1.5 (TMDB Curated Discovery & Privacy Sanitization)
+- ✅ **NEW**: TMDB Curated Discovery with admin-configurable quality filtering
+- ✅ **NEW**: Toggle between 'Standard' and 'Curated' discovery modes
+- ✅ **ENHANCED**: Movie/TV recommendations use curated filtering
+- ✅ **SECURITY**: Complete privacy sanitization - no personal data in releases
+- ✅ **BUILD**: Optimized Ubuntu/Debian release packages
+- 🔧 **FIXED**: TypeScript compilation and method naming issues resolved
 
 ## 🛠️ Service Management
 

@@ -1,4 +1,4 @@
-# Overseerr Content Filtering
+# Overseerr Content Filtering with TMDB Curated Discovery
 
 <p align="center">
 <img src="./public/logo_full.svg" alt="Overseerr Content Filtering" style="margin: 20px 0;">
@@ -16,11 +16,28 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. This version features **global adult content blocking** and **admin-only rating controls**, providing maximum content safety and centralized management.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.5** introduces groundbreaking **TMDB Curated Discovery** alongside existing **global adult content blocking** and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+
+### 🆕 **What's New in v1.1.5: TMDB Curated Discovery**
+
+This major release introduces an entirely new content discovery paradigm:
+- **🎯 Quality-First Discovery**: Admin-configurable minimum vote counts and ratings ensure only high-quality content appears in discovery
+- **🔄 Dual Discovery Modes**: Users can toggle between 'Standard' (all content) and 'Curated' (quality-filtered) discovery experiences
+- **🎬 Enhanced Recommendations**: Movie/TV recommendations and "similar content" suggestions now use intelligent quality filtering
+- **⚙️ Admin Control**: Set global quality thresholds (default: 3000+ votes, 6.0+ rating) with granular user permissions
+- **🚀 Performance Optimized**: Smart API parameter combination minimizes external calls while maximizing content quality
 
 ## 📋 Why This Fork Exists: Comprehensive Content Filtering
 
-The filtering system provides admin-configurable age rating controls:
+Overseerr with TMDB Curated Discovery provides a refined content experience:
+
+### Key Features:
+- Curate high-quality content with admin-configurable vote counts and ratings.
+- Separate TV rating filters for precise content control.
+- Search offers comprehensive, raw results devoid of curated filtering.
+- Discovery and recommendations incorporate curated quality filtering.
+
+Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' and 'Curated' discovery modes for a personalized viewing experience.
 
 1. **User Preference Storage**: Individual rating limits stored in user settings
 2. **Multi-Layer Protection**: Combined API-level and application-level filtering
@@ -69,6 +86,14 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - **Family-safe defaults**: New users start with age-appropriate content settings
 - **Professional implementation**: Dual-layer filtering architecture for reliability
 
+### 🎯 **TMDB Curated Discovery (v1.1.5)**
+- **Quality Filtering**: Admin-configurable minimum vote counts and ratings for curated content
+- **Discovery vs Search**: Search returns comprehensive results; discovery applies quality filters
+- **Recommendation Enhancement**: Movie/TV recommendations and similar content use curated filtering
+- **User Control**: Toggle between 'Standard' and 'Curated' discovery modes
+- **Admin Configuration**: Set global quality thresholds (default: 3000+ votes, 6.0+ rating)
+- **Performance Optimized**: Intelligent parameter combination minimizes API calls
+
 ### 🚀 **All Original Overseerr Features**
 - Full Plex integration with user authentication
 - Seamless Sonarr and Radarr integration
@@ -96,6 +121,21 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 #### Quick Install Script
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/install-overseerr-filtering.sh)
+```
+
+#### Pre-built Package Download
+```bash
+# Download the latest pre-built package (v1.1.5)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
+
+# Verify checksum
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz.sha256
+sha256sum -c overseerr-content-filtering-v1.1.5-ubuntu.tar.gz.sha256
+
+# Extract and install
+tar -xzf overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.1.5
+sudo ./install.sh
 ```
 
 #### Docker
@@ -184,10 +224,25 @@ yarn start
 - **User Restrictions**: Regular users cannot see or change their own rating restrictions
 - **Centralized Management**: All content filtering decisions are made by administrators
 
+### TMDB Curated Discovery Setup
+**Admin Configuration:**
+1. Navigate to **Settings** → **General**
+2. Configure **TMDB Curated Discovery** settings:
+   - **Default Min Votes**: Set global minimum vote count threshold (default: 3000)
+   - **Default Min Rating**: Set global minimum rating threshold (default: 6.0)
+   - **Allow User Override**: Whether users can change their discovery mode
+
+**User Configuration:**
+1. Navigate to **Settings** → **General** (if allowed by admin)
+2. Configure **Discovery Preferences**:
+   - **Discovery Mode**: Choose between 'Standard' and 'Curated'
+   - **Custom Thresholds**: Adjust personal quality preferences (if enabled)
+
 ### Rating System
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)
 - **TV Shows**: TV-Y → TV-Y7 → TV-G → TV-PG → TV-14 → TV-MA (admins set maximum allowed rating per user)
 - **Defaults**: New users start with PG-13 (movies) and TV-PG (TV shows) for family-safe browsing
+- **Curated Quality**: Default 3000+ votes and 6.0+ rating for curated discovery
 
 ## 🤝 Contributing
 

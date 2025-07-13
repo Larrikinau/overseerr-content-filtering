@@ -23,7 +23,7 @@ TEMP_DIR="/tmp/overseerr-content-filtering-build"
 # Package information
 PACKAGE_NAME="overseerr-content-filtering"
 VERSION=$(node -p "require('$PROJECT_ROOT/package.json').version")
-TARBALL_NAME="$PACKAGE_NAME-ubuntu.tar.gz"
+TARBALL_NAME="$PACKAGE_NAME-v$VERSION-ubuntu.tar.gz"
 CHECKSUM_FILE="$PACKAGE_NAME-ubuntu.tar.gz.sha256"
 
 # Help function
@@ -169,10 +169,12 @@ create_release_package() {
     cp "$PROJECT_ROOT/yarn.lock" "$STAGING_DIR/"
     cp "$PROJECT_ROOT/next.config.js" "$STAGING_DIR/"
     
-    # Copy documentation
+    # Copy documentation and installation script
     cp "$PROJECT_ROOT/README.md" "$STAGING_DIR/"
     cp "$PROJECT_ROOT/LICENSE" "$STAGING_DIR/"
     cp "$PROJECT_ROOT/CHANGELOG.md" "$STAGING_DIR/" 2>/dev/null || true
+    cp "$PROJECT_ROOT/install.sh" "$STAGING_DIR/"
+    chmod +x "$STAGING_DIR/install.sh"
     
     # Create production node_modules
     log "Installing production dependencies..."

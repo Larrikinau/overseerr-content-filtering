@@ -47,15 +47,15 @@ If you prefer to install manually, follow these steps:
 2. **Download the package**:
    ```bash
    cd /tmp
-curl -L -o overseerr-content-filtering-v1.1.4-compiled.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.4/overseerr-content-filtering-v1.1.4-compiled.tar.gz
+   curl -L -o overseerr-content-filtering-v1.1.5-ubuntu.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
    ```
 
 3. **Extract and install**:
    ```bash
    sudo mkdir -p /opt/overseerr-filtering
-   sudo tar -xzf overseerr-content-filtering-v1.1.4-compiled.tar.gz -C /opt/overseerr-filtering --strip-components=1
+   sudo tar -xzf overseerr-content-filtering-v1.1.5-ubuntu.tar.gz -C /opt/overseerr-filtering --strip-components=1
    sudo chown -R overseerr:overseerr /opt/overseerr-filtering
-   sudo chmod +x /opt/overseerr-filtering/start.sh
+   sudo chmod +x /opt/overseerr-filtering/dist/index.js
    ```
 
 4. **Create systemd service**:
@@ -149,14 +149,14 @@ To update to a newer version:
 2. **Download the new package**:
    ```bash
    cd /tmp
-curl -L -o overseerr-content-filtering-v1.1.4-compiled.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.4/overseerr-content-filtering-v1.1.4-compiled.tar.gz
+   curl -L -o overseerr-content-filtering-v1.1.5-ubuntu.tar.gz https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
    ```
 
 3. **Extract and replace**:
    ```bash
-   sudo tar -xzf overseerr-content-filtering-v1.1.4-compiled.tar.gz -C /opt/overseerr-filtering --strip-components=1
+   sudo tar -xzf overseerr-content-filtering-v1.1.5-ubuntu.tar.gz -C /opt/overseerr-filtering --strip-components=1
    sudo chown -R overseerr:overseerr /opt/overseerr-filtering
-   sudo chmod +x /opt/overseerr-filtering/start.sh
+   sudo chmod +x /opt/overseerr-filtering/dist/index.js
    ```
 
 4. **Start the service**:

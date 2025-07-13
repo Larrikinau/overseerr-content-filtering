@@ -102,16 +102,22 @@ class TheMovieDb extends ExternalAPI {
   private originalLanguage?: string;
   private maxMovieRating?: string;
   private maxTvRating?: string;
+  private tmdbSortingMode?: string;
+  private curatedMinVotes?: number;
+  private curatedMinRating?: number | null;
   constructor({
     region,
     originalLanguage,
     maxMovieRating,
     maxTvRating,
-  }: { region?: string; originalLanguage?: string; maxMovieRating?: string; maxTvRating?: string } = {}) {
+    tmdbSortingMode,
+    curatedMinVotes,
+    curatedMinRating,
+  }: { region?: string; originalLanguage?: string; maxMovieRating?: string; maxTvRating?: string; tmdbSortingMode?: string; curatedMinVotes?: number; curatedMinRating?: number | null } = {}) {
     super(
       'https://api.themoviedb.org/3',
       {
-        api_key: 'db55323b8d3e4154498498a75642b381',
+        api_key: process.env.TMDB_API_KEY || 'YOUR_TMDB_API_KEY_HERE',
       },
       {
         nodeCache: cacheManager.getCache('tmdb').data,
@@ -125,6 +131,9 @@ class TheMovieDb extends ExternalAPI {
     this.originalLanguage = originalLanguage;
     this.maxMovieRating = maxMovieRating;
     this.maxTvRating = maxTvRating;
+    this.tmdbSortingMode = tmdbSortingMode;
+    this.curatedMinVotes = curatedMinVotes;
+    this.curatedMinRating = curatedMinRating;
   }
   
   private shouldIncludeAdult(): boolean {
@@ -163,6 +172,48 @@ class TheMovieDb extends ExternalAPI {
       'certification_country': 'US',
       'certification.lte': allowedRating
     };
+  }
+  
+  private getTvCertification(): { [key: string]: string } {
+    if (!this.maxTvRating) return {}; // No restrictions
+    
+    const ratingMap: { [key: string]: string } = {
+      'G': 'G',
+      'PG': 'G',
+      'PG-13': 'PG',
+      'R': 'PG-13',
+      'Adult': 'R',
+    };
+    const allowedRating = ratingMap[this.maxTvRating];
+    if (this.maxTvRating === 'G') {
+      return {
+        'certification_country': 'US',
+        'certification': 'G'
+      };
+    }
+    if (!allowedRating) return {};
+    return {
+      'certification_country': 'US',
+      'certification.lte': allowedRating
+    };
+  }
+  
+  private getCuratedFilteringParams(): { [key: string]: string | undefined } {
+    if (this.tmdbSortingMode !== 'curated') return {};
+    
+    const params: { [key: string]: string | undefined } = {};
+    
+    // Apply admin-configured minimum vote count (default 3000)
+    if (this.curatedMinVotes) {
+      params['vote_count.gte'] = this.curatedMinVotes.toString();
+    }
+    
+    // Apply admin-configured minimum rating if set
+    if (this.curatedMinRating !== null && this.curatedMinRating !== undefined) {
+      params['vote_average.gte'] = this.curatedMinRating.toString();
+    }
+    
+    return params;
   }
 
   public searchMulti = async ({
@@ -366,7 +417,7 @@ class TheMovieDb extends ExternalAPI {
     }
   };
 
-  public async getMovieRecommendations({
+  public getMovieRecommendations = async ({
     movieId,
     page = 1,
     language = 'en',
@@ -374,25 +425,30 @@ class TheMovieDb extends ExternalAPI {
     movieId: number;
     page?: number;
     language?: string;
-  }): Promise<TmdbSearchMovieResponse> {
+  }): Promise<TmdbSearchMovieResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getMovieCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchMovieResponse>(
         `/movie/${movieId}/recommendations`,
         {
-          params: {
-            page,
-            language,
-          },
+          params,
         }
       );
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch discover movies: ${e.message}`);
+      return [];
     }
-  }
+  };
 
-  public async getMovieSimilar({
+  public getSimilarMovies = async ({
     movieId,
     page = 1,
     language = 'en',
@@ -400,23 +456,28 @@ class TheMovieDb extends ExternalAPI {
     movieId: number;
     page?: number;
     language?: string;
-  }): Promise<TmdbSearchMovieResponse> {
+  }): Promise<TmdbSearchMovieResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getMovieCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchMovieResponse>(
         `/movie/${movieId}/similar`,
         {
-          params: {
-            page,
-            language,
-          },
+          params,
         }
       );
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch discover movies: ${e.message}`);
+      return [];
     }
-  }
+  };
 
   public async getMoviesByKeyword({
     keywordId,
@@ -444,7 +505,7 @@ class TheMovieDb extends ExternalAPI {
     }
   }
 
-  public async getTvRecommendations({
+  public getTvRecommendations = async ({
     tvId,
     page = 1,
     language = 'en',
@@ -452,27 +513,30 @@ class TheMovieDb extends ExternalAPI {
     tvId: number;
     page?: number;
     language?: string;
-  }): Promise<TmdbSearchTvResponse> {
+  }): Promise<TmdbSearchTvResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getTvCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchTvResponse>(
         `/tv/${tvId}/recommendations`,
         {
-          params: {
-            page,
-            language,
-          },
+          params,
         }
       );
 
       return data;
     } catch (e) {
-      throw new Error(
-        `[TMDB] Failed to fetch TV recommendations: ${e.message}`
-      );
+      return [];
     }
-  }
+  };
 
-  public async getTvSimilar({
+  public getSimilarTvShows = async ({
     tvId,
     page = 1,
     language = 'en',
@@ -480,20 +544,25 @@ class TheMovieDb extends ExternalAPI {
     tvId: number;
     page?: number;
     language?: string;
-  }): Promise<TmdbSearchTvResponse> {
+  }): Promise<TmdbSearchTvResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getTvCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchTvResponse>(`/tv/${tvId}/similar`, {
-        params: {
-          page,
-          language,
-        },
+        params,
       });
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch TV similar: ${e.message}`);
+      return [];
     }
-  }
+  };
 
   public getDiscoverMovies = async ({
     sortBy = 'popularity.desc',
@@ -526,11 +595,14 @@ class TheMovieDb extends ExternalAPI {
         .toISOString()
         .split('T')[0];
 
+      const curatedFilters = this.getCuratedFilteringParams();
+      
       const data = await this.get<TmdbSearchMovieResponse>('/discover/movie', {
         params: {
           sort_by: sortBy,
           page,
-          include_adult: this.shouldIncludeAdult(),          ...this.getMovieCertification(),
+          include_adult: this.shouldIncludeAdult(),
+          ...this.getMovieCertification(),
           language,
           region: this.region,
           with_original_language:
@@ -554,9 +626,9 @@ class TheMovieDb extends ExternalAPI {
           with_keywords: keywords,
           'with_runtime.gte': withRuntimeGte,
           'with_runtime.lte': withRuntimeLte,
-          'vote_average.gte': voteAverageGte,
+          'vote_average.gte': voteAverageGte || curatedFilters['vote_average.gte'],
           'vote_average.lte': voteAverageLte,
-          'vote_count.gte': voteCountGte,
+          'vote_count.gte': voteCountGte || curatedFilters['vote_count.gte'],
           'vote_count.lte': voteCountLte,
           watch_region: watchRegion,
           with_watch_providers: watchProviders,
@@ -600,6 +672,8 @@ class TheMovieDb extends ExternalAPI {
         .toISOString()
         .split('T')[0];
 
+      const curatedFilters = this.getCuratedFilteringParams();
+      
       const data = await this.get<TmdbSearchTvResponse>('/discover/tv', {
         params: {
           sort_by: sortBy,
@@ -628,9 +702,9 @@ class TheMovieDb extends ExternalAPI {
           with_keywords: keywords,
           'with_runtime.gte': withRuntimeGte,
           'with_runtime.lte': withRuntimeLte,
-          'vote_average.gte': voteAverageGte,
+          'vote_average.gte': voteAverageGte || curatedFilters['vote_average.gte'],
           'vote_average.lte': voteAverageLte,
-          'vote_count.gte': voteCountGte,
+          'vote_count.gte': voteCountGte || curatedFilters['vote_count.gte'],
           'vote_count.lte': voteCountLte,
           with_watch_providers: watchProviders,
           watch_region: watchRegion,
