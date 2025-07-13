@@ -32,12 +32,13 @@ This major release introduces an entirely new content discovery paradigm:
 Overseerr with TMDB Curated Discovery provides a refined content experience:
 
 ### Key Features:
-- Curate high-quality content with admin-configurable vote counts and ratings.
-- Separate TV rating filters for precise content control.
-- Search offers comprehensive, raw results devoid of curated filtering.
-- Discovery and recommendations incorporate curated quality filtering.
+- **Standard Discovery Mode**: Shows all content exactly as the TMDB website does with no additional filtering
+- **Curated Discovery Mode**: Allows administrators to be more granular with quality variables I set (vote counts, ratings)
+- Separate TV rating filters for precise content control
+- Search offers comprehensive, raw results devoid of curated filtering
+- Discovery and recommendations incorporate curated quality filtering when enabled
 
-Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' and 'Curated' discovery modes for a personalized viewing experience.
+Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' (TMDB website behavior) and 'Curated' (admin-controlled quality filtering) discovery modes for a personalized viewing experience.
 
 1. **User Preference Storage**: Individual rating limits stored in user settings
 2. **Multi-Layer Protection**: Combined API-level and application-level filtering
@@ -87,11 +88,12 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - **Professional implementation**: Dual-layer filtering architecture for reliability
 
 ### 🎯 **TMDB Curated Discovery (v1.1.5)**
-- **Quality Filtering**: Admin-configurable minimum vote counts and ratings for curated content
-- **Discovery vs Search**: Search returns comprehensive results; discovery applies quality filters
-- **Recommendation Enhancement**: Movie/TV recommendations and similar content use curated filtering
-- **User Control**: Toggle between 'Standard' and 'Curated' discovery modes
-- **Admin Configuration**: Set global quality thresholds (default: 3000+ votes, 6.0+ rating)
+- **Standard Mode**: Shows content exactly as the TMDB website does with no additional filtering
+- **Curated Mode**: Admin-configurable minimum vote counts and ratings allow granular quality control
+- **Discovery vs Search**: Search returns comprehensive results; discovery applies admin-configured quality filters in curated mode
+- **Recommendation Enhancement**: Movie/TV recommendations and similar content use curated filtering when enabled
+- **User Control**: Toggle between 'Standard' (TMDB website behavior) and 'Curated' (admin quality variables) discovery modes
+- **Admin Configuration**: Set global quality thresholds that I define (default: 3000+ votes, 6.0+ rating)
 - **Performance Optimized**: Intelligent parameter combination minimizes API calls
 
 ### 🚀 **All Original Overseerr Features**
@@ -235,8 +237,8 @@ yarn start
 **User Configuration:**
 1. Navigate to **Settings** → **General** (if allowed by admin)
 2. Configure **Discovery Preferences**:
-   - **Discovery Mode**: Choose between 'Standard' and 'Curated'
-   - **Custom Thresholds**: Adjust personal quality preferences (if enabled)
+   - **Discovery Mode**: Choose between 'Standard' (TMDB website behavior) and 'Curated' (admin-controlled quality filtering)
+   - **Custom Thresholds**: Adjust personal quality preferences within admin-defined ranges (if enabled)
 
 ### Rating System
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)

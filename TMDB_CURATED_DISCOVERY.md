@@ -15,15 +15,17 @@ The system uses two primary quality indicators from TMDB:
 Users can toggle between two discovery experiences:
 
 #### **Standard Mode** (Default)
-- Shows all available content regardless of quality metrics
-- Identical to original Overseerr behavior
-- No filtering applied to discovery results
+- Shows all available content exactly as the original TMDB website does
+- Uses TMDB's default sorting and filtering behavior
+- No additional quality filtering applied to discovery results
+- Identical to browsing movies/TV shows directly on themoviedb.org
 - Search results remain unfiltered
 
 #### **Curated Mode** (New)
-- Applies quality thresholds to filter content
-- Only shows movies/TV shows meeting minimum standards
-- Enhanced recommendations using quality filtering
+- Allows administrators to be more granular with quality variables I set
+- Applies admin-configured quality thresholds to filter content
+- Only shows movies/TV shows meeting minimum vote count and rating standards
+- Enhanced recommendations using quality filtering based on admin preferences
 - Search results remain comprehensive (unfiltered)
 
 ### **Where Filtering Applies**

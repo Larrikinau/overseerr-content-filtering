@@ -20,7 +20,7 @@
 
 ## 📋 Why This Fork Exists: Comprehensive Content Filtering
 
-The filtering system provides admin-configurable age rating controls:
+The filtering system I developed provides admin-configurable age rating controls:
 
 1. **User Preference Storage**: Individual rating limits stored in user settings
 2. **Multi-Layer Protection**: Combined API-level and application-level filtering
@@ -29,7 +29,7 @@ The filtering system provides admin-configurable age rating controls:
 
 ### How Content Filtering Works
 
-This fork uses **dual-layer filtering architecture** to ensure reliable content management across all age rating categories.
+This fork uses **dual-layer filtering architecture** that I designed to ensure reliable content management across all age rating categories.
 
 **📖 For detailed technical explanation:** See [TECHNICAL_IMPLEMENTATION.md](TECHNICAL_IMPLEMENTATION.md)
 
