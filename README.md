@@ -26,7 +26,7 @@
 - **🧪 User Testing Tools**: Added migration validation script for troubleshooting
 - **✅ Production Ready**: Resolved all reported Docker deployment issues
 
-### 📋 **TMDB Curated Discovery (v1.1.5)**
+### 📋 **TMDB Curated Discovery**
 
 This major release introduces an entirely new content discovery paradigm:
 - **🎯 Quality-First Discovery**: Admin-configurable minimum vote counts and ratings ensure only high-quality content appears in discovery
