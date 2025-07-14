@@ -121,10 +121,11 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/migrate-to-content-filtering.sh)
 ```
 
-✅ **Supports all installation types**: Docker, Snap, systemd  
+✅ **Migrates FROM**: Docker, Snap, or systemd installations  
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:latest)  
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
-✅ **Seamless transition**: ~2-5 minutes with zero downtime  
+✅ **Seamless transition**: ~2-5 minutes with zero downtime
 
 📖 **[Complete Migration Guide](MIGRATION_GUIDE.md)** - Detailed instructions and troubleshooting
 
