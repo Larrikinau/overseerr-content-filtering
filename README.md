@@ -105,6 +105,23 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - Multiple notification agents
 - Real-time request management
 
+## 🔄 Migrating from Existing Overseerr?
+
+**Already have Overseerr installed?** Migrate to overseerr-content-filtering with a single command that preserves all your data:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/migrate-to-content-filtering.sh)
+```
+
+✅ **Supports all installation types**: Docker, Snap, systemd  
+✅ **100% data preservation**: Users, requests, settings, database  
+✅ **Automatic backup**: Creates timestamped backups before migration  
+✅ **Seamless transition**: ~2-5 minutes with zero downtime  
+
+📖 **[Complete Migration Guide](MIGRATION_GUIDE.md)** - Detailed instructions and troubleshooting
+
+---
+
 ## 📥 Installation
 
 **Two Installation Options Available:**
