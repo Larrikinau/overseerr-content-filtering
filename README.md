@@ -87,7 +87,7 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 - **Family-safe defaults**: New users start with age-appropriate content settings
 - **Professional implementation**: Dual-layer filtering architecture for reliability
 
-### 🎯 **TMDB Curated Discovery (v1.1.5)**
+### 🎯 **TMDB Curated Discovery**
 - **Standard Mode**: Shows content with all existing safety and age rating controls (no quality filtering added)
 - **Curated Mode**: Adds admin-configurable quality thresholds on top of existing safety controls
 - **Discovery vs Search**: Search returns results within safety boundaries; discovery applies additional quality filters in curated mode
