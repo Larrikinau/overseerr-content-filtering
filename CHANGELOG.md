@@ -5,6 +5,51 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2025-07-14 (LATEST RELEASE)
+
+### Docker Hub Registration and Version Alignment
+- **🐳 Docker Hub Official Registration**: Successfully published to Docker Hub with proper versioning
+- **🏷️ Version Tag Alignment**: Docker image tags now correctly align with project version
+- **📋 Latest Tag Update**: `latest` tag updated to point to v1.1.5
+- **🔧 Versioning Strategy**: Implemented comprehensive Docker versioning documentation
+- **📚 Documentation Updates**: DOCKER_DEPLOYMENT.md enhanced with versioning strategy section
+
+### Docker Image Improvements
+- **Registry**: Now available at `larrikinau/overseerr-content-filtering:latest`
+- **Versioned Tags**: Both `1.1.5` and `1.1.4` tags available for version control
+- **No Workarounds**: Direct pull from Docker Hub without authentication issues
+- **Standard Experience**: Full Docker registry functionality with multi-version support
+
+### User Experience Enhancements
+- **✅ One-Command Docker Setup**: `docker pull larrikinau/overseerr-content-filtering:latest`
+- **🔄 Version Rollback**: Previous versions maintained for rollback capabilities
+- **📖 Clear Documentation**: Versioning strategy and tag alignment clearly documented
+- **🎯 Production Ready**: v1.1.5 marked as stable for production deployment
+
+---
+
+## [1.1.4] - 2025-07-14
+
+### Docker Hub Registration and Infrastructure
+- **🐳 Docker Hub Account Creation**: Successfully registered `larrikinau` account on Docker Hub
+- **🔑 Authentication Setup**: Personal access token configured for automated publishing
+- **🏗️ Build Process**: Complete Docker image build and push pipeline established
+- **🧹 Server Cleanup**: Docker environment properly cleaned up after publishing
+
+### Version Tagging Implementation
+- **Latest Tag**: `larrikinau/overseerr-content-filtering:latest` published
+- **Version Tag**: `larrikinau/overseerr-content-filtering:1.1.4` published
+- **Image Size**: 175.8 MB optimized for production use
+- **Architecture**: linux/amd64 platform support
+
+### User Access Resolution
+- **✅ No More Workarounds**: Users can now pull directly from Docker Hub
+- **🚀 Standard Docker Experience**: Full registry functionality available
+- **📚 Updated Documentation**: All guides updated with Docker Hub instructions
+- **🔧 Docker Compose Support**: Production-ready compose configurations provided
+
+---
+
 ## [1.1.3] - 2025-07-12
 
 ### Enhanced
