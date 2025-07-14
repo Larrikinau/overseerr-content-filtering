@@ -4,17 +4,30 @@
 
 This guide covers Docker deployment options for Overseerr Content Filtering, including both pre-built images and local building.
 
+## 🎉 Now Available on Docker Hub!
+
+**✅ Official Docker Hub Registration Complete**
+
+- **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
+- **No workarounds needed** - Pull directly from Docker Hub
+- **Latest version**: `larrikinau/overseerr-content-filtering:latest`
+- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.1.4`
+
 ## 🐳 Quick Start with Pre-built Images
 
 ### Option 1: Docker Run
 
 ```bash
+# Pull the latest image
+docker pull larrikinau/overseerr-content-filtering:latest
+
+# Run the container
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering
+  larrikinau/overseerr-content-filtering:latest
 ```
 
 ### Option 2: Docker Compose

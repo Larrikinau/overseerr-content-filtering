@@ -140,15 +140,22 @@ cd overseerr-content-filtering-v1.1.5
 sudo ./install.sh
 ```
 
-#### Docker
+#### Docker (Recommended)
+
+✅ **Now Available on Docker Hub** - No workarounds needed!
+
 ```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering
+  larrikinau/overseerr-content-filtering:latest
 ```
+
+🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -157,12 +164,15 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering
+    image: larrikinau/overseerr-content-filtering:latest
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055
     volumes:
       - /path/to/appdata/config:/app/config
+    environment:
+      - NODE_ENV=production
+      - RUN_MIGRATIONS=true
     restart: unless-stopped
 ```
 
