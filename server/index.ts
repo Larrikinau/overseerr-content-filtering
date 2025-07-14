@@ -99,7 +99,7 @@ app
         
         // Verify critical content filtering columns exist
         try {
-          await dbConnection.query("SELECT maxMovieRating FROM user_settings LIMIT 1");
+          await dbConnection.query("SELECT tmdbSortingMode FROM user_settings LIMIT 1");
           logger.info('Content filtering columns verified', { label: 'Database' });
         } catch (verifyError) {
           logger.warn('Content filtering columns may not exist - this could indicate migration issues', { 
