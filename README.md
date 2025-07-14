@@ -16,9 +16,17 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.5** introduces groundbreaking **TMDB Curated Discovery** alongside existing **global adult content blocking** and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.6** introduces enhanced **Docker migration reliability** alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.1.5: TMDB Curated Discovery**
+### 🆕 **What's New in v1.1.6: Enhanced Docker Migration**
+
+- **🐳 Reliable Docker Deployment**: Fixed database migration persistence issues in Docker containers
+- **🔧 Automatic Migration Execution**: Enhanced migration logic ensures content filtering features work out-of-the-box
+- **📊 Comprehensive Logging**: Detailed migration status tracking and error reporting
+- **🧪 User Testing Tools**: Added migration validation script for troubleshooting
+- **✅ Production Ready**: Resolved all reported Docker deployment issues
+
+### 📋 **TMDB Curated Discovery (v1.1.5)**
 
 This major release introduces an entirely new content discovery paradigm:
 - **🎯 Quality-First Discovery**: Admin-configurable minimum vote counts and ratings ensure only high-quality content appears in discovery
@@ -144,16 +152,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.1.5)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
+# Download the latest pre-built package (v1.1.6)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.6/overseerr-content-filtering-v1.1.6-ubuntu.tar.gz
 
 # Verify checksum
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.5/overseerr-content-filtering-v1.1.5-ubuntu.tar.gz.sha256
-sha256sum -c overseerr-content-filtering-v1.1.5-ubuntu.tar.gz.sha256
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.6/overseerr-content-filtering-v1.1.6-ubuntu.tar.gz.sha256
+sha256sum -c overseerr-content-filtering-v1.1.6-ubuntu.tar.gz.sha256
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.1.5-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.1.5
+tar -xzf overseerr-content-filtering-v1.1.6-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.1.6
 sudo ./install.sh
 ```
 

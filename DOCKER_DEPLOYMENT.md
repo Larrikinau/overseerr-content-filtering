@@ -10,8 +10,8 @@ This guide covers Docker deployment options for Overseerr Content Filtering, inc
 
 - **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
 - **No workarounds needed** - Pull directly from Docker Hub
-- **Latest version**: `larrikinau/overseerr-content-filtering:latest`
-- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.1.5`
+- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.1.6)
+- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.1.6` (migration fixes)
 
 ## 🐳 Quick Start with Pre-built Images
 
@@ -219,7 +219,7 @@ docker run -d \
   -e LOG_LEVEL=info \
   -p 5055:5055 \
   -v overseerr-config:/app/config \
-  larrikinau/overseerr-content-filtering:v1.1.5
+  larrikinau/overseerr-content-filtering:v1.1.6
 ```
 
 ### Network Security
@@ -362,16 +362,17 @@ docker exec overseerr-content-filtering ps aux
 
 ### Available Tags
 
-- `latest` - Latest stable release (v1.1.5)
-- `v1.1.5` - Specific version
-- `v1.1.4` - Previous version
+- `latest` - Latest stable release (v1.1.6)
+- `v1.1.6` - Specific version with migration fixes
+- `v1.1.5` - Previous version
+- `v1.1.4` - Older version
 - `develop` - Development branch (unstable)
 
 ### Docker Versioning Strategy
 
 **Version Alignment**: Docker image tags align with the project version in `package.json`:
 - The `latest` tag always points to the most recent stable release
-- Semantic version tags (e.g., `v1.1.5`) correspond to specific GitHub releases
+- Semantic version tags (e.g., `v1.1.6`) correspond to specific GitHub releases
 - Both `latest` and specific version tags are updated simultaneously during releases
 
 **Tag Updates**: When a new version is released:
@@ -381,7 +382,7 @@ docker exec overseerr-content-filtering ps aux
 4. Previous version tags remain available for rollback purposes
 
 **Recommended Usage**:
-- **Production**: Use specific version tags (e.g., `v1.1.5`) for reproducible deployments
+- **Production**: Use specific version tags (e.g., `v1.1.6`) for reproducible deployments
 - **Development/Testing**: Use `latest` for the most current stable features
 - **Bleeding Edge**: Use `develop` for unreleased features (not recommended for production)
 

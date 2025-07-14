@@ -5,7 +5,35 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.5] - 2025-07-14 (LATEST RELEASE)
+## [1.1.6] - 2025-07-14 (LATEST RELEASE)
+
+### Fixed
+
+- **🐳 Enhanced Docker Database Migration Handling**: Resolved database migration persistence issues in Docker containers
+- **🔧 Automatic Migration Execution**: Enabled `migrationsRun: true` in production config for reliable Docker deployment
+- **📋 Comprehensive Migration Logging**: Added detailed logging for each migration step with verification
+- **🛡️ Database Directory Creation**: Ensures proper directory structure exists before migration
+- **✅ Content Filtering Column Verification**: Validates that critical columns exist after migration
+- **🔍 Enhanced Error Handling**: Better error reporting and stack traces for migration troubleshooting
+- **🚨 TypeScript Compilation Fixes**: Fixed Array.isArray checks for migration return values
+
+### Improvements
+
+- **📊 Migration Status Tracking**: Detailed logging of pending and executed migrations
+- **🧪 Migration Test Script**: Added `test-migration-fix.sh` for user validation
+- **🔄 Automatic Recovery**: Better handling of migration failures and retry mechanisms
+- **🐛 User Issue Resolution**: Comprehensive solution for GitHub Issue #4 migration problems
+
+### Docker Enhancements
+
+- **🏷️ Version 1.1.6 Image**: Updated Docker Hub with latest migration fixes
+- **📦 Latest Tag Updated**: `larrikinau/overseerr-content-filtering:latest` now points to v1.1.6
+- **🔧 Migration Environment**: Added `RUN_MIGRATIONS=true` to Dockerfile for automatic execution
+- **📚 Test Documentation**: Comprehensive user testing guide for migration validation
+
+---
+
+## [1.1.5] - 2025-07-14
 
 ### Docker Hub Registration and Version Alignment
 - **🐳 Docker Hub Official Registration**: Successfully published to Docker Hub with proper versioning
