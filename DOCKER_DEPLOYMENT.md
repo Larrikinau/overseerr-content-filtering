@@ -79,7 +79,7 @@ Use the provided build script for easy building:
 ./scripts/build-docker.sh
 
 # Build with specific tag
-./scripts/build-docker.sh -t v1.1.5
+./scripts/build-docker.sh -t v1.1.6
 
 # Multi-platform build and push
 ./scripts/build-docker.sh --multi-platform --push
