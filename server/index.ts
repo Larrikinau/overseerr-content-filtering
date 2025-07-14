@@ -54,10 +54,30 @@ app
       if (process.env.NODE_ENV === 'production' || process.env.RUN_MIGRATIONS === 'true') {
         logger.info('Running database migrations...', { label: 'Database' });
         
+        // Ensure database directory exists and is writable
+        const dbPath = process.env.CONFIG_DIRECTORY
+          ? `${process.env.CONFIG_DIRECTORY}/db`
+          : 'config/db';
+        
+        try {
+          const fs = require('fs');
+          if (!fs.existsSync(dbPath)) {
+            fs.mkdirSync(dbPath, { recursive: true });
+            logger.info(`Created database directory: ${dbPath}`, { label: 'Database' });
+          }
+        } catch (dirError) {
+          logger.warn('Could not create database directory', { label: 'Database', error: dirError.message });
+        }
+        
         // Check if migrations are pending first
         const pendingMigrations = await dbConnection.showMigrations();
         if (pendingMigrations && pendingMigrations.length > 0) {
           logger.info(`Found ${pendingMigrations.length} pending migrations`, { label: 'Database' });
+          
+          // Log each pending migration
+          pendingMigrations.forEach((migration, index) => {
+            logger.info(`Pending migration ${index + 1}: ${migration.name}`, { label: 'Database' });
+          });
           
           await dbConnection.query('PRAGMA foreign_keys=OFF');
           const executedMigrations = await dbConnection.runMigrations();
@@ -65,12 +85,29 @@ app
           
           if (executedMigrations && executedMigrations.length > 0) {
             logger.info(`Successfully executed ${executedMigrations.length} migrations`, { label: 'Database' });
+            
+            // Log each executed migration
+            executedMigrations.forEach((migration, index) => {
+              logger.info(`Executed migration ${index + 1}: ${migration.name}`, { label: 'Database' });
+            });
           } else {
             logger.info('No migrations needed to be executed', { label: 'Database' });
           }
         } else {
           logger.info('Database schema is up to date', { label: 'Database' });
         }
+        
+        // Verify critical content filtering columns exist
+        try {
+          await dbConnection.query("SELECT maxMovieRating FROM user_settings LIMIT 1");
+          logger.info('Content filtering columns verified', { label: 'Database' });
+        } catch (verifyError) {
+          logger.warn('Content filtering columns may not exist - this could indicate migration issues', { 
+            label: 'Database', 
+            error: verifyError.message 
+          });
+        }
+        
       } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
         // In development, check if migrations are needed and log a warning
         try {
@@ -83,7 +120,7 @@ app
         }
       }
     } catch (error) {
-      logger.error('Database migration error', { label: 'Database', error: error.message });
+      logger.error('Database migration error', { label: 'Database', error: error.message, stack: error.stack });
       throw error;
     }
 
