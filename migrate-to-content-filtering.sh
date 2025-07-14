@@ -24,6 +24,7 @@ log_success() {
 
 log_warning() {
     echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️  $1${NC}"
+    touch "/tmp/migration_warnings"
 }
 
 log_error() {
@@ -69,18 +70,37 @@ detect_overseerr() {
     OVERSEERR_TYPE="none"
 }
 
-# Backup existing configuration
+# Backup existing configuration and detect mount details
 backup_config() {
     log "Creating backup of existing configuration..."
     
     case $OVERSEERR_TYPE in
         "docker")
-            # Get the volume or bind mount path
-            CONFIG_PATH=$(docker inspect $CONTAINER_NAME | grep -A 5 "Mounts" | grep "config" | awk -F'"' '{print $4}' | head -1)
-            if [ ! -z "$CONFIG_PATH" ]; then
-                cp -r "$CONFIG_PATH" "${CONFIG_PATH}.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || log_warning "Could not create filesystem backup"
+            # Get detailed mount information from Docker inspect
+            MOUNT_INFO=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Type}}:{{.Source}}:{{.Destination}}{{end}}{{end}}')
+            
+            if [ ! -z "$MOUNT_INFO" ]; then
+                MOUNT_TYPE=$(echo $MOUNT_INFO | cut -d':' -f1)
+                MOUNT_SOURCE=$(echo $MOUNT_INFO | cut -d':' -f2)
+                
+                log "Found Docker mount: Type=$MOUNT_TYPE, Source=$MOUNT_SOURCE"
+                
+                if [ "$MOUNT_TYPE" = "bind" ]; then
+                    # Bind mount - backup the host directory
+                    DOCKER_CONFIG_PATH="$MOUNT_SOURCE"
+                    if [ -d "$DOCKER_CONFIG_PATH" ]; then
+                        cp -r "$DOCKER_CONFIG_PATH" "${DOCKER_CONFIG_PATH}.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || log_warning "Could not create filesystem backup"
+                        log_success "Docker bind mount backed up from $DOCKER_CONFIG_PATH"
+                    fi
+                elif [ "$MOUNT_TYPE" = "volume" ]; then
+                    # Named volume - backup the volume
+                    DOCKER_VOLUME_NAME="$MOUNT_SOURCE"
+                    docker run --rm -v $DOCKER_VOLUME_NAME:/source -v $(pwd):/backup alpine tar czf /backup/overseerr_volume_backup_$(date +%Y%m%d_%H%M%S).tar.gz -C /source . 2>/dev/null || log_warning "Could not create volume backup"
+                    log_success "Docker volume '$DOCKER_VOLUME_NAME' backed up"
+                fi
+            else
+                log_warning "No config mount found in existing container - this may cause data loss"
             fi
-            log_success "Docker volume will be preserved automatically"
             ;;
         "snap")
             SNAP_CONFIG="/var/snap/overseerr/common"
@@ -134,33 +154,100 @@ install_content_filtering() {
     docker pull larrikinau/overseerr-content-filtering:latest
     log_success "Image pulled successfully"
     
+    # Initialize environment variables file
+    cat > env.list << EOF
+NODE_ENV=production
+RUN_MIGRATIONS=true
+LOG_LEVEL=info
+EOF
+    
     # Determine configuration volume/path
     case $OVERSEERR_TYPE in
         "docker")
-            # Reuse existing Docker volume or create new one
-            VOLUME_ARG="-v overseerr_config:/app/config"
+            # Use the detected mount information from backup_config
+            if [ ! -z "$MOUNT_INFO" ]; then
+                if [ "$MOUNT_TYPE" = "bind" ]; then
+                    # Reuse the same bind mount path
+                    VOLUME_ARG="-v $DOCKER_CONFIG_PATH:/app/config"
+                    log "Reusing existing bind mount: $DOCKER_CONFIG_PATH"
+                elif [ "$MOUNT_TYPE" = "volume" ]; then
+                    # Reuse the same named volume
+                    VOLUME_ARG="-v $DOCKER_VOLUME_NAME:/app/config"
+                    log "Reusing existing volume: $DOCKER_VOLUME_NAME"
+                fi
+
+                # Preserve TMDB API Key settings from existing settings.json
+                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq >/dev/null 2>&1; then
+                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                        log "Preserving TMDB API Key from settings"
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                    fi
+                fi
+
+                # Preserve environment variables from existing .env file
+                if [ -f "$DOCKER_CONFIG_PATH/.env" ]; then
+                    log "Preserving environment variables from .env file"
+                    cat "$DOCKER_CONFIG_PATH/.env" >> env.list
+                fi
+                
+                # Preserve environment variables from existing container
+                if [ -n "$CONTAINER_NAME" ]; then
+                    log "Preserving environment variables from existing container"
+                    docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> env.list 2>/dev/null || true
+                fi
+            else
+                # Fallback to creating new volume if no mount detected
+                docker volume create overseerr_config
+                VOLUME_ARG="-v overseerr_config:/app/config"
+                log_warning "No existing mount found, created new volume: overseerr_config"
+            fi
             ;;
         "snap")
             # Copy snap config to Docker volume
+            docker volume create overseerr_config
             if [ -d "/var/snap/overseerr/common" ]; then
-                docker volume create overseerr_config
                 docker run --rm -v overseerr_config:/dest -v /var/snap/overseerr/common:/src alpine sh -c "cp -r /src/* /dest/"
                 log_success "Snap configuration migrated to Docker volume"
+                
+                # Preserve TMDB API Key from snap settings
+                if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq >/dev/null 2>&1; then
+                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                        log "Preserving TMDB API Key from snap settings"
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                    fi
+                fi
+            else
+                log_warning "Snap config directory not found, starting with empty volume"
             fi
             VOLUME_ARG="-v overseerr_config:/app/config"
             ;;
         "systemd")
             # Copy systemd config to Docker volume  
+            docker volume create overseerr_config
             if [ ! -z "$SYSTEMD_CONFIG_PATH" ]; then
-                docker volume create overseerr_config
                 docker run --rm -v overseerr_config:/dest -v "$SYSTEMD_CONFIG_PATH":/src alpine sh -c "cp -r /src/* /dest/"
                 log_success "Systemd configuration migrated to Docker volume"
+                
+                # Preserve TMDB API Key from systemd settings
+                if [ -f "$SYSTEMD_CONFIG_PATH/settings.json" ] && command -v jq >/dev/null 2>&1; then
+                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$SYSTEMD_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                        log "Preserving TMDB API Key from systemd settings"
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                    fi
+                fi
+            else
+                log_warning "Systemd config path not found, starting with empty volume"
             fi
             VOLUME_ARG="-v overseerr_config:/app/config"
             ;;
         "none")
             # Fresh installation
+            docker volume create overseerr_config
             VOLUME_ARG="-v overseerr_config:/app/config"
+            log "Creating fresh installation with new volume: overseerr_config"
             ;;
     esac
     
@@ -169,9 +256,7 @@ install_content_filtering() {
         --name overseerr-content-filtering \
         -p 5055:5055 \
         $VOLUME_ARG \
-        -e NODE_ENV=production \
-        -e RUN_MIGRATIONS=true \
-        -e LOG_LEVEL=info \
+        --env-file env.list \
         --restart unless-stopped \
         larrikinau/overseerr-content-filtering:latest
     
@@ -204,6 +289,69 @@ verify_installation() {
         fi
         sleep 2
     done
+    
+    # Verify database migrations completed
+    log "Verifying database migrations..."
+    sleep 5  # Give migrations time to complete
+    
+    # Check migration logs
+    if docker logs overseerr-content-filtering 2>&1 | grep -q "Database migrations completed successfully"; then
+        log_success "Database migrations completed successfully"
+    elif docker logs overseerr-content-filtering 2>&1 | grep -q "Database schema is up to date"; then
+        log_success "Database schema is up to date"
+    else
+        log_warning "Could not verify database migration status. Check logs: docker logs overseerr-content-filtering"
+    fi
+    
+    # Check if content filtering columns exist
+    if docker logs overseerr-content-filtering 2>&1 | grep -q "Content filtering columns verified"; then
+        log_success "Content filtering columns verified"
+    else
+        log_warning "Content filtering columns may not exist. Check logs for migration errors."
+    fi
+    
+    # Verify data preservation (if migrating from existing installation)
+    if [ "$OVERSEERR_TYPE" != "none" ]; then
+        log "Verifying data preservation..."
+        
+        # Check if the API responds with valid data structure
+        if curl -s http://localhost:5055/api/v1/settings/main 2>/dev/null | grep -q "apikey"; then
+            log_success "Settings data preserved successfully"
+        else
+            log_warning "Settings may not have been preserved. You may need to reconfigure."
+        fi
+        
+        # Check if users exist (simplified check)
+        if curl -s http://localhost:5055/api/v1/auth/me 2>/dev/null | grep -q "id"; then
+            log_success "User data appears to be preserved"
+        else
+            log_warning "User data may not be preserved. You may need to set up users again."
+        fi
+    fi
+    
+    # Verify TMDB API key configuration
+    log "Verifying TMDB API key configuration..."
+    if docker logs overseerr-content-filtering 2>&1 | grep -q "YOUR_TMDB_API_KEY_HERE"; then
+        log_warning "TMDB API key may not be configured correctly. You may need to set it in the settings."
+    else
+        log_success "TMDB API key appears to be configured"
+    fi
+    
+    # Test TMDB API connectivity
+    sleep 3
+    if curl -s "http://localhost:5055/api/v1/regions" 2>/dev/null | grep -q "iso_3166_1"; then
+        log_success "TMDB API connectivity verified"
+    else
+        log_warning "TMDB API connectivity test failed. Check TMDB API key configuration."
+    fi
+    
+    # Final status check
+    log "Final verification..."
+    if docker logs overseerr-content-filtering 2>&1 | grep -q "Starting Overseerr"; then
+        log_success "Overseerr Content Filtering is running properly"
+    else
+        log_error "Service may not have started correctly. Check logs: docker logs overseerr-content-filtering"
+    fi
 }
 
 # Main migration function
@@ -252,6 +400,31 @@ main() {
     echo ""
     echo "Visit Settings → Users to configure content filtering."
     echo ""
+    
+    # Show troubleshooting information if any warnings occurred
+    if [ -f "/tmp/migration_warnings" ]; then
+        echo ""
+        echo "=================================================="
+        echo "   ⚠️  MIGRATION WARNINGS DETECTED"
+        echo "=================================================="
+        echo ""
+        echo "Some warnings were detected during migration. If you experience issues:"
+        echo ""
+        echo "1. Check container logs: docker logs overseerr-content-filtering"
+        echo "2. Verify data integrity: curl -s http://localhost:5055/api/v1/settings/main"
+        echo "3. Test content filtering: Visit Settings → Users in the web interface"
+        echo "4. If issues persist, restore from backup and contact support"
+        echo ""
+        echo "Backups created:"
+        if [ "$OVERSEERR_TYPE" = "docker" ] && [ ! -z "$DOCKER_CONFIG_PATH" ]; then
+            echo "  - Docker bind mount: ${DOCKER_CONFIG_PATH}.backup.*"
+        fi
+        if [ "$OVERSEERR_TYPE" = "docker" ] && [ ! -z "$DOCKER_VOLUME_NAME" ]; then
+            echo "  - Docker volume: overseerr_volume_backup_*.tar.gz"
+        fi
+        echo ""
+        rm -f "/tmp/migration_warnings"
+    fi
 }
 
 # Run main function
