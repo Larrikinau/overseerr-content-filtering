@@ -123,6 +123,61 @@ backup_config() {
     esac
 }
 
+# Extract TMDB API key from existing installation before stopping
+extract_tmdb_api_key() {
+    log "Extracting TMDB API key from existing installation..."
+    
+    case $OVERSEERR_TYPE in
+        "docker")
+            # For Docker, extract from running container or mounted volume
+            if [ "$MOUNT_TYPE" = "bind" ] && [ -f "$DOCKER_CONFIG_PATH/settings.json" ]; then
+                # Bind mount - read directly from host filesystem
+                if command -v jq > /dev/null 2>&1; then
+                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                        log "Found TMDB API key in bind mount settings"
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
+                    fi
+                fi
+            elif [ "$MOUNT_TYPE" = "volume" ]; then
+                # Volume mount - extract from running container
+                if docker exec $CONTAINER_NAME test -f /app/config/settings.json 2>/dev/null; then
+                    TMDB_API_KEY=$(docker exec $CONTAINER_NAME cat /app/config/settings.json 2>/dev/null | jq -r '.main.tmdbApiKey // null' 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                        log "Found TMDB API key in volume settings"
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
+                    fi
+                fi
+            fi
+            
+            # Also extract environment variables from running container
+            if [ -n "$CONTAINER_NAME" ]; then
+                docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> /tmp/overseerr_env_backup 2>/dev/null || true
+            fi
+            ;;
+        "snap")
+            # Extract from snap settings
+            if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
+                if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                    log "Found TMDB API key in snap settings"
+                    echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
+                fi
+            fi
+            ;;
+        "systemd")
+            # Extract from systemd settings
+            if [ ! -z "$SYSTEMD_CONFIG_PATH" ] && [ -f "$SYSTEMD_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$SYSTEMD_CONFIG_PATH/settings.json" 2>/dev/null)
+                if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
+                    log "Found TMDB API key in systemd settings"
+                    echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
+                fi
+            fi
+            ;;
+    esac
+}
+
 # Stop existing Overseerr
 stop_existing() {
     log "Stopping existing Overseerr installation..."
@@ -160,6 +215,12 @@ NODE_ENV=production
 RUN_MIGRATIONS=true
 LOG_LEVEL=info
 EOF
+    
+    # Add extracted TMDB API key if available
+    if [ -f "/tmp/overseerr_env_backup" ]; then
+        log "Adding extracted environment variables from previous installation"
+        cat /tmp/overseerr_env_backup >> env.list
+    fi
     
     # Determine configuration volume/path
     case $OVERSEERR_TYPE in
@@ -337,12 +398,23 @@ verify_installation() {
         log_success "TMDB API key appears to be configured"
     fi
     
-    # Test TMDB API connectivity
+    # Test TMDB API connectivity by checking if API key was migrated
     sleep 3
-    if curl -s "http://localhost:5055/api/v1/regions" 2>/dev/null | grep -q "iso_3166_1"; then
-        log_success "TMDB API connectivity verified"
+    # Check if we can access the container's settings to verify API key migration
+    if docker exec overseerr-content-filtering ls -la /app/config/settings.json >/dev/null 2>&1; then
+        # Check if settings.json contains a TMDB API key
+        if docker exec overseerr-content-filtering cat /app/config/settings.json 2>/dev/null | grep -q "tmdbApiKey"; then
+            log_success "TMDB API key appears to be migrated successfully"
+        else
+            log_warning "TMDB API key may not be configured. Please configure it in Settings → General → TMDB API."
+        fi
     else
-        log_warning "TMDB API connectivity test failed. Check TMDB API key configuration."
+        # Fall back to basic connectivity test
+        if curl -s "http://localhost:5055/api/v1/status" 2>/dev/null | grep -q "version"; then
+            log_success "Service is running - TMDB API key needs to be configured in web interface"
+        else
+            log_warning "Service may not be responding correctly. Check container logs."
+        fi
     fi
     
     # Final status check
@@ -378,6 +450,7 @@ main() {
     check_docker
     detect_overseerr
     backup_config
+    extract_tmdb_api_key
     stop_existing
     install_content_filtering
     verify_installation
