@@ -50,26 +50,41 @@ app
 
     // Run migrations in production or when explicitly requested (Docker support)
     // This ensures migrations run in Docker containers and production environments
-    if (process.env.NODE_ENV === 'production' || process.env.RUN_MIGRATIONS === 'true') {
-      if (process.env.RUN_MIGRATIONS === 'true') {
+    try {
+      if (process.env.NODE_ENV === 'production' || process.env.RUN_MIGRATIONS === 'true') {
         logger.info('Running database migrations...', { label: 'Database' });
-      }
-      await dbConnection.query('PRAGMA foreign_keys=OFF');
-      await dbConnection.runMigrations();
-      await dbConnection.query('PRAGMA foreign_keys=ON');
-      if (process.env.RUN_MIGRATIONS === 'true') {
-        logger.info('Database migrations completed successfully', { label: 'Database' });
-      }
-    } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      // In development, check if migrations are needed and log a warning
-      try {
-        const hasPendingMigrations = await dbConnection.showMigrations();
-        if (hasPendingMigrations) {
-          logger.warn('Database has pending migrations. Set RUN_MIGRATIONS=true to apply them.', { label: 'Database' });
+        
+        // Check if migrations are pending first
+        const pendingMigrations = await dbConnection.showMigrations();
+        if (pendingMigrations && pendingMigrations.length > 0) {
+          logger.info(`Found ${pendingMigrations.length} pending migrations`, { label: 'Database' });
+          
+          await dbConnection.query('PRAGMA foreign_keys=OFF');
+          const executedMigrations = await dbConnection.runMigrations();
+          await dbConnection.query('PRAGMA foreign_keys=ON');
+          
+          if (executedMigrations && executedMigrations.length > 0) {
+            logger.info(`Successfully executed ${executedMigrations.length} migrations`, { label: 'Database' });
+          } else {
+            logger.info('No migrations needed to be executed', { label: 'Database' });
+          }
+        } else {
+          logger.info('Database schema is up to date', { label: 'Database' });
         }
-      } catch (error) {
-        logger.warn('Could not check migration status', { label: 'Database', error: error.message });
+      } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+        // In development, check if migrations are needed and log a warning
+        try {
+          const pendingMigrations = await dbConnection.showMigrations();
+          if (pendingMigrations && pendingMigrations.length > 0) {
+            logger.warn(`Database has ${pendingMigrations.length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
+          }
+        } catch (error) {
+          logger.warn('Could not check migration status', { label: 'Database', error: error.message });
+        }
       }
+    } catch (error) {
+      logger.error('Database migration error', { label: 'Database', error: error.message });
+      throw error;
     }
 
     // Load Settings
