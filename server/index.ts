@@ -71,11 +71,11 @@ app
         
         // Check if migrations are pending first
         const pendingMigrations = await dbConnection.showMigrations();
-        if (pendingMigrations && pendingMigrations.length > 0) {
+        if (pendingMigrations && Array.isArray(pendingMigrations) && pendingMigrations.length > 0) {
           logger.info(`Found ${pendingMigrations.length} pending migrations`, { label: 'Database' });
           
           // Log each pending migration
-          pendingMigrations.forEach((migration, index) => {
+          pendingMigrations.forEach((migration: any, index: number) => {
             logger.info(`Pending migration ${index + 1}: ${migration.name}`, { label: 'Database' });
           });
           
@@ -112,7 +112,7 @@ app
         // In development, check if migrations are needed and log a warning
         try {
           const pendingMigrations = await dbConnection.showMigrations();
-          if (pendingMigrations && pendingMigrations.length > 0) {
+          if (pendingMigrations && Array.isArray(pendingMigrations) && pendingMigrations.length > 0) {
             logger.warn(`Database has ${pendingMigrations.length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
           }
         } catch (error) {
