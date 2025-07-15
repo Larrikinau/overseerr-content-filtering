@@ -171,17 +171,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:latest
+docker pull larrikinau/overseerr-content-filtering:1.1.6
 
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering:latest
+  larrikinau/overseerr-content-filtering:1.1.6
 ```
 
-🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
+🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.6` (Enhanced Docker Migration)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -190,7 +191,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:latest
+    image: larrikinau/overseerr-content-filtering:1.1.6
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055
