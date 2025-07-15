@@ -438,7 +438,7 @@ EOF
     # Start the new container
     docker run -d \
         --name overseerr-content-filtering \
-        -p 5055:5055 \
+        -p $HOST_PORT:$CONTAINER_PORT \
         $VOLUME_ARG \
         --env-file env.list \
         --restart unless-stopped \
@@ -464,8 +464,8 @@ verify_installation() {
     
     # Check if service is responding
     for i in {1..30}; do
-        if curl -s http://localhost:5055/api/v1/status > /dev/null 2>&1; then
-            log_success "Service is responding on http://localhost:5055"
+        if curl -s http://localhost:$HOST_PORT/api/v1/status > /dev/null 2>&1; then
+            log_success "Service is responding on http://localhost:$HOST_PORT"
             break
         fi
         if [ $i -eq 30 ]; then
@@ -575,6 +575,7 @@ main() {
     backup_config
     extract_tmdb_api_key
     stop_existing
+    detect_port_config
     install_content_filtering
     verify_installation
     
