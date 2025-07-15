@@ -201,6 +201,82 @@ stop_existing() {
     esac
 }
 
+# Detect existing port configuration
+detect_port_config() {
+    log "Detecting existing port configuration..."
+    
+    # Default port
+    HOST_PORT=5055
+    CONTAINER_PORT=5055
+    
+    case $OVERSEERR_TYPE in
+        "docker")
+            if [ -n "$CONTAINER_NAME" ]; then
+                # Get port mappings from existing container
+                PORT_MAPPING=$(docker inspect $CONTAINER_NAME --format='{{range $p, $conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}} -> {{(index $conf 0).HostPort}}{{end}}{{end}}' 2>/dev/null | grep '5055/tcp' | head -1)
+                
+                if [ -n "$PORT_MAPPING" ]; then
+                    # Extract host port from mapping like "5055/tcp -> 5056"
+                    HOST_PORT=$(echo $PORT_MAPPING | sed 's/.*-> //')
+                    log "Found existing Docker port mapping: host port $HOST_PORT"
+                else
+                    # Fallback: check docker inspect for HostConfig.PortBindings
+                    HOST_PORT=$(docker inspect $CONTAINER_NAME --format='{{range $p, $conf := .HostConfig.PortBindings}}{{if eq $p "5055/tcp"}}{{(index $conf 0).HostPort}}{{end}}{{end}}' 2>/dev/null)
+                    if [ -n "$HOST_PORT" ]; then
+                        log "Found existing Docker host port: $HOST_PORT"
+                    else
+                        log "No existing port mapping found, using default port 5055"
+                        HOST_PORT=5055
+                    fi
+                fi
+                
+                # Check if PORT environment variable was set in existing container
+                CONTAINER_PORT_ENV=$(docker inspect $CONTAINER_NAME --format='{{range .Config.Env}}{{if eq (index (split . "=") 0) "PORT"}}{{index (split . "=") 1}}{{end}}{{end}}' 2>/dev/null)
+                if [ -n "$CONTAINER_PORT_ENV" ]; then
+                    CONTAINER_PORT=$CONTAINER_PORT_ENV
+                    log "Found existing container PORT environment variable: $CONTAINER_PORT"
+                else
+                    CONTAINER_PORT=5055
+                fi
+            fi
+            ;;
+        "snap")
+            # Check if snap was configured with a different port
+            if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                SNAP_PORT=$(jq -r '.main.port // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
+                if [ "$SNAP_PORT" != "null" ] && [ "$SNAP_PORT" != "" ]; then
+                    HOST_PORT=$SNAP_PORT
+                    CONTAINER_PORT=$SNAP_PORT
+                    log "Found snap port configuration: $HOST_PORT"
+                fi
+            fi
+            ;;
+        "systemd")
+            # Check systemd service configuration for port
+            if [ -f "/etc/systemd/system/overseerr.service" ]; then
+                SYSTEMD_PORT=$(grep -E 'Environment=.*PORT=' /etc/systemd/system/overseerr.service | sed 's/.*PORT=//' | head -1)
+                if [ -n "$SYSTEMD_PORT" ]; then
+                    HOST_PORT=$SYSTEMD_PORT
+                    CONTAINER_PORT=$SYSTEMD_PORT
+                    log "Found systemd service port configuration: $HOST_PORT"
+                fi
+            elif [ ! -z "$SYSTEMD_CONFIG_PATH" ] && [ -f "$SYSTEMD_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                SYSTEMD_PORT=$(jq -r '.main.port // null' "$SYSTEMD_CONFIG_PATH/settings.json" 2>/dev/null)
+                if [ "$SYSTEMD_PORT" != "null" ] && [ "$SYSTEMD_PORT" != "" ]; then
+                    HOST_PORT=$SYSTEMD_PORT
+                    CONTAINER_PORT=$SYSTEMD_PORT
+                    log "Found systemd port configuration: $HOST_PORT"
+                fi
+            fi
+            ;;
+        "none")
+            log "Fresh installation, using default port 5055"
+            ;;
+    esac
+    
+    log_success "Port configuration detected: host port $HOST_PORT, container port $CONTAINER_PORT"
+}
+
 # Install overseerr-content-filtering
 install_content_filtering() {
     log "Installing overseerr-content-filtering..."
@@ -215,6 +291,12 @@ NODE_ENV=production
 RUN_MIGRATIONS=true
 LOG_LEVEL=info
 EOF
+    
+    # Add PORT environment variable if container port is different from default
+    if [ "$CONTAINER_PORT" != "5055" ]; then
+        echo "PORT=$CONTAINER_PORT" >> env.list
+        log "Added PORT=$CONTAINER_PORT to environment variables"
+    fi
     
     # Track if we've found a valid TMDB API key
     TMDB_KEY_FOUND=false
