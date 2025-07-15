@@ -216,10 +216,24 @@ RUN_MIGRATIONS=true
 LOG_LEVEL=info
 EOF
     
+    # Track if we've found a valid TMDB API key
+    TMDB_KEY_FOUND=false
+    
     # Add extracted TMDB API key if available
     if [ -f "/tmp/overseerr_env_backup" ]; then
         log "Adding extracted environment variables from previous installation"
-        cat /tmp/overseerr_env_backup >> env.list
+        # Filter out TMDB_API_KEY from backup to avoid duplicates
+        grep -v "^TMDB_API_KEY=" /tmp/overseerr_env_backup >> env.list 2>/dev/null || true
+        
+        # Check if we have a valid TMDB API key in the backup
+        if grep -q "^TMDB_API_KEY=" /tmp/overseerr_env_backup 2>/dev/null; then
+            BACKUP_TMDB_KEY=$(grep "^TMDB_API_KEY=" /tmp/overseerr_env_backup | head -1 | cut -d'=' -f2-)
+            if [ -n "$BACKUP_TMDB_KEY" ] && [ "$BACKUP_TMDB_KEY" != "null" ] && [ "$BACKUP_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                echo "TMDB_API_KEY=$BACKUP_TMDB_KEY" >> env.list
+                TMDB_KEY_FOUND=true
+                log "Found valid TMDB API key in backup"
+            fi
+        fi
     fi
     
     # Determine configuration volume/path
@@ -236,26 +250,51 @@ EOF
                     VOLUME_ARG="-v $DOCKER_VOLUME_NAME:/app/config"
                     log "Reusing existing volume: $DOCKER_VOLUME_NAME"
                 fi
-
-                # Preserve TMDB API Key settings from existing settings.json
-                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq >/dev/null 2>&1; then
-                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
-                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
-                        log "Preserving TMDB API Key from settings"
-                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                # Only try to extract TMDB API key if we haven't found one yet
+                if [ "$TMDB_KEY_FOUND" = "false" ]; then
+                    # Try to get TMDB API key from bind mount settings.json
+                    if [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                        TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                        if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                            log "Found TMDB API key in bind mount settings"
+                            echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                            TMDB_KEY_FOUND=true
+                        fi
                     fi
                 fi
 
-                # Preserve environment variables from existing .env file
+                # Preserve environment variables from existing .env file (excluding TMDB_API_KEY to avoid duplicates)
                 if [ -f "$DOCKER_CONFIG_PATH/.env" ]; then
                     log "Preserving environment variables from .env file"
-                    cat "$DOCKER_CONFIG_PATH/.env" >> env.list
+                    grep -v "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" >> env.list 2>/dev/null || true
+                    
+                    # Only extract TMDB API key if we haven't found one yet
+                    if [ "$TMDB_KEY_FOUND" = "false" ]; then
+                        if grep -q "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" 2>/dev/null; then
+                            ENV_TMDB_KEY=$(grep "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" | head -1 | cut -d'=' -f2-)
+                            if [ -n "$ENV_TMDB_KEY" ] && [ "$ENV_TMDB_KEY" != "null" ] && [ "$ENV_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                                echo "TMDB_API_KEY=$ENV_TMDB_KEY" >> env.list
+                                TMDB_KEY_FOUND=true
+                                log "Found TMDB API key in .env file"
+                            fi
+                        fi
+                    fi
                 fi
                 
-                # Preserve environment variables from existing container
+                # Preserve other environment variables from existing container (excluding TMDB_API_KEY to avoid duplicates)
                 if [ -n "$CONTAINER_NAME" ]; then
                     log "Preserving environment variables from existing container"
-                    docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> env.list 2>/dev/null || true
+                    docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(CONFIG_DIRECTORY|TZ)=' >> env.list 2>/dev/null || true
+                    
+                    # Only extract TMDB API key if we haven't found one yet
+                    if [ "$TMDB_KEY_FOUND" = "false" ]; then
+                        CONTAINER_TMDB_KEY=$(docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep "^TMDB_API_KEY=" | head -1 | cut -d'=' -f2- 2>/dev/null)
+                        if [ -n "$CONTAINER_TMDB_KEY" ] && [ "$CONTAINER_TMDB_KEY" != "null" ] && [ "$CONTAINER_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                            echo "TMDB_API_KEY=$CONTAINER_TMDB_KEY" >> env.list
+                            TMDB_KEY_FOUND=true
+                            log "Found TMDB API key in container environment"
+                        fi
+                    fi
                 fi
             else
                 # Fallback to creating new volume if no mount detected
@@ -270,13 +309,15 @@ EOF
             if [ -d "/var/snap/overseerr/common" ]; then
                 docker run --rm -v overseerr_config:/dest -v /var/snap/overseerr/common:/src alpine sh -c "cp -r /src/* /dest/"
                 log_success "Snap configuration migrated to Docker volume"
-                
-                # Preserve TMDB API Key from snap settings
-                if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq >/dev/null 2>&1; then
-                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
-                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
-                        log "Preserving TMDB API Key from snap settings"
-                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                # Only try to extract TMDB API key if we haven't found one yet
+                if [ "$TMDB_KEY_FOUND" = "false" ]; then
+                    if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                        TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
+                        if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                            log "Found TMDB API key in snap settings"
+                            echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
+                            TMDB_KEY_FOUND=true
+                        fi
                     fi
                 fi
             else
