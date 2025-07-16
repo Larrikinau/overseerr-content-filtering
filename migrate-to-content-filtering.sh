@@ -123,9 +123,9 @@ backup_config() {
     esac
 }
 
-# Extract TMDB API key from existing installation before stopping
-extract_tmdb_api_key() {
-    log "Extracting TMDB API key from existing installation..."
+# Extract TMDB and TVDB API keys from existing installation before stopping
+extract_api_keys() {
+    log "Extracting API keys from existing installation..."
     
     case $OVERSEERR_TYPE in
         "docker")
@@ -138,6 +138,15 @@ extract_tmdb_api_key() {
                         log "Found TMDB API key in bind mount settings"
                         echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
                     fi
+                    
+                    # Extract TVDB API key (optional)
+                    TVDB_API_KEY=$(jq -r '.tvdb.apiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$TVDB_API_KEY" != "null" ] && [ "$TVDB_API_KEY" != "" ]; then
+                        log "Found TVDB API key in bind mount settings"
+                        echo "TVDB_API_KEY=$TVDB_API_KEY" >> /tmp/overseerr_env_backup
+                    else
+                        log "No TVDB API key found (optional - you can configure this later)"
+                    fi
                 fi
             elif [ "$MOUNT_TYPE" = "volume" ]; then
                 # Volume mount - extract from running container
@@ -147,12 +156,21 @@ extract_tmdb_api_key() {
                         log "Found TMDB API key in volume settings"
                         echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
                     fi
+                    
+                    # Extract TVDB API key (optional)
+                    TVDB_API_KEY=$(docker exec $CONTAINER_NAME cat /app/config/settings.json 2>/dev/null | jq -r '.tvdb.apiKey // null' 2>/dev/null)
+                    if [ "$TVDB_API_KEY" != "null" ] && [ "$TVDB_API_KEY" != "" ]; then
+                        log "Found TVDB API key in volume settings"
+                        echo "TVDB_API_KEY=$TVDB_API_KEY" >> /tmp/overseerr_env_backup
+                    else
+                        log "No TVDB API key found (optional - you can configure this later)"
+                    fi
                 fi
             fi
             
             # Also extract environment variables from running container
             if [ -n "$CONTAINER_NAME" ]; then
-                docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> /tmp/overseerr_env_backup 2>/dev/null || true
+                docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|TVDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> /tmp/overseerr_env_backup 2>/dev/null || true
             fi
             ;;
         "snap")
@@ -163,6 +181,15 @@ extract_tmdb_api_key() {
                     log "Found TMDB API key in snap settings"
                     echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
                 fi
+                
+                # Extract TVDB API key (optional)
+                TVDB_API_KEY=$(jq -r '.tvdb.apiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
+                if [ "$TVDB_API_KEY" != "null" ] && [ "$TVDB_API_KEY" != "" ]; then
+                    log "Found TVDB API key in snap settings"
+                    echo "TVDB_API_KEY=$TVDB_API_KEY" >> /tmp/overseerr_env_backup
+                else
+                    log "No TVDB API key found (optional - you can configure this later)"
+                fi
             fi
             ;;
         "systemd")
@@ -172,6 +199,15 @@ extract_tmdb_api_key() {
                 if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
                     log "Found TMDB API key in systemd settings"
                     echo "TMDB_API_KEY=$TMDB_API_KEY" >> /tmp/overseerr_env_backup
+                fi
+                
+                # Extract TVDB API key (optional)
+                TVDB_API_KEY=$(jq -r '.tvdb.apiKey // null' "$SYSTEMD_CONFIG_PATH/settings.json" 2>/dev/null)
+                if [ "$TVDB_API_KEY" != "null" ] && [ "$TVDB_API_KEY" != "" ]; then
+                    log "Found TVDB API key in systemd settings"
+                    echo "TVDB_API_KEY=$TVDB_API_KEY" >> /tmp/overseerr_env_backup
+                else
+                    log "No TVDB API key found (optional - you can configure this later)"
                 fi
             fi
             ;;
@@ -573,7 +609,7 @@ main() {
     check_docker
     detect_overseerr
     backup_config
-    extract_tmdb_api_key
+    extract_api_keys
     stop_existing
     detect_port_config
     install_content_filtering
