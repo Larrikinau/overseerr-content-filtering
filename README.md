@@ -16,15 +16,15 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.6** introduces enhanced **Docker migration reliability** alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.7** introduces enhanced **Curated Collections** with production-ready builds alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.1.6: Enhanced Docker Migration**
+### 🆕 **What's New in v1.1.7: Enhanced Content Filtering with Curated Collections**
 
-- **🐳 Reliable Docker Deployment**: Fixed database migration persistence issues in Docker containers
-- **🔧 Automatic Migration Execution**: Enhanced migration logic ensures content filtering features work out-of-the-box
-- **📊 Comprehensive Logging**: Detailed migration status tracking and error reporting
-- **🧪 User Testing Tools**: Added migration validation script for troubleshooting
-- **✅ Production Ready**: Resolved all reported Docker deployment issues
+- **🎯 Curated Content Collections**: Pre-curated movie and TV show collections for enhanced family-friendly content discovery
+- **🔧 Enhanced Content Filtering**: Improved filtering algorithms with better age-appropriate content detection
+- **📦 Production-Ready Build**: Full production deployment with Docker image and Debian/Ubuntu package support
+- **🐛 Bug Fixes**: Fixed TypeScript migration compilation errors and improved error handling
+- **📚 Documentation**: Updated installation guides and enhanced troubleshooting documentation
 
 ### 📋 **TMDB Curated Discovery**
 
@@ -122,7 +122,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.6)
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.7)
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
