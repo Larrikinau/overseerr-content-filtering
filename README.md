@@ -195,16 +195,12 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.1.6)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.6/overseerr-content-filtering-v1.1.6-ubuntu.tar.gz
-
-# Verify checksum
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.6/overseerr-content-filtering-v1.1.6-ubuntu.tar.gz.sha256
-sha256sum -c overseerr-content-filtering-v1.1.6-ubuntu.tar.gz.sha256
+# Download the latest pre-built package (v1.1.7)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.7/overseerr-content-filtering-v1.1.7.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.1.6-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.1.6
+tar -xzf overseerr-content-filtering-v1.1.7.tar.gz
+cd overseerr-content-filtering-v1.1.7
 sudo ./install.sh
 ```
 
@@ -213,18 +209,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:1.1.6
+docker pull larrikinau/overseerr-content-filtering:1.1.7
 
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering:1.1.6
+  larrikinau/overseerr-content-filtering:1.1.7
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.6` (Enhanced Docker Migration)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.7` (Enhanced Content Filtering with Curated Collections)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -233,7 +229,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:1.1.6
+    image: larrikinau/overseerr-content-filtering:1.1.7
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055
