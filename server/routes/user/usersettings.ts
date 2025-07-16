@@ -67,6 +67,9 @@ userSettingsRoutes.get<{ id: string }, UserSettingsGeneralResponse>(
         watchlistSyncTv: user.settings?.watchlistSyncTv,
         maxMovieRating: user.settings?.maxMovieRating,
         maxTvRating: user.settings?.maxTvRating,
+        tmdbSortingMode: user.settings?.tmdbSortingMode,
+        curatedMinVotes: user.settings?.curatedMinVotes,
+        curatedMinRating: user.settings?.curatedMinRating,
       });
     } catch (e) {
       next({ status: 500, message: e.message });
@@ -122,6 +125,9 @@ userSettingsRoutes.post<
         watchlistSyncTv: req.body.watchlistSyncTv,
         maxMovieRating: req.body.maxMovieRating || 'Adult',
         maxTvRating: req.body.maxTvRating,
+        tmdbSortingMode: req.body.tmdbSortingMode || 'curated',
+        curatedMinVotes: req.body.curatedMinVotes || 3000,
+        curatedMinRating: req.body.curatedMinRating || 6.0,
       });
     } else {
       user.settings.discordId = req.body.discordId;
@@ -132,6 +138,9 @@ userSettingsRoutes.post<
       user.settings.watchlistSyncTv = req.body.watchlistSyncTv;
       user.settings.maxMovieRating = req.body.maxMovieRating;
       user.settings.maxTvRating = req.body.maxTvRating;
+      user.settings.tmdbSortingMode = req.body.tmdbSortingMode;
+      user.settings.curatedMinVotes = req.body.curatedMinVotes;
+      user.settings.curatedMinRating = req.body.curatedMinRating;
     }
 
     await userRepository.save(user);
@@ -146,6 +155,9 @@ userSettingsRoutes.post<
       watchlistSyncTv: user.settings.watchlistSyncTv,
       maxMovieRating: user.settings.maxMovieRating,
       maxTvRating: user.settings.maxTvRating,
+      tmdbSortingMode: user.settings.tmdbSortingMode,
+      curatedMinVotes: user.settings.curatedMinVotes,
+      curatedMinRating: user.settings.curatedMinRating,
     });
   } catch (e) {
     next({ status: 500, message: e.message });
