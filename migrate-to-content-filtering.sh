@@ -44,11 +44,19 @@ check_docker() {
 detect_overseerr() {
     log "Detecting existing Overseerr installation..."
     
-    # Check for Docker container
+    # Check for Docker container (more comprehensive detection)
     if docker ps -a --format "table {{.Names}}" | grep -q "overseerr"; then
         OVERSEERR_TYPE="docker"
         CONTAINER_NAME=$(docker ps -a --format "{{.Names}}" | grep overseerr | head -1)
         log_success "Found Docker installation: $CONTAINER_NAME"
+        return 0
+    fi
+    
+    # Check for containers with "overseerr" in the image name
+    if docker ps -a --format "table {{.Names}}\t{{.Image}}" | grep -i overseerr | head -1 | cut -f1 > /dev/null 2>&1; then
+        OVERSEERR_TYPE="docker"
+        CONTAINER_NAME=$(docker ps -a --format "table {{.Names}}\t{{.Image}}" | grep -i overseerr | head -1 | cut -f1)
+        log_success "Found Docker installation by image: $CONTAINER_NAME"
         return 0
     fi
     
@@ -76,8 +84,38 @@ backup_config() {
     
     case $OVERSEERR_TYPE in
         "docker")
-            # Get detailed mount information from Docker inspect
+            # Get detailed mount information from Docker inspect - try multiple mount patterns
             MOUNT_INFO=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Type}}:{{.Source}}:{{.Destination}}{{end}}{{end}}')
+            
+            # If no /app/config mount found, try common alternatives
+            if [ -z "$MOUNT_INFO" ]; then
+                MOUNT_INFO=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{if eq .Destination "/config"}}{{.Type}}:{{.Source}}:{{.Destination}}{{end}}{{end}}')
+                if [ ! -z "$MOUNT_INFO" ]; then
+                    log "Found alternative config mount at /config"
+                fi
+            fi
+            
+            # Try to detect any volume/bind mount that might contain config
+            if [ -z "$MOUNT_INFO" ]; then
+                # Look for any mount containing settings.json or db files
+                ALL_MOUNTS=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{.Type}}:{{.Source}}:{{.Destination}}|{{end}}')
+                for mount in $(echo $ALL_MOUNTS | tr '|' ' '); do
+                    if [ ! -z "$mount" ]; then
+                        MOUNT_TYPE=$(echo $mount | cut -d':' -f1)
+                        MOUNT_SOURCE=$(echo $mount | cut -d':' -f2)
+                        MOUNT_DEST=$(echo $mount | cut -d':' -f3)
+                        
+                        if [ "$MOUNT_TYPE" = "bind" ] && [ -d "$MOUNT_SOURCE" ]; then
+                            # Check if this bind mount contains Overseerr data
+                            if [ -f "$MOUNT_SOURCE/settings.json" ] || [ -f "$MOUNT_SOURCE/db/db.sqlite3" ]; then
+                                MOUNT_INFO="$mount"
+                                log "Found Overseerr config in bind mount: $MOUNT_SOURCE -> $MOUNT_DEST"
+                                break
+                            fi
+                        fi
+                    fi
+                done
+            fi
             
             if [ ! -z "$MOUNT_INFO" ]; then
                 MOUNT_TYPE=$(echo $MOUNT_INFO | cut -d':' -f1)
@@ -100,6 +138,7 @@ backup_config() {
                 fi
             else
                 log_warning "No config mount found in existing container - this may cause data loss"
+                log_warning "You may need to manually copy your Overseerr configuration to the new container"
             fi
             ;;
         "snap")
@@ -378,6 +417,30 @@ EOF
                             echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
                             TMDB_KEY_FOUND=true
                         fi
+                    fi
+                fi
+                
+                # Migrate region settings from existing configuration
+                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                    # Extract region from main settings
+                    REGION_SETTING=$(jq -r '.main.region // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$REGION_SETTING" != "null" ] && [ "$REGION_SETTING" != "" ]; then
+                        log "Found region setting: $REGION_SETTING"
+                        echo "REGION=$REGION_SETTING" >> env.list
+                    fi
+                    
+                    # Extract original language from main settings
+                    ORIGINAL_LANG=$(jq -r '.main.originalLanguage // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$ORIGINAL_LANG" != "null" ] && [ "$ORIGINAL_LANG" != "" ]; then
+                        log "Found original language setting: $ORIGINAL_LANG"
+                        echo "ORIGINAL_LANGUAGE=$ORIGINAL_LANG" >> env.list
+                    fi
+                    
+                    # Extract locale from main settings
+                    LOCALE_SETTING=$(jq -r '.main.locale // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$LOCALE_SETTING" != "null" ] && [ "$LOCALE_SETTING" != "" ]; then
+                        log "Found locale setting: $LOCALE_SETTING"
+                        echo "LOCALE=$LOCALE_SETTING" >> env.list
                     fi
                 fi
 

@@ -129,6 +129,48 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 
 📖 **[Complete Migration Guide](MIGRATION_GUIDE.md)** - Detailed instructions and troubleshooting
 
+## 🛠️ Troubleshooting & Diagnostics
+
+### 🔍 **Automatic Diagnostics**
+
+If you're experiencing issues with your Overseerr Content Filtering installation, run the automated diagnostic script:
+
+```bash
+# Download and run diagnostic script
+curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/diagnose-overseerr-issues.sh | bash
+```
+
+This script will:
+- ✅ Check container status and configuration
+- ✅ Verify database integrity and migrations
+- ✅ Test API connectivity and Plex integration
+- ✅ Validate environment variables and settings
+- ✅ Generate detailed diagnostic report
+
+### 📚 **Comprehensive Troubleshooting Guides**
+
+- **[Plex Scan Troubleshooting](PLEX_SCAN_TROUBLESHOOTING.md)** - Diagnose and fix Plex scan failures
+- **[TVDB Configuration Guide](TVDB_CONFIGURATION.md)** - Optional TVDB API setup and troubleshooting
+- **[Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced Docker configuration and security
+- **[Migration Guide](MIGRATION_GUIDE.md)** - Complete migration instructions and troubleshooting
+
+### 🎯 **Common Issues & Quick Fixes**
+
+#### Migration Script Issues
+- **Mount detection problems**: Enhanced detection logic handles various Docker configurations
+- **Region settings not migrated**: Automatic region/locale extraction from existing settings
+- **TVDB API key warnings**: TVDB is now optional, migration continues gracefully
+
+#### Plex Integration Issues
+- **Scan failures**: Use diagnostic script to check authentication and connectivity
+- **Missing libraries**: Verify Plex settings and library synchronization
+- **Token issues**: Re-authenticate or manually configure Plex token
+
+#### Database Issues
+- **Migration failures**: Docker containers now run migrations automatically
+- **Content filtering not working**: Diagnostic script verifies column existence
+- **Performance issues**: Built-in database optimization recommendations
+
 ---
 
 ## 📥 Installation
