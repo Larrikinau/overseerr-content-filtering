@@ -11,12 +11,12 @@ export class AddTmdbSortingAndCuratedColumns1751780113001 implements MigrationIn
     
     // Add curatedMinVotes column
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "curatedMinVotes" integer DEFAULT 3000`
+      `ALTER TABLE "user_settings" ADD "curatedMinVotes" int DEFAULT 3000`
     );
     
     // Add curatedMinRating column
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "curatedMinRating" real DEFAULT 6.0`
+      `ALTER TABLE "user_settings" ADD "curatedMinRating" float DEFAULT 6.0`
     );
   }
 

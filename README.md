@@ -199,8 +199,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.7/overseerr-content-filtering-v1.1.7.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.1.7.tar.gz
-cd overseerr-content-filtering-v1.1.7
+tar -xzf overseerr-content-filtering-v1.1.8.tar.gz
+cd overseerr-content-filtering-v1.1.8
 sudo ./install.sh
 ```
 
@@ -209,18 +209,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:1.1.7
+docker pull larrikinau/overseerr-content-filtering:1.1.8
 
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering:1.1.7
+  larrikinau/overseerr-content-filtering:1.1.8
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.7` (Enhanced Content Filtering with Curated Collections)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.8` (Database Migration & Plex Scanner Fixes)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -229,7 +229,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:1.1.7
+    image: larrikinau/overseerr-content-filtering:1.1.8
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055

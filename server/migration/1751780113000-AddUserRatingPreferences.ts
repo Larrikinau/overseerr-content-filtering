@@ -5,7 +5,7 @@ export class AddUserRatingPreferences1751780113000 implements MigrationInterface
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "maxMovieRating" varchar`
+      `ALTER TABLE "user_settings" ADD "maxMovieRating" varchar DEFAULT 'Adult'`
     );
     await queryRunner.query(
       `ALTER TABLE "user_settings" ADD "maxTvRating" varchar`
