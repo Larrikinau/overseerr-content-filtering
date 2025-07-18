@@ -16,9 +16,9 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.7** introduces enhanced **Curated Collections** with production-ready builds alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.8** introduces enhanced **Curated Collections** with production-ready builds alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.1.7: Enhanced Content Filtering with Curated Collections**
+### 🆕 **What's New in v1.1.8: Enhanced Content Filtering with Curated Collections**
 
 - **🎯 Curated Content Collections**: Pre-curated movie and TV show collections for enhanced family-friendly content discovery
 - **🔧 Enhanced Content Filtering**: Improved filtering algorithms with better age-appropriate content detection
@@ -122,7 +122,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.7)  
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.8)  
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
@@ -195,12 +195,12 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.1.7)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.7/overseerr-content-filtering-v1.1.7.tar.gz
+# Download the latest pre-built package (v1.1.8)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.8-final/overseerr-1.1.8.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.1.8.tar.gz
-cd overseerr-content-filtering-v1.1.8
+tar -xzf overseerr-1.1.8.tar.gz
+cd overseerr-1.1.8
 sudo ./install.sh
 ```
 
@@ -220,7 +220,7 @@ docker run -d \
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.8` (Database Migration & Plex Scanner Fixes)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.8` (TypeScript Fix & Production Build)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 

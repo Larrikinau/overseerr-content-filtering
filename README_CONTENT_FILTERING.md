@@ -88,7 +88,7 @@ docker run -d \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering
+  larrikinau/overseerr-content-filtering:1.1.8
 ```
 
 #### Docker Compose
@@ -96,7 +96,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering
+    image: larrikinau/overseerr-content-filtering:1.1.8
     container_name: overseerr-content-filtering
     environment:
       - LOG_LEVEL=debug
