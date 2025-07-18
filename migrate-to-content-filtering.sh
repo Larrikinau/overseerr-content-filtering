@@ -31,13 +31,28 @@ log_error() {
     echo -e "${RED}[$(date '+%Y-%m-%d %H:%M:%S')] ❌ $1${NC}"
 }
 
-# Check if Docker is installed
+# Check if Docker is installed and accessible
 check_docker() {
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed. Please install Docker first."
         exit 1
     fi
     log_success "Docker is installed"
+    
+    # Check if Docker daemon is running and accessible
+    if ! docker info &> /dev/null; then
+        log_error "Cannot connect to Docker daemon. This could be because:"
+        log_error "1. Docker daemon is not running"
+        log_error "2. Your user doesn't have permission to access Docker"
+        log_error "3. You need to run this script with sudo"
+        log_error ""
+        log_error "Solutions:"
+        log_error "• On macOS: Make sure Docker Desktop is running"
+        log_error "• On Linux: Add your user to the docker group: sudo usermod -aG docker \$USER"
+        log_error "• Or run with sudo: sudo bash migrate-to-content-filtering.sh"
+        exit 1
+    fi
+    log_success "Docker daemon is accessible"
 }
 
 # Detect existing Overseerr installation

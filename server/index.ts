@@ -71,11 +71,11 @@ app
         
         // Check if migrations are pending first
         const pendingMigrations = await dbConnection.showMigrations();
-        if (pendingMigrations && (pendingMigrations as any[]).length > 0) {
-          logger.info(`Found ${(pendingMigrations as any[]).length} pending migrations`, { label: 'Database' });
+        if (pendingMigrations && (pendingMigrations as unknown as any[]).length > 0) {
+          logger.info(`Found ${(pendingMigrations as unknown as any[]).length} pending migrations`, { label: 'Database' });
           
           // Log each pending migration
-          pendingMigrations.forEach((migration: any, index: number) => {
+          (pendingMigrations as unknown as any[]).forEach((migration: any, index: number) => {
             logger.info(`Pending migration ${index + 1}: ${migration.name}`, { label: 'Database' });
           });
           
@@ -112,8 +112,8 @@ app
         // In development, check if migrations are needed and log a warning
         try {
           const pendingMigrations = await dbConnection.showMigrations();
-          if (pendingMigrations && (pendingMigrations as any[]).length > 0) {
-            logger.warn(`Database has ${(pendingMigrations as any[]).length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
+          if (pendingMigrations && (pendingMigrations as unknown as any[]).length > 0) {
+            logger.warn(`Database has ${(pendingMigrations as unknown as any[]).length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
           }
         } catch (error: any) {
           logger.warn('Could not check migration status', { label: 'Database', error: error.message });

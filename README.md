@@ -16,15 +16,15 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.8** introduces enhanced **Curated Collections** with production-ready builds alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.9** introduces enhanced **Docker Migration Fix** with improved privilege detection alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.1.8: Enhanced Content Filtering with Curated Collections**
+### 🆕 **What's New in v1.1.9: Enhanced Docker Migration Fix**
 
-- **🎯 Curated Content Collections**: Pre-curated movie and TV show collections for enhanced family-friendly content discovery
-- **🔧 Enhanced Content Filtering**: Improved filtering algorithms with better age-appropriate content detection
-- **📦 Production-Ready Build**: Full production deployment with Docker image and Debian/Ubuntu package support
-- **🐛 Bug Fixes**: Fixed TypeScript migration compilation errors and improved error handling
-- **📚 Documentation**: Updated installation guides and enhanced troubleshooting documentation
+- **🐳 Enhanced Docker Migration Detection**: Fixed Docker privilege checking in migration script with proper error messages
+- **🔧 Improved TypeScript Compilation**: Fixed type casting errors in server index.ts for proper migration handling
+- **📦 Updated Release Build**: Full production deployment with Docker image v1.1.9 and updated Debian/Ubuntu package
+- **🐛 Migration Script Fixes**: Enhanced Docker daemon detection and improved user privilege error handling
+- **📚 Enhanced Documentation**: Updated installation guides with latest version references
 
 ### 📋 **TMDB Curated Discovery**
 
@@ -122,7 +122,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.8)  
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.9)
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
@@ -195,12 +195,12 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.1.8)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.8-final/overseerr-1.1.8.tar.gz
+# Download the latest pre-built package (v1.1.9)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.9/overseerr-content-filtering-v1.1.9-ubuntu.tar.gz
 
 # Extract and install
-tar -xzf overseerr-1.1.8.tar.gz
-cd overseerr-1.1.8
+tar -xzf overseerr-content-filtering-v1.1.9-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.1.9-ubuntu
 sudo ./install.sh
 ```
 
@@ -209,18 +209,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:1.1.8
+docker pull larrikinau/overseerr-content-filtering:1.1.9
 
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  larrikinau/overseerr-content-filtering:1.1.8
+  larrikinau/overseerr-content-filtering:1.1.9
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.8` (TypeScript Fix & Production Build)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.9` (Docker Migration Fix & Enhanced Privilege Detection)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -229,7 +229,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:1.1.8
+    image: larrikinau/overseerr-content-filtering:1.1.9
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055
