@@ -65,14 +65,14 @@ app
             fs.mkdirSync(dbPath, { recursive: true });
             logger.info(`Created database directory: ${dbPath}`, { label: 'Database' });
           }
-        } catch (dirError) {
+        } catch (dirError: any) {
           logger.warn('Could not create database directory', { label: 'Database', error: dirError.message });
         }
         
         // Check if migrations are pending first
         const pendingMigrations = await dbConnection.showMigrations();
-        if (pendingMigrations && Array.isArray(pendingMigrations) && pendingMigrations.length > 0) {
-          logger.info(`Found ${pendingMigrations.length} pending migrations`, { label: 'Database' });
+        if (pendingMigrations && (pendingMigrations as any[]).length > 0) {
+          logger.info(`Found ${(pendingMigrations as any[]).length} pending migrations`, { label: 'Database' });
           
           // Log each pending migration
           pendingMigrations.forEach((migration: any, index: number) => {
@@ -101,7 +101,7 @@ app
         try {
           await dbConnection.query("SELECT tmdbSortingMode FROM user_settings LIMIT 1");
           logger.info('Content filtering columns verified', { label: 'Database' });
-        } catch (verifyError) {
+        } catch (verifyError: any) {
           logger.warn('Content filtering columns may not exist - this could indicate migration issues', { 
             label: 'Database', 
             error: verifyError.message 
@@ -112,14 +112,14 @@ app
         // In development, check if migrations are needed and log a warning
         try {
           const pendingMigrations = await dbConnection.showMigrations();
-          if (pendingMigrations && Array.isArray(pendingMigrations) && pendingMigrations.length > 0) {
-            logger.warn(`Database has ${pendingMigrations.length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
+          if (pendingMigrations && (pendingMigrations as any[]).length > 0) {
+            logger.warn(`Database has ${(pendingMigrations as any[]).length} pending migrations. Set RUN_MIGRATIONS=true to apply them.`, { label: 'Database' });
           }
-        } catch (error) {
+        } catch (error: any) {
           logger.warn('Could not check migration status', { label: 'Database', error: error.message });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Database migration error', { label: 'Database', error: error.message, stack: error.stack });
       throw error;
     }
@@ -182,7 +182,7 @@ app
         if (descriptor?.writable === true) {
           req.ip = getClientIp(req) ?? '';
         }
-      } catch (e) {
+      } catch (e: any) {
         logger.error('Failed to attach the ip to the request', {
           label: 'Middleware',
           message: e.message,

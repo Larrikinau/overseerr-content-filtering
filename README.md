@@ -288,12 +288,13 @@ yarn start
 
 ### Content Filtering Setup
 **Admin Users Only:**
-1. Navigate to **Settings** → **Users** → **User Settings**
-2. Select the user you want to configure
-3. Configure **Rating Preferences** for that specific user:
+1. Navigate to **Users**
+2. Click **Edit** on the user you want to configure
+3. Go to **General** tab
+4. Configure **Content Rating Filtering** for that specific user:
    - **Max Movie Rating**: Set maximum allowed movie rating for this user
    - **Max TV Rating**: Set maximum allowed TV show rating for this user
-4. Save settings - filtering applies immediately to that user
+5. Save settings - filtering applies immediately to that user
 
 **Important Notes:**
 - **Admin Control**: Only administrators can modify content rating settings for any user
