@@ -9,8 +9,15 @@ import { Router } from 'express';
 import { createTmdbWithRegionLanguage } from './discover';
 
 const filterResultsByRating = (results: any[], user?: User): any[] => {
-  if (!user?.settings?.maxMovieRating && !user?.settings?.maxTvRating) {
-    return results;
+  // Always apply basic adult content filtering, even if no user rating limits are set
+  if (!user?.settings) {
+    // If no user settings, apply basic adult content filtering only
+    return results.filter((result: any) => !result.adult);
+  }
+  
+  // If user settings exist but no rating limits are set, apply basic filtering
+  if (!user.settings.maxMovieRating && !user.settings.maxTvRating) {
+    return results.filter((result: any) => !result.adult);
   }
 
   return results.filter((result: any) => {
