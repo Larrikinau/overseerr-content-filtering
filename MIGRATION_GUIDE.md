@@ -5,10 +5,12 @@
 **The easiest way to migrate is with our automated script:**
 
 ```bash
-curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh | bash
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
+chmod +x migrate-to-content-filtering.sh
+./migrate-to-content-filtering.sh
 ```
 
-This single command will:
+These commands will:
 - ✅ Detect your existing Overseerr installation (Docker, Snap, or systemd)
 - ✅ Automatically backup your configuration
 - ✅ Stop your existing installation safely

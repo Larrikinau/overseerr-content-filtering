@@ -702,8 +702,8 @@ main() {
     detect_overseerr
     backup_config
     extract_api_keys
-    stop_existing
     detect_port_config
+    stop_existing
     install_content_filtering
     verify_installation
     

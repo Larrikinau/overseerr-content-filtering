@@ -115,14 +115,16 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 ## 🔄 Migrating from Existing Overseerr?
 
-**Already have Overseerr installed?** Migrate to overseerr-content-filtering with a single command that preserves all your data:
+**Already have Overseerr installed?** Migrate to overseerr-content-filtering with these commands that preserve all your data:
 
 ```bash
-curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh | bash
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
+chmod +x migrate-to-content-filtering.sh
+./migrate-to-content-filtering.sh
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.2.1)
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.2.2)
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
@@ -195,12 +197,12 @@ curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/in
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.2.1)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.2.1/overseerr-content-filtering-v1.2.1-ubuntu.tar.gz
+# Download the latest pre-built package (v1.2.2)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.2.2/overseerr-content-filtering-v1.2.2-ubuntu.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.2.1-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.2.1-ubuntu
+tar -xzf overseerr-content-filtering-v1.2.2-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.2.2-ubuntu
 sudo ./install.sh
 ```
 
@@ -209,18 +211,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:v1.2.1
+docker pull larrikinau/overseerr-content-filtering:v1.2.2
 
 docker run -d \\
   --name overseerr-content-filtering \\
   -p 5055:5055 \\
   -v /path/to/appdata/config:/app/config \\
   --restart unless-stopped \\
-  larrikinau/overseerr-content-filtering:v1.2.1
+  larrikinau/overseerr-content-filtering:v1.2.2
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:v1.2.1` (TMDB API 401 Authentication Fixes)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:v1.2.2` (Migration Script Fix)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -229,7 +231,7 @@ docker run -d \\
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:v1.2.1
+    image: larrikinau/overseerr-content-filtering:v1.2.2
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055
