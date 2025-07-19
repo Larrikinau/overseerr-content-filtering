@@ -118,7 +118,7 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 **Already have Overseerr installed?** Migrate to overseerr-content-filtering with a single command that preserves all your data:
 
 ```bash
-bash \u003c\(curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh\)
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh | bash
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
@@ -190,7 +190,7 @@ This script will:
 
 #### Quick Install Script
 ```bash
-bash \u003c\(curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/install-overseerr-filtering.sh\)
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/install-overseerr-filtering.sh | bash
 ```
 
 #### Pre-built Package Download
