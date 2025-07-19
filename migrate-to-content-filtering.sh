@@ -396,14 +396,14 @@ EOF
     if [ -f "/tmp/overseerr_env_backup" ]; then
         log "Adding extracted environment variables from previous installation"
         # Filter out TMDB_API_KEY from backup to avoid duplicates
-        grep -v "^TMDB_API_KEY=" /tmp/overseerr_env_backup  3e 3e env.list 2 3e/dev/null || true
+        grep -v "^TMDB_API_KEY=" /tmp/overseerr_env_backup >> env.list 2>/dev/null || true
 
         # Extract TMDB API key from backup
         EXTRACTED_TMDB_KEY=$(grep "^TMDB_API_KEY=" /tmp/overseerr_env_backup | head -1 | cut -d'=' -f2-)
-        if [ -n "$EXTRACTED_TMDB_KEY" ]  26 26 [ "$EXTRACTED_TMDB_KEY" != "null" ]  26 26 [ "$EXTRACTED_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
-            echo "TMDB_API_KEY=$EXTRACTED_TMDB_KEY"  3e 3e env.list
+        if [ -n "$EXTRACTED_TMDB_KEY" ] && [ "$EXTRACTED_TMDB_KEY" != "null" ] && [ "$EXTRACTED_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+            echo "TMDB_API_KEY=$EXTRACTED_TMDB_KEY" >> env.list
             TMDB_KEY_FOUND=true
-            log "Found valid TMDB API key in backup: ${EXTRACTED_TMDB_KEY:0:8}..."
+            log_success "Found valid TMDB API key in backup: ${EXTRACTED_TMDB_KEY:0:8}..."
         else
             log_warning "No TMDB API key found in backup"
         fi
@@ -425,50 +425,50 @@ EOF
                     log "Reusing existing volume: $DOCKER_VOLUME_NAME"
                 fi
                 # Try to extract TMDB API key from bind mount settings.json
-                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ]  26 26 command -v jq  3e /dev/null 2 3e 261; then
-                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2 3e/dev/null)
-                    if [ "$TMDB_API_KEY" != "null" ]  26 26 [ "$TMDB_API_KEY" != "" ]  26 26 [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                if [ "$TMDB_KEY_FOUND" = "false" ] && [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
+                    TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
                         log_success "Found TMDB API key in bind mount settings: ${TMDB_API_KEY:0:8}..."
-                        echo "TMDB_API_KEY=$TMDB_API_KEY"  3e 3e env.list
+                        echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
                         TMDB_KEY_FOUND=true
                     fi
                 fi
                 
                 # Migrate region settings from existing configuration
-                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ]  26 26 command -v jq  3e /dev/null 2 3e 261; then
+                if [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
                     # Extract region from main settings
-                    REGION_SETTING=$(jq -r '.main.region // null' "$DOCKER_CONFIG_PATH/settings.json" 2 3e/dev/null)
-                    if [ "$REGION_SETTING" != "null" ]  26 26 [ "$REGION_SETTING" != "" ]; then
+                    REGION_SETTING=$(jq -r '.main.region // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$REGION_SETTING" != "null" ] && [ "$REGION_SETTING" != "" ]; then
                         log "Found region setting: $REGION_SETTING"
-                        echo "REGION=$REGION_SETTING"  3e 3e env.list
+                        echo "REGION=$REGION_SETTING" >> env.list
                     fi
                     
                     # Extract original language from main settings
-                    ORIGINAL_LANG=$(jq -r '.main.originalLanguage // null' "$DOCKER_CONFIG_PATH/settings.json" 2 3e/dev/null)
-                    if [ "$ORIGINAL_LANG" != "null" ]  26 26 [ "$ORIGINAL_LANG" != "" ]; then
+                    ORIGINAL_LANG=$(jq -r '.main.originalLanguage // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$ORIGINAL_LANG" != "null" ] && [ "$ORIGINAL_LANG" != "" ]; then
                         log "Found original language setting: $ORIGINAL_LANG"
-                        echo "ORIGINAL_LANGUAGE=$ORIGINAL_LANG"  3e 3e env.list
+                        echo "ORIGINAL_LANGUAGE=$ORIGINAL_LANG" >> env.list
                     fi
                     
                     # Extract locale from main settings
-                    LOCALE_SETTING=$(jq -r '.main.locale // null' "$DOCKER_CONFIG_PATH/settings.json" 2 3e/dev/null)
-                    if [ "$LOCALE_SETTING" != "null" ]  26 26 [ "$LOCALE_SETTING" != "" ]; then
+                    LOCALE_SETTING=$(jq -r '.main.locale // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
+                    if [ "$LOCALE_SETTING" != "null" ] && [ "$LOCALE_SETTING" != "" ]; then
                         log "Found locale setting: $LOCALE_SETTING"
-                        echo "LOCALE=$LOCALE_SETTING"  3e 3e env.list
+                        echo "LOCALE=$LOCALE_SETTING" >> env.list
                     fi
                 fi
 
                 # Preserve environment variables from existing .env file (excluding TMDB_API_KEY to avoid duplicates)
                 if [ -f "$DOCKER_CONFIG_PATH/.env" ]; then
                     log "Preserving environment variables from .env file"
-                    grep -v "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env"  3e 3e env.list 2 3e/dev/null || true
+                    grep -v "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" >> env.list 2>/dev/null || true
                     
                     # Extract TMDB API key
                     if [ "$TMDB_KEY_FOUND" = "false" ]; then
-                        if grep -q "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" 2 3e/dev/null; then
+                        if grep -q "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" 2>/dev/null; then
                             ENV_TMDB_KEY=$(grep "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" | head -1 | cut -d'=' -f2-)
-                            if [ -n "$ENV_TMDB_KEY" ]  26 26 [ "$ENV_TMDB_KEY" != "null" ]  26 26 [ "$ENV_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
-                                echo "TMDB_API_KEY=$ENV_TMDB_KEY"  3e 3e env.list
+                            if [ -n "$ENV_TMDB_KEY" ] && [ "$ENV_TMDB_KEY" != "null" ] && [ "$ENV_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                                echo "TMDB_API_KEY=$ENV_TMDB_KEY" >> env.list
                                 TMDB_KEY_FOUND=true
                                 log_success "Found TMDB API key in .env file: ${ENV_TMDB_KEY:0:8}..."
                             fi
@@ -479,13 +479,13 @@ EOF
                 # Preserve other environment variables from existing container (excluding TMDB_API_KEY to avoid duplicates)
                 if [ -n "$CONTAINER_NAME" ]; then
                     log "Preserving environment variables from existing container"
-                    docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(CONFIG_DIRECTORY|TZ)='  3e 3e env.list 2 3e/dev/null || true
+                    docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(CONFIG_DIRECTORY|TZ)=' >> env.list 2>/dev/null || true
                     
                     # Extract TMDB API key
                     if [ "$TMDB_KEY_FOUND" = "false" ]; then
-                        CONTAINER_TMDB_KEY=$(docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep "^TMDB_API_KEY=" | head -1 | cut -d'=' -f2- 2 3e/dev/null)
-                        if [ -n "$CONTAINER_TMDB_KEY" ]  26 26 [ "$CONTAINER_TMDB_KEY" != "null" ]  26 26 [ "$CONTAINER_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
-                            echo "TMDB_API_KEY=$CONTAINER_TMDB_KEY"  3e 3e env.list
+                        CONTAINER_TMDB_KEY=$(docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep "^TMDB_API_KEY=" | head -1 | cut -d'=' -f2- 2>/dev/null)
+                        if [ -n "$CONTAINER_TMDB_KEY" ] && [ "$CONTAINER_TMDB_KEY" != "null" ] && [ "$CONTAINER_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                            echo "TMDB_API_KEY=$CONTAINER_TMDB_KEY" >> env.list
                             TMDB_KEY_FOUND=true
                             log_success "Found TMDB API key in container environment: ${CONTAINER_TMDB_KEY:0:8}..."
                         fi
@@ -548,6 +548,15 @@ EOF
             ;;
     esac
     
+    # Final check: warn if no TMDB API key was found
+    if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
+        log_warning "**IMPORTANT**: No TMDB API key was detected during migration!"
+        log_warning "You will need to configure a TMDB API key after the migration completes."
+        log_warning "Without a TMDB API key, you'll see '401 Authentication Failed' errors."
+        echo "" >> env.list
+        echo "# TMDB_API_KEY=YOUR_ACTUAL_TMDB_API_KEY_HERE" >> env.list
+    fi
+    
     # Start the new container
     docker run -d \
         --name overseerr-content-filtering \
@@ -577,7 +586,7 @@ verify_installation() {
     
     # Check if service is responding
     for i in {1..30}; do
-        if curl -s http://localhost:$HOST_PORT/api/v1/status  3e /dev/null 2 3e 261; then
+        if curl -s http://localhost:$HOST_PORT/api/v1/status > /dev/null 2>&1; then
             log_success "Service is responding on http://localhost:$HOST_PORT"
             break
         fi
@@ -638,7 +647,7 @@ verify_installation() {
     # Test TMDB API connectivity by checking if API key was migrated
     sleep 3
     # Check if we can access the container's settings to verify API key migration
-    if docker exec overseerr-content-filtering ls -la /app/config/settings.json >/dev/null 2>&1; then
+    if docker exec overseerr-content-filtering ls -la /app/config/settings.json > /dev/null 2>&1; then
         # Check if settings.json contains a TMDB API key
         if docker exec overseerr-content-filtering cat /app/config/settings.json 2>/dev/null | grep -q "tmdbApiKey"; then
             log_success "TMDB API key appears to be migrated successfully"
@@ -711,6 +720,23 @@ main() {
     echo ""
     echo "Visit Settings → Users to configure content filtering."
     echo ""
+    
+    # Final TMDB API key warning if needed
+    if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
+        echo "=================================================="
+        echo "   ⚠️  TMDB API KEY CONFIGURATION REQUIRED"
+        echo "=================================================="
+        echo ""
+        echo "No TMDB API key was found during migration. You MUST configure one:"
+        echo ""
+        echo "1. Get a free TMDB API key from: https://www.themoviedb.org/"
+        echo "2. Go to Settings → General → TMDB API Key in your browser"
+        echo "3. Enter your API key and save settings"
+        echo ""
+        echo "Without a TMDB API key, you'll see '401 Authentication Failed' errors"
+        echo "and content discovery won't work properly."
+        echo ""
+    fi
     
     # Show troubleshooting information if any warnings occurred
     if [ -f "/tmp/migration_warnings" ]; then
