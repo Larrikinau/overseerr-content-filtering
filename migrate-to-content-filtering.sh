@@ -550,11 +550,16 @@ EOF
     
     # Final check: warn if no TMDB API key was found
     if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
-        log_warning "**IMPORTANT**: No TMDB API key was detected during migration!"
-        log_warning "You will need to configure a TMDB API key after the migration completes."
-        log_warning "Without a TMDB API key, you'll see '401 Authentication Failed' errors."
+        log_warning "**CRITICAL**: No TMDB API key was detected during migration!"
+        log_warning "This WILL cause '401 Authentication Failed' errors during Plex scans!"
+        log_warning "You MUST configure a TMDB API key immediately after migration."
         echo "" >> env.list
         echo "# TMDB_API_KEY=YOUR_ACTUAL_TMDB_API_KEY_HERE" >> env.list
+        
+        # Create a prominent warning file that the container can read
+        echo "MISSING_TMDB_API_KEY_WARNING=true" >> env.list
+    elif [ "$TMDB_KEY_FOUND" = "true" ]; then
+        log_success "TMDB API key successfully migrated: ${EXTRACTED_TMDB_KEY:0:8}..."
     fi
     
     # Start the new container

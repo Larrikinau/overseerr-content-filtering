@@ -114,11 +114,16 @@ class TheMovieDb extends ExternalAPI {
     curatedMinVotes,
     curatedMinRating,
   }: { region?: string; originalLanguage?: string; maxMovieRating?: string; maxTvRating?: string; tmdbSortingMode?: string; curatedMinVotes?: number; curatedMinRating?: number | null } = {}) {
+    const apiParams: Record<string, string> = {};
+    
+    // Only include API key if one is actually configured
+    if (process.env.TMDB_API_KEY && process.env.TMDB_API_KEY !== 'YOUR_TMDB_API_KEY_HERE') {
+      apiParams.api_key = process.env.TMDB_API_KEY;
+    }
+    
     super(
       'https://api.themoviedb.org/3',
-      {
-        api_key: process.env.TMDB_API_KEY || 'YOUR_TMDB_API_KEY_HERE',
-      },
+      apiParams,
       {
         nodeCache: cacheManager.getCache('tmdb').data,
         rateLimit: {
