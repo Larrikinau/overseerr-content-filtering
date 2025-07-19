@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Overseerr Content Filtering Migration Script
-# Automatically migrates from vanilla Overseerr (Docker or Snap) to overseerr-content-filtering
-# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/migrate-to-content-filtering.sh)
+# Automatically migrates from vanilla Overseerr to overseerr-content-filtering
+# Preserves all data while adding enhanced content filtering capabilities
+# Usage: curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh | bash
 
 set -e
 
@@ -372,7 +373,8 @@ install_content_filtering() {
     log "Installing overseerr-content-filtering..."
     
     # Pull the latest image
-    docker pull larrikinau/overseerr-content-filtering:latest
+    docker pull larrikinau/overseerr-content-filtering:1.3.0
+    docker tag larrikinau/overseerr-content-filtering:1.3.0 larrikinau/overseerr-content-filtering:latest
     log_success "Image pulled successfully"
     
     # Initialize environment variables file
@@ -548,18 +550,17 @@ EOF
             ;;
     esac
     
-    # Final check: warn if no TMDB API key was found
+    # Final check: inform about TMDB API key status
     if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
-        log_warning "**CRITICAL**: No TMDB API key was detected during migration!"
-        log_warning "This WILL cause '401 Authentication Failed' errors during Plex scans!"
-        log_warning "You MUST configure a TMDB API key immediately after migration."
-        echo "" >> env.list
-        echo "# TMDB_API_KEY=YOUR_ACTUAL_TMDB_API_KEY_HERE" >> env.list
-        
-        # Create a prominent warning file that the container can read
-        echo "MISSING_TMDB_API_KEY_WARNING=true" >> env.list
+        log_warning "No TMDB API key found in existing installation"
+        log "The application will work without TMDB API key, but some features may be limited:"
+        log "• Enhanced movie/TV metadata will not be available"
+        log "• Some discovery features may not work optimally"
+        log "You can optionally configure a TMDB API key later in Settings → General"
     elif [ "$TMDB_KEY_FOUND" = "true" ]; then
-        log_success "TMDB API key successfully migrated: ${EXTRACTED_TMDB_KEY:0:8}..."
+        log_success "TMDB API key successfully migrated from existing installation"
+    elif [ "$OVERSEERR_TYPE" = "none" ]; then
+        log "Fresh installation - TMDB API key can be configured later if desired"
     fi
     
     # Start the new container
@@ -726,20 +727,26 @@ main() {
     echo "Visit Settings → Users to configure content filtering."
     echo ""
     
-    # Final TMDB API key warning if needed
+    # Final TMDB API key information if needed
     if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
         echo "=================================================="
-        echo "   ⚠️  TMDB API KEY CONFIGURATION REQUIRED"
+        echo "   📝  TMDB API KEY INFORMATION"
         echo "=================================================="
         echo ""
-        echo "No TMDB API key was found during migration. You MUST configure one:"
+        echo "No TMDB API key was found during migration."
+        echo ""
+        echo "Overseerr Content Filtering works without an API key, but enhanced features"
+        echo "require one. To get the best experience:"
         echo ""
         echo "1. Get a free TMDB API key from: https://www.themoviedb.org/"
         echo "2. Go to Settings → General → TMDB API Key in your browser"
         echo "3. Enter your API key and save settings"
         echo ""
-        echo "Without a TMDB API key, you'll see '401 Authentication Failed' errors"
-        echo "and content discovery won't work properly."
+        echo "Benefits of configuring a TMDB API key:"
+        echo "• Enhanced movie/TV show metadata and ratings"
+        echo "• Improved content discovery and recommendations"
+        echo "• Better poster and backdrop images"
+        echo "• More accurate content filtering"
         echo ""
     fi
     
