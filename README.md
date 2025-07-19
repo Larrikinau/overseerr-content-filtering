@@ -135,7 +135,7 @@ chmod +x migrate-to-content-filtering.sh
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.3.0)
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.3.0)  
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
