@@ -180,7 +180,7 @@ sudo systemctl restart overseerr-filtering
 
 ## 🔮 Future Roadmap
 
-### Planned Features (v1.2.0)
+### Planned Features (v1.2.2)
 - **Custom Keyword Filtering**: User-defined content exclusion keywords
 - **Genre-Specific Controls**: Per-genre rating restrictions
 - **Audit Logging**: Content filtering activity logs for administrators

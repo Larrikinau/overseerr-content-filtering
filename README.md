@@ -16,15 +16,15 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.2.0** introduces **Enhanced Migration Script with Multiple API Key Detection** alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.2.2** includes a **Critical Migration Script Fix** alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.2.0: Enhanced Migration Script with Multiple API Key Detection**
+### 🆕 **What's New in v1.2.2: Migration Script Interactive Hang Fix**
 
-- **🔑 Multiple API Key Sources**: Migration script now detects TMDB API keys from settings.json, .env files, container environment, and hardcoded sources
-- **🔧 Improved Migration Reliability**: Fixed premature flag setting that was skipping API key extraction from different sources
-- **🛠️ Enhanced Error Handling**: Better service verification, dependency checking, and user guidance when migrations fail
-- **📊 Comprehensive Validation**: Added proper backup verification and configuration testing
-- **🚀 Docker Hub**: Updated image larrikinau/overseerr-content-filtering:1.2.0 with enhanced migration capabilities
+- **🐛 Critical Bug Fix**: Fixed migration script hanging after port detection due to trying to inspect removed container
+- **🔧 Function Execution Order**: Reordered migration script functions - `detect_port_config` now runs BEFORE `stop_existing`
+- **📝 Documentation Update**: Updated installation commands with proper 3-step sequence for interactive script handling
+- **🛠️ Enhanced User Experience**: Migration script now completes successfully instead of hanging
+- **🚀 Docker Hub**: Updated image larrikinau/overseerr-content-filtering:1.2.2 with migration fix
 
 ### 📋 **TMDB Curated Discovery**
 

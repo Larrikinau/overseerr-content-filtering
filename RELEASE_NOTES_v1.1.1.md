@@ -160,7 +160,7 @@ if (process.env.NODE_ENV === 'production' || process.env.RUN_MIGRATIONS === 'tru
 ## 🎯 Next Steps
 
 ### Upcoming Features
-- **v1.2.0**: Enhanced rating system with regional compatibility
+- **v1.2.2**: Enhanced rating system with regional compatibility
 - **v1.3.0**: Advanced content filtering options
 - **v1.4.0**: Improved admin dashboard for content management
 
