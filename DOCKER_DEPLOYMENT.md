@@ -10,8 +10,8 @@ This guide covers Docker deployment options for Overseerr Content Filtering, inc
 
 - **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
 - **No workarounds needed** - Pull directly from Docker Hub
-- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.1.6)
-- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.1.6` (migration fixes)
+- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.3.0)
+- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.3.0` (enhanced content filtering)
 
 ## 🐳 Quick Start with Pre-built Images
 
@@ -42,14 +42,22 @@ services:
     image: larrikinau/overseerr-content-filtering:latest
     container_name: overseerr-content-filtering
     environment:
-      - TZ=Asia/Tokyo  # optional
+      - TZ=Asia/Tokyo # optional
     ports:
-      - "5055:5055"
+      - '5055:5055'
     volumes:
       - /path/to/appdata/config:/app/config
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5055/api/v1/status"]
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:5055/api/v1/status',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -79,7 +87,7 @@ Use the provided build script for easy building:
 ./scripts/build-docker.sh
 
 # Build with specific tag
-./scripts/build-docker.sh -t v1.1.6
+./scripts/build-docker.sh -t v1.3.0
 
 # Multi-platform build and push
 ./scripts/build-docker.sh --multi-platform --push
@@ -108,12 +116,12 @@ docker run -d \
 
 ## 🔧 Environment Variables
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `LOG_LEVEL` | Logging level (debug, info, warn, error) | `info` | No |
-| `TZ` | Timezone for the container | `UTC` | No |
-| `PORT` | Port for the web interface | `5055` | No |
-| `CONFIG_DIRECTORY` | Path to config directory | `/app/config` | No |
+| Variable           | Description                              | Default       | Required |
+| ------------------ | ---------------------------------------- | ------------- | -------- |
+| `LOG_LEVEL`        | Logging level (debug, info, warn, error) | `info`        | No       |
+| `TZ`               | Timezone for the container               | `UTC`         | No       |
+| `PORT`             | Port for the web interface               | `5055`        | No       |
+| `CONFIG_DIRECTORY` | Path to config directory                 | `/app/config` | No       |
 
 ## 📁 Volume Mounts
 
@@ -127,16 +135,19 @@ docker run -d \
 ### Example Volume Configurations
 
 #### Linux/macOS (Host Path)
+
 ```bash
 -v /opt/overseerr/config:/app/config
 ```
 
 #### Windows (Named Volume)
+
 ```bash
 -v overseerr-data:/app/config
 ```
 
 #### Docker Compose (Named Volume)
+
 ```yaml
 volumes:
   - overseerr-data:/app/config
@@ -172,7 +183,7 @@ volumes:
 server {
     listen 80;
     server_name overseerr.yourdomain.com;
-    
+
     location / {
         proxy_pass http://localhost:5055;
         proxy_set_header Host $host;
@@ -190,11 +201,11 @@ services:
   overseerr-content-filtering:
     image: larrikinau/overseerr-content-filtering:latest
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.overseerr.rule=Host(`overseerr.yourdomain.com`)"
-      - "traefik.http.routers.overseerr.tls=true"
-      - "traefik.http.routers.overseerr.tls.certresolver=letsencrypt"
-      - "traefik.http.services.overseerr.loadbalancer.server.port=5055"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.overseerr.rule=Host(`overseerr.yourdomain.com`)'
+      - 'traefik.http.routers.overseerr.tls=true'
+      - 'traefik.http.routers.overseerr.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.overseerr.loadbalancer.server.port=5055'
 ```
 
 ## 🔒 Security Considerations
@@ -219,7 +230,7 @@ docker run -d \
   -e LOG_LEVEL=info \
   -p 5055:5055 \
   -v overseerr-config:/app/config \
-  larrikinau/overseerr-content-filtering:v1.1.6
+  larrikinau/overseerr-content-filtering:1.3.0
 ```
 
 ### Network Security
@@ -251,7 +262,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
 
 ```yaml
 healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:5055/api/v1/status"]
+  test: ['CMD', 'curl', '-f', 'http://localhost:5055/api/v1/status']
   interval: 30s
   timeout: 10s
   retries: 3
@@ -263,6 +274,7 @@ healthcheck:
 ### Updating the Container
 
 #### Docker Run
+
 ```bash
 # Stop and remove old container
 docker stop overseerr-content-filtering
@@ -276,9 +288,10 @@ docker run -d --name overseerr-content-filtering [options] larrikinau/overseerr-
 ```
 
 #### Docker Compose
+
 ```bash
 # Pull and restart
-docker-compose pull overseerr-content-filtering
+docker-compose pull
 docker-compose up -d overseerr-content-filtering
 ```
 
@@ -307,20 +320,23 @@ docker run --rm \
 ### Common Issues
 
 1. **Permission denied errors**
+
    ```bash
    # Fix ownership
    docker exec overseerr-content-filtering chown -R app:app /app/config
    ```
 
 2. **Database corruption (Windows)**
+
    - Use named volumes instead of host mounts
    - Ensure WSL2 is enabled
 
 3. **Port conflicts**
+
    ```bash
    # Check what's using the port
    netstat -tlnp | grep :5055
-   
+
    # Use different host port
    docker run ... -p 8080:5055 ...
    ```
@@ -362,33 +378,38 @@ docker exec overseerr-content-filtering ps aux
 
 ### Available Tags
 
-- `latest` - Latest stable release (v1.1.6)
-- `v1.1.6` - Specific version with migration fixes
-- `v1.1.5` - Previous version
-- `v1.1.4` - Older version
+- `latest` - Latest stable release (v1.3.0)
+- `1.3.0` - Enhanced content filtering release
+- `1.2.2` - Previous version with migration fixes
+- `1.2.1` - Previous version
+- `1.2.0` - Previous version
 - `develop` - Development branch (unstable)
 
 ### Docker Versioning Strategy
 
 **Version Alignment**: Docker image tags align with the project version in `package.json`:
+
 - The `latest` tag always points to the most recent stable release
-- Semantic version tags (e.g., `v1.1.6`) correspond to specific GitHub releases
+- Semantic version tags (e.g., `1.3.0`) correspond to specific GitHub releases
 - Both `latest` and specific version tags are updated simultaneously during releases
 
 **Tag Updates**: When a new version is released:
+
 1. Project version is updated in `package.json`
 2. Docker image is built with the new version tag
-3. Both `vX.Y.Z` and `latest` tags are pushed to Docker Hub
+3. Both `X.Y.Z` and `latest` tags are pushed to Docker Hub
 4. Previous version tags remain available for rollback purposes
 
 **Recommended Usage**:
-- **Production**: Use specific version tags (e.g., `v1.1.6`) for reproducible deployments
+
+- **Production**: Use specific version tags (e.g., `1.3.0`) for reproducible deployments
 - **Development/Testing**: Use `latest` for the most current stable features
 - **Bleeding Edge**: Use `develop` for unreleased features (not recommended for production)
 
 ### Multi-Platform Support
 
 The images support multiple architectures:
+
 - `linux/amd64` (x86_64)
 - `linux/arm64` (ARM64/v8)
 - `linux/arm/v7` (ARM32/v7)
