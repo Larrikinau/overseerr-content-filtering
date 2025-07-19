@@ -16,15 +16,15 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.1.9** introduces enhanced **Docker Migration Fix** with improved privilege detection alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.2.0** introduces **Enhanced Migration Script with Multiple API Key Detection** alongside existing **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.1.9: Enhanced Docker Migration Fix**
+### 🆕 **What's New in v1.2.0: Enhanced Migration Script with Multiple API Key Detection**
 
-- **🐳 Enhanced Docker Migration Detection**: Fixed Docker privilege checking in migration script with proper error messages
-- **🔧 Improved TypeScript Compilation**: Fixed type casting errors in server index.ts for proper migration handling
-- **📦 Updated Release Build**: Full production deployment with Docker image v1.1.9 and updated Debian/Ubuntu package
-- **🐛 Migration Script Fixes**: Enhanced Docker daemon detection and improved user privilege error handling
-- **📚 Enhanced Documentation**: Updated installation guides with latest version references
+- **🔑 Multiple API Key Sources**: Migration script now detects TMDB API keys from settings.json, .env files, container environment, and hardcoded sources
+- **🔧 Improved Migration Reliability**: Fixed premature flag setting that was skipping API key extraction from different sources
+- **🛠️ Enhanced Error Handling**: Better service verification, dependency checking, and user guidance when migrations fail
+- **📊 Comprehensive Validation**: Added proper backup verification and configuration testing
+- **🚀 Docker Hub**: Updated image larrikinau/overseerr-content-filtering:1.2.0 with enhanced migration capabilities
 
 ### 📋 **TMDB Curated Discovery**
 
@@ -118,11 +118,11 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 **Already have Overseerr installed?** Migrate to overseerr-content-filtering with a single command that preserves all your data:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/migrate-to-content-filtering.sh)
+bash \u003c\(curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh\)
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.1.9)
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.2.0)
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
@@ -137,7 +137,7 @@ If you're experiencing issues with your Overseerr Content Filtering installation
 
 ```bash
 # Download and run diagnostic script
-curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/diagnose-overseerr-issues.sh | bash
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/diagnose-overseerr-issues.sh | bash
 ```
 
 This script will:
@@ -190,17 +190,17 @@ This script will:
 
 #### Quick Install Script
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/install-overseerr-filtering.sh)
+bash \u003c\(curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/install-overseerr-filtering.sh\)
 ```
 
 #### Pre-built Package Download
 ```bash
-# Download the latest pre-built package (v1.1.9)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.1.9/overseerr-content-filtering-v1.1.9-ubuntu.tar.gz
+# Download the latest pre-built package (v1.2.0)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.2.0/overseerr-content-filtering-v1.2.0-ubuntu.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.1.9-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.1.9-ubuntu
+tar -xzf overseerr-content-filtering-v1.2.0-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.2.0-ubuntu
 sudo ./install.sh
 ```
 
@@ -209,18 +209,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:1.1.9
+docker pull larrikinau/overseerr-content-filtering:1.2.0
 
-docker run -d \
-  --name overseerr-content-filtering \
-  -p 5055:5055 \
-  -v /path/to/appdata/config:/app/config \
-  --restart unless-stopped \
-  larrikinau/overseerr-content-filtering:1.1.9
+docker run -d \\
+  --name overseerr-content-filtering \\
+  -p 5055:5055 \\
+  -v /path/to/appdata/config:/app/config \\
+  --restart unless-stopped \\
+  larrikinau/overseerr-content-filtering:1.2.0
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.1.9` (Docker Migration Fix & Enhanced Privilege Detection)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.2.0` (Enhanced Migration Script with Multiple API Key Detection)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -229,7 +229,7 @@ docker run -d \
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:1.1.9
+    image: larrikinau/overseerr-content-filtering:1.2.0
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055

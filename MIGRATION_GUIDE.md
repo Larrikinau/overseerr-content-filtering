@@ -5,7 +5,7 @@
 **The easiest way to migrate is with our automated script:**
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/migrate-to-content-filtering.sh)
+bash \u003c\(curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh\)
 ```
 
 This single command will:
