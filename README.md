@@ -16,9 +16,9 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.3.0** represents a major stability and feature release with **Enhanced Content Filtering**, **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.3.1** represents a major stability and feature release with **Enhanced Content Filtering**, **TMDB Curated Discovery**, **global adult content blocking**, and **admin-only rating controls**, providing both content safety and intelligent quality filtering for superior media discovery.
 
-### 🆕 **What's New in v1.3.0: Enhanced Content Filtering Release**
+### 🆕 **What's New in v1.3.1: Enhanced Content Filtering Release**
 
 - **🚀 Major Version Release**: Comprehensive stability improvements and feature enhancements
 - **🎯 Enhanced TMDB Curated Discovery**: Improved quality filtering algorithms and user experience
@@ -26,7 +26,7 @@
 - **🐳 Optimized Docker Images**: Reduced image size (685MB vs 798MB) with improved build process
 - **📊 Enhanced User Rating Preferences**: Advanced rating and sorting controls for personalized discovery
 - **🛠️ Technical Improvements**: Updated dependencies and enhanced performance optimizations
-- **🚀 Docker Hub**: Updated images larrikinau/overseerr-content-filtering:1.3.0 and :latest
+- **🚀 Docker Hub**: Updated images larrikinau/overseerr-content-filtering:1.3.1 and :latest
 
 ### 📋 **TMDB Curated Discovery**
 
@@ -135,7 +135,7 @@ chmod +x migrate-to-content-filtering.sh
 ```
 
 ✅ **Migrates FROM**: Docker, Snap, or systemd installations  
-✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.3.0)  
+✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:1.3.1)  
 ✅ **100% data preservation**: Users, requests, settings, database  
 ✅ **Automatic backup**: Creates timestamped backups before migration  
 ✅ **Seamless transition**: ~2-5 minutes with zero downtime
@@ -215,12 +215,12 @@ curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/in
 #### Pre-built Package Download
 
 ```bash
-# Download the latest pre-built package (v1.3.0)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.3.0/overseerr-content-filtering-v1.3.0-ubuntu.tar.gz
+# Download the latest pre-built package (v1.3.1)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.3.1/overseerr-content-filtering-v1.3.1-ubuntu.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.3.0-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.3.0-ubuntu
+tar -xzf overseerr-content-filtering-v1.3.1-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.3.1-ubuntu
 sudo ./install.sh
 ```
 
@@ -229,18 +229,18 @@ sudo ./install.sh
 ✅ **Now Available on Docker Hub** - No workarounds needed!
 
 ```bash
-docker pull larrikinau/overseerr-content-filtering:1.3.0
+docker pull larrikinau/overseerr-content-filtering:1.3.1
 
 docker run -d \\
   --name overseerr-content-filtering \\
   -p 5055:5055 \\
   -v /path/to/appdata/config:/app/config \\
   --restart unless-stopped \\
-  larrikinau/overseerr-content-filtering:1.3.0
+  larrikinau/overseerr-content-filtering:1.3.1
 ```
 
 🔗 **Docker Hub Repository**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering  
-📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.3.0` (Enhanced Content Filtering Release)
+📦 **Latest Version**: `larrikinau/overseerr-content-filtering:1.3.1` (Enhanced Content Filtering Release)
 
 📖 **[Complete Docker Deployment Guide](DOCKER_DEPLOYMENT.md)** - Advanced configuration, security, troubleshooting
 
@@ -250,7 +250,7 @@ docker run -d \\
 version: '3.8'
 services:
   overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:1.3.0
+    image: larrikinau/overseerr-content-filtering:1.3.1
     container_name: overseerr-content-filtering
     ports:
       - 5055:5055

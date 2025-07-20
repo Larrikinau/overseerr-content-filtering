@@ -10,8 +10,8 @@ This guide covers Docker deployment options for Overseerr Content Filtering, inc
 
 - **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
 - **No workarounds needed** - Pull directly from Docker Hub
-- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.3.0)
-- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.3.0` (enhanced content filtering)
+- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.3.1)
+- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.3.1` (enhanced content filtering)
 
 ## 🐳 Quick Start with Pre-built Images
 
@@ -87,7 +87,7 @@ Use the provided build script for easy building:
 ./scripts/build-docker.sh
 
 # Build with specific tag
-./scripts/build-docker.sh -t v1.3.0
+./scripts/build-docker.sh -t v1.3.1
 
 # Multi-platform build and push
 ./scripts/build-docker.sh --multi-platform --push
@@ -230,7 +230,7 @@ docker run -d \
   -e LOG_LEVEL=info \
   -p 5055:5055 \
   -v overseerr-config:/app/config \
-  larrikinau/overseerr-content-filtering:1.3.0
+  larrikinau/overseerr-content-filtering:1.3.1
 ```
 
 ### Network Security
@@ -378,8 +378,8 @@ docker exec overseerr-content-filtering ps aux
 
 ### Available Tags
 
-- `latest` - Latest stable release (v1.3.0)
-- `1.3.0` - Enhanced content filtering release
+- `latest` - Latest stable release (v1.3.1)
+- `1.3.1` - Enhanced content filtering release
 - `1.2.2` - Previous version with migration fixes
 - `1.2.1` - Previous version
 - `1.2.0` - Previous version
@@ -390,7 +390,7 @@ docker exec overseerr-content-filtering ps aux
 **Version Alignment**: Docker image tags align with the project version in `package.json`:
 
 - The `latest` tag always points to the most recent stable release
-- Semantic version tags (e.g., `1.3.0`) correspond to specific GitHub releases
+- Semantic version tags (e.g., `1.3.1`) correspond to specific GitHub releases
 - Both `latest` and specific version tags are updated simultaneously during releases
 
 **Tag Updates**: When a new version is released:
@@ -402,7 +402,7 @@ docker exec overseerr-content-filtering ps aux
 
 **Recommended Usage**:
 
-- **Production**: Use specific version tags (e.g., `1.3.0`) for reproducible deployments
+- **Production**: Use specific version tags (e.g., `1.3.1`) for reproducible deployments
 - **Development/Testing**: Use `latest` for the most current stable features
 - **Bleeding Edge**: Use `develop` for unreleased features (not recommended for production)
 
