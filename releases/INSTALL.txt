@@ -1,0 +1,27 @@
+# Overseerr Content Filtering - Installation Instructions
+
+## Quick Install (Recommended)
+curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filtering/main/install-overseerr-filtering.sh | sudo bash
+
+## Manual Install
+1. Download: overseerr-content-filtering-v1.3.1-ubuntu.tar.gz
+2. Extract: tar -xzf overseerr-content-filtering-v1.3.1-ubuntu.tar.gz
+3. Install: sudo ./install-overseerr-filtering.sh
+
+## Docker Install
+docker run -d \
+  --name overseerr-content-filtering \
+  -p 5055:5055 \
+  -v /path/to/config:/app/config \
+  --restart unless-stopped \
+  larrikinau/overseerr-content-filtering
+
+## Verification
+SHA256: 595e68916ec1db337f0b0c6468588ec29984a7a9698ef5d935295eb89c5a8a44
+Size:  96M
+Version: 1.3.1
+Build Date: 2025-07-20T06:41:13Z
+
+## Support
+- Documentation: https://github.com/Larrikinau/overseerr-content-filtering
+- Issues: https://github.com/Larrikinau/overseerr-content-filtering/issues

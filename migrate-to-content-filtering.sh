@@ -373,8 +373,8 @@ install_content_filtering() {
     log "Installing overseerr-content-filtering..."
     
     # Pull the latest image
-    docker pull larrikinau/overseerr-content-filtering:1.3.0
-    docker tag larrikinau/overseerr-content-filtering:1.3.0 larrikinau/overseerr-content-filtering:latest
+    docker pull larrikinau/overseerr-content-filtering:1.3.1
+    docker tag larrikinau/overseerr-content-filtering:1.3.1 larrikinau/overseerr-content-filtering:latest
     log_success "Image pulled successfully"
     
     # Initialize environment variables file

@@ -216,7 +216,7 @@ create_tarball() {
         tar -czf "$RELEASE_DIR/$TARBALL_NAME" -C staging .
     else
         # Use better compression
-        tar -czf "$RELEASE_DIR/$TARBALL_NAME" -C staging . --exclude-vcs
+        tar -czf "$RELEASE_DIR/$TARBALL_NAME" -C staging .
     fi
     
     # Create checksum
