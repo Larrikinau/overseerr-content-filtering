@@ -220,6 +220,43 @@ class TheMovieDb extends ExternalAPI {
     
     return params;
   }
+  
+  private async filterUnratedMovies(movies: any[]): Promise<any[]> {
+    if (!this.maxMovieRating) return movies;
+    
+    const filteredMovies = [];
+    
+    for (const movie of movies) {
+      try {
+        // Get detailed movie info to check for certification
+        const details = await this.getMovie({ movieId: movie.id });
+        
+        // Check if movie has US certification
+        const usCertification = details.release_dates?.results?.find(
+          (country: any) => country.iso_3166_1 === 'US'
+        );
+        
+        if (usCertification && usCertification.release_dates?.length > 0) {
+          // Check if any release date has certification data
+          const hasCertification = usCertification.release_dates.some(
+            (release: any) => release.certification && release.certification.trim() !== ''
+          );
+          
+          if (hasCertification) {
+            // Movie has rating data - include it (TMDB filter already handled appropriateness)
+            filteredMovies.push(movie);
+          }
+          // If no rating data - exclude it when strict filtering is enabled
+        }
+        
+      } catch (error) {
+        // If we can't get movie details, exclude it to be safe when filtering is enabled
+        continue;
+      }
+    }
+    
+    return filteredMovies;
+  }
 
   public searchMulti = async ({
     query,
@@ -447,6 +484,11 @@ class TheMovieDb extends ExternalAPI {
         }
       );
 
+      // Apply unrated movie filtering when rating restrictions are enabled
+      if (this.maxMovieRating) {
+        data.results = await this.filterUnratedMovies(data.results);
+      }
+
       return data;
     } catch (e) {
       return {
@@ -482,6 +524,11 @@ class TheMovieDb extends ExternalAPI {
           params,
         }
       );
+
+      // Apply unrated movie filtering when rating restrictions are enabled
+      if (this.maxMovieRating) {
+        data.results = await this.filterUnratedMovies(data.results);
+      }
 
       return data;
     } catch (e) {
@@ -659,6 +706,11 @@ class TheMovieDb extends ExternalAPI {
           with_watch_providers: watchProviders,
         },
       });
+
+      // NEW: Post-process to filter out unrated movies when rating restrictions are enabled
+      if (this.maxMovieRating) {
+        data.results = await this.filterUnratedMovies(data.results);
+      }
 
       return data;
     } catch (e) {

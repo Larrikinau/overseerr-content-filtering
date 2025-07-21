@@ -24,14 +24,14 @@ For details on the Docker CLI, please [review the official `docker run` document
 **Installation:**
 
 ```bash
-docker run -d \
-  --name overseerr \
-  -e LOG_LEVEL=debug \
-  -e TZ=Asia/Tokyo \
-  -e PORT=5055 `#optional` \
-  -p 5055:5055 \
-  -v /path/to/appdata/config:/app/config \
-  --restart unless-stopped \
+sudo docker run -d \\
+  --name overseerr \\
+  -e LOG_LEVEL=debug \\
+  -e TZ=Asia/Tokyo \\
+  -e PORT=5055 `#optional` \\
+  -p 5055:5055 \\
+  -v /path/to/appdata/config:/app/config \\
+  --restart unless-stopped \\
   sctx/overseerr
 ```
 
@@ -42,19 +42,19 @@ To run the container as a specific user/group, you may optionally add `--user=[ 
 Stop and remove the existing container:
 
 ```bash
-docker stop overseerr && docker rm overseerr
+sudo docker stop overseerr && sudo docker rm overseerr
 ```
 
 Pull the latest image:
 
 ```bash
-docker pull sctx/overseerr
+sudo docker pull sctx/overseerr
 ```
 
 Finally, run the container with the same parameters originally used to create the container:
 
 ```bash
-docker run -d ...
+sudo docker run -d ...
 ```
 
 {% hint style="info" %}
@@ -130,7 +130,7 @@ Please refer to the [Docker Desktop for Windows user manual](https://docs.docker
 First, create a volume to store the configuration data for Overseerr using using either the Docker CLI:
 
 ```bash
-docker volume create overseerr-data
+sudo docker volume create overseerr-data
 ```
 
 or the Docker Desktop app:
@@ -143,7 +143,7 @@ or the Docker Desktop app:
 Then, create and start the Overseerr container:
 
 ```bash
-docker run -d --name overseerr-content-filtering -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped larrikinau/overseerr-content-filtering:latest
+sudo docker run -d --name overseerr-content-filtering -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped larrikinau/overseerr-content-filtering:latest
 ```
 
 To access the files inside the volume created above, navigate to `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\overseerr-data\_data` using File Explorer.

@@ -175,6 +175,9 @@ nano .env.local
 # Database (SQLite is default, no configuration needed)
 # Leave empty for SQLite: DATABASE_URL=
 
+# Required: TMDB API key for movie/TV data
+TMDB_API_KEY=db55323b8d3e4154498498a75642b381
+
 # Application settings
 LOG_LEVEL=info
 PORT=5055
@@ -235,7 +238,8 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 5055
+      PORT: 5055,
+      TMDB_API_KEY: 'db55323b8d3e4154498498a75642b381'
     }
   }]
 }
@@ -383,6 +387,7 @@ yarn type-check
    RestartSec=10
    Environment=NODE_ENV=production
    Environment=PORT=5055
+   Environment=TMDB_API_KEY=db55323b8d3e4154498498a75642b381
    
    [Install]
    WantedBy=multi-user.target
@@ -437,6 +442,7 @@ yarn type-check
    docker run -d \
      --name overseerr-content-filtering \
      -p 5055:5055 \
+     -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
      -v overseerr-config:/app/config \
      overseerr-content-filtering:local
    ```

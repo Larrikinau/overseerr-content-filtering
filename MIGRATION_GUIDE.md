@@ -5,9 +5,12 @@
 **The easiest way to migrate is with our automated script:**
 
 ```bash
+# Download migration script
 curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
 chmod +x migrate-to-content-filtering.sh
-./migrate-to-content-filtering.sh
+
+# Run migration script (add sudo if you get Docker permission errors)
+sudo ./migrate-to-content-filtering.sh
 ```
 
 These commands will:
@@ -70,7 +73,7 @@ docker run -d \
   -v overseerr_config:/app/config \
   -e NODE_ENV=production \
   -e RUN_MIGRATIONS=true \
-  larrikinau/overseerr-content-filtering:latest
+larrikinau/overseerr-content-filtering:latest
 ```
 
 #### 4. **Verification Phase**
@@ -89,16 +92,17 @@ If you prefer manual control or have a custom setup:
 ### For Docker Users
 ```bash
 # 1. Stop existing container
-docker stop overseerr && docker rm overseerr
+sudo docker stop overseerr && sudo docker rm overseerr
 
 # 2. Pull new image
-docker pull larrikinau/overseerr-content-filtering:latest
+sudo docker pull larrikinau/overseerr-content-filtering:latest
 
 # 3. Start with existing volume
-docker run -d \
+sudo docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v overseerr_config:/app/config \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -e NODE_ENV=production \
   -e RUN_MIGRATIONS=true \
   --restart unless-stopped \
@@ -118,14 +122,15 @@ curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 
 # 4. Create Docker volume and copy config
-docker volume create overseerr_config
-docker run --rm -v overseerr_config:/dest -v /var/snap/overseerr/common:/src alpine sh -c "cp -r /src/* /dest/"
+sudo docker volume create overseerr_config
+sudo docker run --rm -v overseerr_config:/dest -v /var/snap/overseerr/common:/src alpine sh -c "cp -r /src/* /dest/"
 
 # 5. Start overseerr-content-filtering
-docker run -d \
+sudo docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v overseerr_config:/app/config \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -e NODE_ENV=production \
   -e RUN_MIGRATIONS=true \
   --restart unless-stopped \
@@ -142,14 +147,15 @@ sudo systemctl disable overseerr
 sudo cp -r /opt/overseerr/config /opt/overseerr/config.backup
 
 # 3. Install Docker and migrate config
-docker volume create overseerr_config
-docker run --rm -v overseerr_config:/dest -v /opt/overseerr/config:/src alpine sh -c "cp -r /src/* /dest/"
+sudo docker volume create overseerr_config
+sudo docker run --rm -v overseerr_config:/dest -v /opt/overseerr/config:/src alpine sh -c "cp -r /src/* /dest/"
 
 # 4. Start new container
-docker run -d \
+sudo docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
   -v overseerr_config:/app/config \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -e NODE_ENV=production \
   -e RUN_MIGRATIONS=true \
   --restart unless-stopped \
@@ -160,7 +166,7 @@ docker run -d \
 
 ### 1. **Check Container Status**
 ```bash
-docker ps | grep overseerr-content-filtering
+sudo docker ps | grep overseerr-content-filtering
 ```
 
 ### 2. **Verify Service Response**
@@ -170,7 +176,7 @@ curl http://localhost:5055/api/v1/status
 
 ### 3. **Check Migration Logs**
 ```bash
-docker logs overseerr-content-filtering | grep -i migration
+sudo docker logs overseerr-content-filtering | grep -i migration
 ```
 Look for: `[info][Database] Database migrations completed successfully`
 
@@ -193,40 +199,40 @@ Look for: `[info][Database] Database migrations completed successfully`
 #### Issue: Container won't start
 ```bash
 # Check logs for errors
-docker logs overseerr-content-filtering
+sudo docker logs overseerr-content-filtering
 
 # Ensure migrations are enabled
-docker run -d ... -e RUN_MIGRATIONS=true ...
+sudo docker run -d ... -e RUN_MIGRATIONS=true ...
 ```
 
 #### Issue: Database migration errors
 ```bash
 # Force migration run
-docker exec overseerr-content-filtering sqlite3 /app/config/db/db.sqlite3 "PRAGMA integrity_check;"
+sudo docker exec overseerr-content-filtering sqlite3 /app/config/db/db.sqlite3 "PRAGMA integrity_check;"
 
 # Restart with fresh migration
-docker rm overseerr-content-filtering
-docker run -d ... -e NODE_ENV=production -e RUN_MIGRATIONS=true ...
+sudo docker rm overseerr-content-filtering
+sudo docker run -d ... -e NODE_ENV=production -e RUN_MIGRATIONS=true ...
 ```
 
 #### Issue: Port 5055 already in use
 ```bash
 # Use different host port
-docker run -d ... -p 5056:5055 ...
+sudo docker run -d ... -p 5056:5055 ...
 # Access via http://localhost:5056
 ```
 
 #### Issue: Permission denied on config folder
 ```bash
 # Fix Docker volume permissions
-docker exec overseerr-content-filtering chown -R overseerr:nodejs /app/config
+sudo docker exec overseerr-content-filtering chown -R overseerr:nodejs /app/config
 ```
 
 ### Getting Help
 
 If migration fails or you encounter issues:
 
-1. **Check logs**: `docker logs overseerr-content-filtering`
+1. **Check logs**: `sudo docker logs overseerr-content-filtering`
 2. **Enable debug**: Add `-e LOG_LEVEL=debug` to Docker command
 3. **Backup verification**: Ensure your backup was created successfully
 4. **GitHub Issues**: [Report issues](https://github.com/Larrikinau/overseerr-content-filtering/issues) with:

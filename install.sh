@@ -149,6 +149,7 @@ StandardError=journal
 SyslogIdentifier=$SERVICE_NAME
 Environment=NODE_ENV=production
 Environment=PORT=$DEFAULT_PORT
+Environment=TMDB_API_KEY=db55323b8d3e4154498498a75642b381
 
 # Security settings
 NoNewPrivileges=true

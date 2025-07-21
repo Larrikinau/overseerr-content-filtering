@@ -247,12 +247,12 @@ curl -fsSL https://raw.githubusercontent.com/Larrikinau/overseerr-content-filter
 3. Install: sudo ./install-overseerr-filtering.sh
 
 ## Docker Install
-docker run -d \\
+sudo docker run -d \\
   --name overseerr-content-filtering \\
   -p 5055:5055 \\
   -v /path/to/config:/app/config \\
   --restart unless-stopped \\
-  larrikinau/overseerr-content-filtering
+  larrikinau/overseerr-content-filtering:latest
 
 ## Verification
 SHA256: $PACKAGE_SHA256

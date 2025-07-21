@@ -60,7 +60,23 @@ check_docker() {
 detect_overseerr() {
     log "Detecting existing Overseerr installation..."
     
-    # Check for Docker container (more comprehensive detection)
+    # Check for docker-compose.yml files first (highest priority)
+    for compose_file in "docker-compose.yml" "docker-compose.yaml" "compose.yml" "compose.yaml"; do
+        if [ -f "$compose_file" ] && grep -q "overseerr" "$compose_file"; then
+            OVERSEERR_TYPE="docker-compose"
+            COMPOSE_FILE="$compose_file"
+            # Extract container name from compose file
+            CONTAINER_NAME=$(docker ps -a --format "{{.Names}}" | grep overseerr | head -1)
+            if [ -z "$CONTAINER_NAME" ]; then
+                # Try to get it from the compose file
+                CONTAINER_NAME=$(grep -A 10 "container_name:" "$compose_file" | grep "overseerr" | head -1 | sed 's/.*container_name: *//; s/"//g; s/\'//g')
+            fi
+            log_success "Found Docker Compose installation: $compose_file (container: $CONTAINER_NAME)"
+            return 0
+        fi
+    done
+    
+    # Check for Docker container (fallback to regular docker)
     if docker ps -a --format "table {{.Names}}" | grep -q "overseerr"; then
         OVERSEERR_TYPE="docker"
         CONTAINER_NAME=$(docker ps -a --format "{{.Names}}" | grep overseerr | head -1)
@@ -99,6 +115,14 @@ backup_config() {
     log "Creating backup of existing configuration..."
     
     case $OVERSEERR_TYPE in
+        "docker-compose")
+            # Handle docker-compose backup - same as docker but backup compose file too
+            if [ -f "$COMPOSE_FILE" ]; then
+                cp "$COMPOSE_FILE" "${COMPOSE_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
+                log_success "Docker Compose file backed up: $COMPOSE_FILE"
+            fi
+            # Fall through to docker handling
+            ;&
         "docker")
             # Get detailed mount information from Docker inspect - try multiple mount patterns
             MOUNT_INFO=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Type}}:{{.Source}}:{{.Destination}}{{end}}{{end}}')
@@ -183,6 +207,9 @@ extract_api_keys() {
     log "Extracting API keys from existing installation..."
     
     case $OVERSEERR_TYPE in
+        "docker-compose")
+            # Handle docker-compose API key extraction - same as docker
+            ;&
         "docker")
             # For Docker, extract from running container or mounted volume
             if [ "$MOUNT_TYPE" = "bind" ] && [ -f "$DOCKER_CONFIG_PATH/settings.json" ]; then
@@ -274,6 +301,18 @@ stop_existing() {
     log "Stopping existing Overseerr installation..."
     
     case $OVERSEERR_TYPE in
+        "docker-compose")
+            # Stop docker-compose services
+            if [ -f "$COMPOSE_FILE" ]; then
+                docker-compose -f "$COMPOSE_FILE" down || log_warning "Docker Compose services were not running"
+                log_success "Docker Compose services stopped and removed"
+            else
+                # Fallback to manual container stop
+                docker stop $CONTAINER_NAME || log_warning "Container was not running"
+                docker rm $CONTAINER_NAME || log_warning "Could not remove container"
+                log_success "Docker container stopped and removed"
+            fi
+            ;;
         "docker")
             docker stop $CONTAINER_NAME || log_warning "Container was not running"
             docker rm $CONTAINER_NAME || log_warning "Could not remove container"
@@ -301,6 +340,9 @@ detect_port_config() {
     CONTAINER_PORT=5055
     
     case $OVERSEERR_TYPE in
+        "docker-compose")
+            # Handle docker-compose port detection - same as docker
+            ;&
         "docker")
             if [ -n "$CONTAINER_NAME" ]; then
                 # Get port mappings from existing container
@@ -373,8 +415,7 @@ install_content_filtering() {
     log "Installing overseerr-content-filtering..."
     
     # Pull the latest image
-    docker pull larrikinau/overseerr-content-filtering:1.3.1
-    docker tag larrikinau/overseerr-content-filtering:1.3.1 larrikinau/overseerr-content-filtering:latest
+    docker pull larrikinau/overseerr-content-filtering:latest
     log_success "Image pulled successfully"
     
     # Initialize environment variables file
@@ -550,29 +591,115 @@ EOF
             ;;
     esac
     
-    # Final check: inform about TMDB API key status
-    if [ "$TMDB_KEY_FOUND" = "false" ] && [ "$OVERSEERR_TYPE" != "none" ]; then
-        log_warning "No TMDB API key found in existing installation"
-        log "The application will work without TMDB API key, but some features may be limited:"
-        log "• Enhanced movie/TV metadata will not be available"
-        log "• Some discovery features may not work optimally"
-        log "You can optionally configure a TMDB API key later in Settings → General"
+    # Final check: add default TMDB API key if none found
+    if [ "$TMDB_KEY_FOUND" = "false" ]; then
+        echo "TMDB_API_KEY=db55323b8d3e4154498498a75642b381" >> env.list
+        log_success "Default TMDB API key added (from Overseerr)"
     elif [ "$TMDB_KEY_FOUND" = "true" ]; then
         log_success "TMDB API key successfully migrated from existing installation"
-    elif [ "$OVERSEERR_TYPE" = "none" ]; then
-        log "Fresh installation - TMDB API key can be configured later if desired"
     fi
     
-    # Start the new container
-    docker run -d \
-        --name overseerr-content-filtering \
-        -p $HOST_PORT:$CONTAINER_PORT \
-        $VOLUME_ARG \
-        --env-file env.list \
-        --restart unless-stopped \
-        larrikinau/overseerr-content-filtering:latest
-    
-    log_success "overseerr-content-filtering container started"
+    # Handle different deployment types
+    if [ "$OVERSEERR_TYPE" = "docker-compose" ]; then
+        # Create new docker-compose.yml with migrated API keys
+        log "Creating new docker-compose.yml file with migrated configuration..."
+        
+        # Determine volume configuration based on detected mount
+        if [ "$MOUNT_TYPE" = "bind" ] && [ -n "$DOCKER_CONFIG_PATH" ]; then
+            COMPOSE_VOLUMES="      - $DOCKER_CONFIG_PATH:/app/config"
+        elif [ "$MOUNT_TYPE" = "volume" ] && [ -n "$DOCKER_VOLUME_NAME" ]; then
+            COMPOSE_VOLUMES="      - $DOCKER_VOLUME_NAME:/app/config"
+        else
+            COMPOSE_VOLUMES="      - overseerr-config:/app/config"
+        fi
+        
+        # Create docker-compose.yml
+        cat > docker-compose.yml <<EOF
+version: '3.8'
+
+services:
+  overseerr-content-filtering:
+    image: larrikinau/overseerr-content-filtering:1.3.4
+    container_name: overseerr-content-filtering
+    ports:
+      - "$HOST_PORT:$CONTAINER_PORT"
+    volumes:
+$COMPOSE_VOLUMES
+      - overseerr-logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - RUN_MIGRATIONS=true
+      - LOG_LEVEL=info
+      - TZ=UTC
+EOF
+        
+        # Add TMDB API Key if found
+        if [ "$TMDB_KEY_FOUND" = "true" ] && [ -n "$EXTRACTED_TMDB_KEY" ]; then
+            echo "      - TMDB_API_KEY=$EXTRACTED_TMDB_KEY" >> docker-compose.yml
+            log_success "TMDB API key added to docker-compose.yml: ${EXTRACTED_TMDB_KEY:0:8}..."
+        else
+            echo "      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381" >> docker-compose.yml
+            log_success "Default TMDB API key added to docker-compose.yml (from Overseerr)"
+        fi
+        
+        # Add other environment variables from env.list (excluding duplicates)
+        if [ -f "env.list" ]; then
+            while IFS= read -r line; do
+                if [[ ! "$line" =~ ^(NODE_ENV|RUN_MIGRATIONS|LOG_LEVEL|TZ|TMDB_API_KEY)= ]]; then
+                    echo "      - $line" >> docker-compose.yml
+                fi
+            done < env.list
+        fi
+        
+        # Complete docker-compose.yml
+        cat >> docker-compose.yml <<EOF
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:$CONTAINER_PORT/api/v1/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - overseerr-network
+
+volumes:
+EOF
+        
+        # Add volume definitions only if using named volumes
+        if [ "$MOUNT_TYPE" = "volume" ] && [ -n "$DOCKER_VOLUME_NAME" ]; then
+            echo "  $DOCKER_VOLUME_NAME:" >> docker-compose.yml
+            echo "    external: true" >> docker-compose.yml
+        elif [ "$MOUNT_TYPE" != "bind" ]; then
+            echo "  overseerr-config:" >> docker-compose.yml
+            echo "    driver: local" >> docker-compose.yml
+        fi
+        
+        echo "  overseerr-logs:" >> docker-compose.yml
+        echo "    driver: local" >> docker-compose.yml
+        echo "" >> docker-compose.yml
+        echo "networks:" >> docker-compose.yml
+        echo "  overseerr-network:" >> docker-compose.yml
+        echo "    driver: bridge" >> docker-compose.yml
+        
+        log_success "Generated docker-compose.yml with migrated configuration"
+        
+        # Start with docker-compose
+        docker-compose up -d
+        log_success "overseerr-content-filtering started with Docker Compose"
+        
+    else
+        # Start with regular docker run
+        docker run -d \
+            --name overseerr-content-filtering \
+            -p $HOST_PORT:$CONTAINER_PORT \
+            $VOLUME_ARG \
+            --env-file env.list \
+            --restart unless-stopped \
+            larrikinau/overseerr-content-filtering:latest
+        
+        log_success "overseerr-content-filtering container started"
+    fi
 }
 
 # Verify installation

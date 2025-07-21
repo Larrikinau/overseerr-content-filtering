@@ -13,6 +13,9 @@ services:
       - NODE_ENV=production
       - LOG_LEVEL=info
       - TZ=UTC
+      # TMDB API Key - Required for movie/TV data
+      # This is a working API key for immediate setup
+      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5055/api/v1/status"]

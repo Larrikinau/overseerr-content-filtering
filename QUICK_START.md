@@ -191,6 +191,7 @@ See [BUILD.md](BUILD.md) for complete instructions.
 docker run -d \
   --name overseerr-filtering \
   -p 5055:5055 \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -v overseerr-config:/app/config \
   overseerr-filtering:local
 ```

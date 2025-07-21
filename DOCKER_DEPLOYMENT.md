@@ -25,6 +25,7 @@ docker pull larrikinau/overseerr-content-filtering:latest
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
   larrikinau/overseerr-content-filtering:latest
@@ -42,6 +43,7 @@ services:
     image: larrikinau/overseerr-content-filtering:latest
     container_name: overseerr-content-filtering
     environment:
+      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381  # Required for movie/TV data
       - TZ=Asia/Tokyo # optional
     ports:
       - '5055:5055'
@@ -118,6 +120,7 @@ docker run -d \
 
 | Variable           | Description                              | Default       | Required |
 | ------------------ | ---------------------------------------- | ------------- | -------- |
+| `TMDB_API_KEY`     | The Movie Database API key               | None          | **Yes**  |
 | `LOG_LEVEL`        | Logging level (debug, info, warn, error) | `info`        | No       |
 | `TZ`               | Timezone for the container               | `UTC`         | No       |
 | `PORT`             | Port for the web interface               | `5055`        | No       |
@@ -230,17 +233,17 @@ docker run -d \
   -e LOG_LEVEL=info \
   -p 5055:5055 \
   -v overseerr-config:/app/config \
-  larrikinau/overseerr-content-filtering:1.3.1
+larrikinau/overseerr-content-filtering:latest
 ```
 
 ### Network Security
 
 ```bash
 # Create isolated network
-docker network create overseerr-net
+sudo docker network create overseerr-net
 
 # Run with custom network
-docker run -d \
+sudo docker run -d \
   --name overseerr-content-filtering \
   --network overseerr-net \
   -p 127.0.0.1:5055:5055 \  # Bind to localhost only
@@ -277,14 +280,14 @@ healthcheck:
 
 ```bash
 # Stop and remove old container
-docker stop overseerr-content-filtering
-docker rm overseerr-content-filtering
+sudo docker stop overseerr-content-filtering
+sudo docker rm overseerr-content-filtering
 
 # Pull latest image
-docker pull larrikinau/overseerr-content-filtering:latest
+sudo docker pull larrikinau/overseerr-content-filtering:latest
 
 # Start new container with same configuration
-docker run -d --name overseerr-content-filtering [options] larrikinau/overseerr-content-filtering:latest
+sudo docker run -d --name overseerr-content-filtering [options] larrikinau/overseerr-content-filtering:latest
 ```
 
 #### Docker Compose
@@ -299,7 +302,7 @@ docker-compose up -d overseerr-content-filtering
 
 ```bash
 # Create backup of config volume
-docker run --rm \
+sudo docker run --rm \
   -v overseerr-config:/data \
   -v $(pwd):/backup \
   alpine tar czf /backup/overseerr-backup-$(date +%Y%m%d).tar.gz /data
@@ -309,7 +312,7 @@ docker run --rm \
 
 ```bash
 # Restore from backup
-docker run --rm \
+sudo docker run --rm \
   -v overseerr-config:/data \
   -v $(pwd):/backup \
   alpine tar xzf /backup/overseerr-backup-YYYYMMDD.tar.gz -C /
@@ -323,7 +326,7 @@ docker run --rm \
 
    ```bash
    # Fix ownership
-   docker exec overseerr-content-filtering chown -R app:app /app/config
+   sudo docker exec overseerr-content-filtering chown -R app:app /app/config
    ```
 
 2. **Database corruption (Windows)**
@@ -338,33 +341,33 @@ docker run --rm \
    netstat -tlnp | grep :5055
 
    # Use different host port
-   docker run ... -p 8080:5055 ...
+   sudo docker run ... -p 8080:5055 ...
    ```
 
 4. **Memory issues**
    ```bash
    # Increase container memory limit
-   docker run ... --memory=2g ...
+   sudo docker run ... --memory=2g ...
    ```
 
 ### Debug Mode
 
 ```bash
 # Enable debug logging
-docker run ... -e LOG_LEVEL=debug ...
+sudo docker run ... -e LOG_LEVEL=debug ...
 
 # Check logs
-docker logs overseerr-content-filtering -f
+sudo docker logs overseerr-content-filtering -f
 ```
 
 ### Container Shell Access
 
 ```bash
 # Access container shell
-docker exec -it overseerr-content-filtering sh
+sudo docker exec -it overseerr-content-filtering sh
 
 # Check application status
-docker exec overseerr-content-filtering ps aux
+sudo docker exec overseerr-content-filtering ps aux
 ```
 
 ## 📚 Additional Resources
@@ -416,7 +419,7 @@ The images support multiple architectures:
 
 ```bash
 # Pull specific architecture
-docker pull --platform linux/arm64 larrikinau/overseerr-content-filtering:latest
+sudo docker pull --platform linux/arm64 larrikinau/overseerr-content-filtering:latest
 ```
 
 ---
