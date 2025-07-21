@@ -69,7 +69,7 @@ detect_overseerr() {
             CONTAINER_NAME=$(docker ps -a --format "{{.Names}}" | grep overseerr | head -1)
             if [ -z "$CONTAINER_NAME" ]; then
                 # Try to get it from the compose file
-                CONTAINER_NAME=$(grep -A 10 "container_name:" "$compose_file" | grep "overseerr" | head -1 | sed 's/.*container_name: *//; s/"//g; s/\'//g')
+                CONTAINER_NAME=$(grep -A 10 "container_name:" "$compose_file" | grep "overseerr" | head -1 | sed 's/.*container_name: *//; s/"//g; s/'\''//g')
             fi
             log_success "Found Docker Compose installation: $compose_file (container: $CONTAINER_NAME)"
             return 0
@@ -115,15 +115,12 @@ backup_config() {
     log "Creating backup of existing configuration..."
     
     case $OVERSEERR_TYPE in
-        "docker-compose")
-            # Handle docker-compose backup - same as docker but backup compose file too
-            if [ -f "$COMPOSE_FILE" ]; then
+        "docker-compose"|"docker")
+            # Handle docker-compose backup - backup compose file if present
+            if [ "$OVERSEERR_TYPE" = "docker-compose" ] && [ -f "$COMPOSE_FILE" ]; then
                 cp "$COMPOSE_FILE" "${COMPOSE_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
                 log_success "Docker Compose file backed up: $COMPOSE_FILE"
             fi
-            # Fall through to docker handling
-            ;&
-        "docker")
             # Get detailed mount information from Docker inspect - try multiple mount patterns
             MOUNT_INFO=$(docker inspect $CONTAINER_NAME --format='{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Type}}:{{.Source}}:{{.Destination}}{{end}}{{end}}')
             
@@ -207,10 +204,7 @@ extract_api_keys() {
     log "Extracting API keys from existing installation..."
     
     case $OVERSEERR_TYPE in
-        "docker-compose")
-            # Handle docker-compose API key extraction - same as docker
-            ;&
-        "docker")
+        "docker-compose"|"docker")
             # For Docker, extract from running container or mounted volume
             if [ "$MOUNT_TYPE" = "bind" ] && [ -f "$DOCKER_CONFIG_PATH/settings.json" ]; then
                 # Bind mount - read directly from host filesystem
@@ -252,7 +246,7 @@ extract_api_keys() {
             
             # Also extract environment variables from running container
             if [ -n "$CONTAINER_NAME" ]; then
-                docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^(TMDB_API_KEY|TVDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> /tmp/overseerr_env_backup 2>/dev/null || true
+                docker inspect "$CONTAINER_NAME" --format="{{range .Config.Env}}{{println .}}{{end}}" | grep -E '^(TMDB_API_KEY|TVDB_API_KEY|CONFIG_DIRECTORY|TZ)=' >> /tmp/overseerr_env_backup 2>/dev/null || true
             fi
             ;;
         "snap")
@@ -340,10 +334,7 @@ detect_port_config() {
     CONTAINER_PORT=5055
     
     case $OVERSEERR_TYPE in
-        "docker-compose")
-            # Handle docker-compose port detection - same as docker
-            ;&
-        "docker")
+        "docker-compose"|"docker")
             if [ -n "$CONTAINER_NAME" ]; then
                 # Get port mappings from existing container
                 PORT_MAPPING=$(docker inspect $CONTAINER_NAME --format='{{range $p, $conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}} -> {{(index $conf 0).HostPort}}{{end}}{{end}}' 2>/dev/null | grep '5055/tcp' | head -1)
@@ -455,7 +446,7 @@ EOF
     
     # Determine configuration volume/path
     case $OVERSEERR_TYPE in
-        "docker")
+        "docker-compose"|"docker")
             # Use the detected mount information from backup_config
             if [ ! -z "$MOUNT_INFO" ]; then
                 if [ "$MOUNT_TYPE" = "bind" ]; then
@@ -571,7 +562,7 @@ EOF
                 log_success "Systemd configuration migrated to Docker volume"
                 
                 # Preserve TMDB API Key from systemd settings
-                if [ -f "$SYSTEMD_CONFIG_PATH/settings.json" ] && command -v jq >/dev/null 2>&1; then
+                if [ -f "$SYSTEMD_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
                     TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$SYSTEMD_CONFIG_PATH/settings.json" 2>/dev/null)
                     if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ]; then
                         log "Preserving TMDB API Key from systemd settings"
@@ -645,7 +636,7 @@ EOF
         # Add other environment variables from env.list (excluding duplicates)
         if [ -f "env.list" ]; then
             while IFS= read -r line; do
-                if [[ ! "$line" =~ ^(NODE_ENV|RUN_MIGRATIONS|LOG_LEVEL|TZ|TMDB_API_KEY)= ]]; then
+                if ! echo "$line" | grep -E '^(NODE_ENV|RUN_MIGRATIONS|LOG_LEVEL|TZ|TMDB_API_KEY)=' > /dev/null; then
                     echo "      - $line" >> docker-compose.yml
                 fi
             done < env.list
@@ -718,7 +709,8 @@ verify_installation() {
     fi
     
     # Check if service is responding
-    for i in {1..30}; do
+    i=1
+    while [ $i -le 30 ]; do
         if curl -s http://localhost:$HOST_PORT/api/v1/status > /dev/null 2>&1; then
             log_success "Service is responding on http://localhost:$HOST_PORT"
             break
@@ -728,6 +720,7 @@ verify_installation() {
             exit 1
         fi
         sleep 2
+        i=$((i + 1))
     done
     
     # Verify database migrations completed
@@ -821,7 +814,7 @@ main() {
     echo ""
     read -p "Do you want to continue? (y/N): " -n 1 -r
     echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if ! echo "$REPLY" | grep -E '^[Yy]$' > /dev/null; then
         log "Migration cancelled by user"
         exit 0
     fi
