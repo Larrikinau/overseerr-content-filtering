@@ -3,7 +3,9 @@
 # Overseerr Content Filtering Migration Script
 # Automatically migrates from vanilla Overseerr to overseerr-content-filtering
 # Preserves all data while adding enhanced content filtering capabilities
-# Usage: curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh | bash
+# Usage: curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
+#        chmod +x migrate-to-content-filtering.sh
+#        sudo ./migrate-to-content-filtering.sh
 
 set -e
 
@@ -44,13 +46,12 @@ check_docker() {
     if ! docker info &> /dev/null; then
         log_error "Cannot connect to Docker daemon. This could be because:"
         log_error "1. Docker daemon is not running"
-        log_error "2. Your user doesn't have permission to access Docker"
-        log_error "3. You need to run this script with sudo"
+        log_error "2. Permission issues accessing Docker"
         log_error ""
         log_error "Solutions:"
         log_error "• On macOS: Make sure Docker Desktop is running"
-        log_error "• On Linux: Add your user to the docker group: sudo usermod -aG docker \$USER"
-        log_error "• Or run with sudo: sudo bash migrate-to-content-filtering.sh"
+        log_error "• On Linux: Start Docker service: sudo systemctl start docker"
+        log_error "• This script is designed to run with sudo for reliable Docker access"
         exit 1
     fi
     log_success "Docker daemon is accessible"
@@ -812,6 +813,8 @@ main() {
     echo "4. Install overseerr-content-filtering"
     echo "5. Migrate your settings and data"
     echo ""
+    echo "Note: This script runs with sudo for reliable Docker access."
+    echo ""
     read -p "Do you want to continue? (y/N): " -n 1 -r
     echo ""
     if ! echo "$REPLY" | grep -E '^[Yy]$' > /dev/null; then
@@ -834,7 +837,7 @@ main() {
     echo "=================================================="
     echo ""
     echo "🎉 Your Overseerr Content Filtering is now running!"
-    echo "🌐 Access it at: http://localhost:5055"
+    echo "🌐 Access it at: http://localhost:$HOST_PORT"
     echo "📊 Check logs: docker logs overseerr-content-filtering"
     echo "🔧 Manage container: docker stop/start overseerr-content-filtering"
     echo ""
