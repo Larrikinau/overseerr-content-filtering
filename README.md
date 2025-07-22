@@ -26,7 +26,7 @@
 - **🐛 Critical Bug Fixes**: Fixed TMDB API key handling and database migration issues
 - **🏗️ Technical Improvements**: Enhanced error handling, performance optimizations, and code quality
 - **📚 Documentation**: Updated installation guides and comprehensive setup instructions
-- **🚀 Docker Hub**: Updated images markvos/overseerr-content-filtering:1.3.5 and :latest
+- **🚀 Docker Hub**: Updated images larrikinau/overseerr-content-filtering:1.3.5 and :latest
 
 **📋 Major Changes in v1.3.5:**
 
