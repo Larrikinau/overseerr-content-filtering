@@ -117,8 +117,9 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return response.data;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[${this.apiName}] Failed to retrieve system status: ${e.message}`
+        `[${this.apiName}] Failed to retrieve system status: ${errorMessage}`
       );
     }
   };
@@ -133,8 +134,9 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return data;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[${this.apiName}] Failed to retrieve profiles: ${e.message}`
+        `[${this.apiName}] Failed to retrieve profiles: ${errorMessage}`
       );
     }
   };
@@ -149,8 +151,9 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return data;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[${this.apiName}] Failed to retrieve root folders: ${e.message}`
+        `[${this.apiName}] Failed to retrieve root folders: ${errorMessage}`
       );
     }
   };
@@ -168,8 +171,9 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return response.data.records;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[${this.apiName}] Failed to retrieve queue: ${e.message}`
+        `[${this.apiName}] Failed to retrieve queue: ${errorMessage}`
       );
     }
   };
@@ -180,8 +184,9 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return response.data;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[${this.apiName}] Failed to retrieve tags: ${e.message}`
+        `[${this.apiName}] Failed to retrieve tags: ${errorMessage}`
       );
     }
   };
@@ -194,7 +199,8 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
 
       return response.data;
     } catch (e) {
-      throw new Error(`[${this.apiName}] Failed to create tag: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new Error(`[${this.apiName}] Failed to create tag: ${errorMessage}`);
     }
   };
 
@@ -208,7 +214,8 @@ class ServarrBase<QueueItemAppendT> extends ExternalAPI {
         ...options,
       });
     } catch (e) {
-      throw new Error(`[${this.apiName}] Failed to run command: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new Error(`[${this.apiName}] Failed to run command: ${errorMessage}`);
     }
   }
 }

@@ -16,17 +16,25 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.3.4** represents a stability release that ensures **TMDB API integration** works correctly across all installation methods, with enhanced compatibility and improved build processes.
+**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.3.5** represents a major stability and feature release with comprehensive improvements to content discovery, API handling, and user experience.
 
-### 🆕 **What's New in v1.3.4: Enhanced Stability Release**
+### 🚀 **What's New in v1.3.5: Major Feature & Stability Release**
 
-- **🚀 Major Version Release**: Comprehensive stability improvements and feature enhancements
-- **🎯 Enhanced TMDB Curated Discovery**: Improved quality filtering algorithms and user experience
-- **🔧 Migration Script Improvements**: Robust migration handling with comprehensive backup and rollback
-- **🐳 Optimized Docker Images**: Reduced image size (685MB vs 798MB) with improved build process
-- **📊 Enhanced User Rating Preferences**: Advanced rating and sorting controls for personalized discovery
-- **🛠️ Technical Improvements**: Updated dependencies and enhanced performance optimizations
-- **🚀 Docker Hub**: Updated images larrikinau/overseerr-content-filtering:1.3.4 and :latest
+- **🎯 Enhanced Content Filtering System**: Complete overhaul with advanced genre, rating, and keyword filters
+- **🌟 TMDB Curated Discovery**: Advanced movie and TV show discovery with curated content recommendations
+- **🔧 API Improvements**: Enhanced Sonarr/Radarr integration with better error handling and retry logic
+- **🐛 Critical Bug Fixes**: Fixed TMDB API key handling and database migration issues
+- **🏗️ Technical Improvements**: Enhanced error handling, performance optimizations, and code quality
+- **📚 Documentation**: Updated installation guides and comprehensive setup instructions
+- **🚀 Docker Hub**: Updated images markvos/overseerr-content-filtering:1.3.5 and :latest
+
+**📋 Major Changes in v1.3.5:**
+
+- **✨ Advanced Discover Interface**: Redesigned discovery page with enhanced filtering capabilities
+- **🎮 Content Rating Preferences**: User-configurable rating system preferences (TMDB, IMDB, RT)
+- **🔄 Database Schema Updates**: Added content filtering columns and rating preference storage
+- **🛡️ Better TMDB API Management**: Robust API key validation and error handling
+- **⚡ Performance Optimizations**: Improved query performance and caching strategies
 
 ### 📋 **TMDB Curated Discovery**
 
@@ -217,12 +225,12 @@ curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/in
 #### Pre-built Package Download
 
 ```bash
-# Download the latest pre-built package (v1.3.4)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.3.4/overseerr-content-filtering-v1.3.4-ubuntu.tar.gz
+# Download the latest pre-built package (v1.3.5)
+wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.3.5/overseerr-content-filtering-v1.3.5-ubuntu.tar.gz
 
 # Extract and install
-tar -xzf overseerr-content-filtering-v1.3.4-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.3.4-ubuntu
+tar -xzf overseerr-content-filtering-v1.3.5-ubuntu.tar.gz
+cd overseerr-content-filtering-v1.3.5-ubuntu
 sudo ./install.sh
 ```
 

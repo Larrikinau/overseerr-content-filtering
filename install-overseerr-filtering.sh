@@ -20,8 +20,8 @@ CONFIG_DIR="/etc/overseerr-content-filtering"
 LOG_DIR="/var/log/overseerr-content-filtering"
 DATA_DIR="/var/lib/overseerr-content-filtering"
 BACKUP_DIR="/var/backups/overseerr-content-filtering"
-RELEASE_URL="https://github.com/larrikinau/overseerr-content-filtering/releases/download/v1.3.4"
-TARBALL_NAME="overseerr-content-filtering-v1.3.4-ubuntu.tar.gz"
+RELEASE_URL="https://github.com/larrikinau/overseerr-content-filtering/releases/download/v1.3.5"
+TARBALL_NAME="overseerr-content-filtering-v1.3.5-ubuntu.tar.gz"
 
 # Default configuration
 DEFAULT_PORT=5055

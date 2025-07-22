@@ -5,7 +5,55 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.6] - 2025-07-14 (LATEST RELEASE)
+## [1.3.5] - 2025-01-22 (LATEST RELEASE)
+
+### 🚀 Major Features
+- **Enhanced Content Filtering System**: Complete overhaul of content filtering with advanced genre, rating, and keyword filters
+- **TMDB Curated Discovery**: Advanced movie and TV show discovery with curated content recommendations
+- **Rating Integration**: Support for multiple rating sources (TMDB, IMDB, Rotten Tomatoes) with preference controls
+
+### ✨ New Features
+- **Advanced Discover Interface**: Redesigned discovery page with enhanced filtering and sorting capabilities
+- **Content Rating Preferences**: User-configurable rating system preferences (TMDB, IMDB, RT)
+- **Improved Content Filters**: Genre-based filtering, keyword filtering, and rating-based content control
+- **Enhanced User Experience**: Streamlined interface with better content organization and discovery
+- **Database Schema Improvements**: Added content filtering columns and rating preference storage
+
+### 🔧 API Improvements
+- **Enhanced Sonarr/Radarr Integration**: Improved error handling and retry logic for external services
+- **Better TMDB API Management**: Robust API key validation and error handling
+- **Rate Limiting**: Improved API rate limiting and caching mechanisms
+- **Tag Merging**: Fixed series tag merging instead of overwriting existing tags
+
+### 🐛 Bug Fixes
+- **TMDB API Key Handling**: Fixed critical API key validation and management issues
+- **Database Migration Safety**: Enhanced migration process with proper error handling
+- **Content Filtering Logic**: Fixed filtering algorithms for more accurate results
+- **External API Timeouts**: Better handling of external service timeouts and errors
+
+### 🏗️ Technical Improvements
+- **Database Migrations**: Added comprehensive migrations for content filtering features
+- **Error Handling**: Enhanced error logging and debugging capabilities
+- **Performance Optimizations**: Improved query performance and caching strategies
+- **Code Quality**: Refactored components for better maintainability and testing
+
+### 📚 Documentation
+- **Updated Installation Guide**: Comprehensive setup instructions for all deployment methods
+- **Docker Deployment Guide**: Enhanced Docker setup and configuration documentation
+- **Content Filtering Documentation**: Complete guide for using the new filtering features
+- **Migration Guide**: Step-by-step upgrade instructions from previous versions
+
+### 🔄 Breaking Changes
+- **Database Schema**: New migrations required - automatic on startup
+- **Configuration**: Some configuration options may need to be reconfigured
+- **API Changes**: Some internal API endpoints have been updated
+
+### 🚧 Known Issues
+- None reported at release time
+
+---
+
+## [1.1.6] - 2025-07-14
 
 ### Fixed
 

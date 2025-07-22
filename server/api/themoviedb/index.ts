@@ -150,65 +150,65 @@ class TheMovieDb extends ExternalAPI {
   private getMovieCertification(): { [key: string]: string } {
     if (!this.maxMovieRating) return {}; // No restrictions
     
-    // Blocking logic based on dropdown descriptions:
-    // "Adult" = Block only Adult/XXX content (allow R and below)
-    // "R" = Block R and above (allow G, PG, PG-13)
-    // etc.
-    const ratingMap: { [key: string]: string } = {
-      'G': 'G', // Allow only G
-      'PG': 'G', // Block PG and above, allow only G
-      'PG-13': 'PG', // Block PG-13 and above, allow G and PG
-      'R': 'PG-13', // Block R and above, allow G, PG, PG-13
-      'Adult': 'R', // Block Adult/XXX content, allow R and below
-    };
+    // Correct logic: maxMovieRating is the MAXIMUM allowed rating
+    // "G" = Allow only G-rated content
+    // "PG" = Allow G and PG-rated content (block PG-13 and above)
+    // "PG-13" = Allow G, PG, and PG-13 content (block R and above)
+    // "R" = Allow G, PG, PG-13, and R content (block Adult/XXX)
+    // "Adult" = Allow all content including Adult/XXX
     
-    const allowedRating = ratingMap[this.maxMovieRating];
     if (this.maxMovieRating === 'G') {
-      // Special case: only allow G-rated content
       return {
         'certification_country': 'US',
         'certification': 'G'
       };
     }
     
-    if (!allowedRating) return {};
-    
     return {
       'certification_country': 'US',
-      'certification.lte': allowedRating
+      'certification.lte': this.maxMovieRating
     };
   }
   
   private getTvCertification(): { [key: string]: string } {
     if (!this.maxTvRating) return {}; // No restrictions
     
-    const ratingMap: { [key: string]: string } = {
-      'G': 'G',
-      'PG': 'G',
-      'PG-13': 'PG',
-      'R': 'PG-13',
-      'Adult': 'R',
+    // TMDB TV Discover API uses "certification" parameter differently than movies
+    // It accepts exact certification values, not "certification.lte"
+    // Also, TMDB uses "certification_country" to specify the country
+    
+    // Map movie-style ratings to TV ratings for consistency in the UI
+    // These are the exact TV rating values used by TMDB for US content
+    const tvRatingMapping: { [key: string]: string[] } = {
+      'G': ['TV-Y', 'TV-Y7', 'TV-G'],
+      'PG': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 
+      'PG-13': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
+      'R': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
+      'Adult': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
     };
-    const allowedRating = ratingMap[this.maxTvRating];
-    if (this.maxTvRating === 'G') {
+    
+    const allowedRatings = tvRatingMapping[this.maxTvRating];
+    if (allowedRatings) {
+      // For TMDB Discover TV API, we need to specify the country and allowed certifications
+      // Use pipe-separated values for multiple allowed certifications
       return {
         'certification_country': 'US',
-        'certification': 'G'
+        'certification': allowedRatings.join('|')
       };
     }
-    if (!allowedRating) return {};
+    
+    // Fallback for direct TV rating values
     return {
       'certification_country': 'US',
-      'certification.lte': allowedRating
+      'certification': this.maxTvRating
     };
   }
   
   private getCuratedFilteringParams(): { [key: string]: string | undefined } {
-    if (this.tmdbSortingMode !== 'curated') return {};
-    
     const params: { [key: string]: string | undefined } = {};
     
-    // Apply admin-configured minimum vote count (default 3000)
+    // Always apply curated filtering when values are set (not just in 'curated' mode)
+    // This ensures consistent quality filtering across all discovery and recommendation methods
     if (this.curatedMinVotes) {
       params['vote_count.gte'] = this.curatedMinVotes.toString();
     }
@@ -256,6 +256,36 @@ class TheMovieDb extends ExternalAPI {
     }
     
     return filteredMovies;
+  }
+
+  private async filterUnratedTv(tvShows: any[]): Promise<any[]> {
+    if (!this.maxTvRating) return tvShows;
+    
+    const filteredTvShows = [];
+    
+    for (const tvShow of tvShows) {
+      try {
+        // Get detailed TV show info to check for content ratings
+        const details = await this.getTvShow({ tvId: tvShow.id });
+        
+        // Check if TV show has US content rating
+        const usContentRating = details.content_ratings?.results?.find(
+          (rating: any) => rating.iso_3166_1 === 'US'
+        );
+        
+        if (usContentRating && usContentRating.rating && usContentRating.rating.trim() !== '') {
+          // TV show has rating data - include it (TMDB filter already handled appropriateness)
+          filteredTvShows.push(tvShow);
+        }
+        // If no rating data - exclude it when strict filtering is enabled
+        
+      } catch (error) {
+        // If we can't get TV show details, exclude it to be safe when filtering is enabled
+        continue;
+      }
+    }
+    
+    return filteredTvShows;
   }
 
   public searchMulti = async ({
@@ -352,7 +382,8 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch person details: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new Error(`[TMDB] Failed to fetch person details: ${errorMessage}`);
     }
   };
 
@@ -373,8 +404,9 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `[TMDB] Failed to fetch person combined credits: ${e.message}`
+        `[TMDB] Failed to fetch person combined credits: ${errorMessage}`
       );
     }
   };
@@ -402,7 +434,8 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch movie details: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new Error(`[TMDB] Failed to fetch movie details: ${errorMessage}`);
     }
   };
 
@@ -429,7 +462,8 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch TV show details: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new Error(`[TMDB] Failed to fetch TV show details: ${errorMessage}`);
     }
   };
 
@@ -592,6 +626,11 @@ class TheMovieDb extends ExternalAPI {
         }
       );
 
+      // Apply unrated TV filtering when rating restrictions are enabled
+      if (this.maxTvRating) {
+        data.results = await this.filterUnratedTv(data.results);
+      }
+
       return data;
     } catch (e) {
       return {
@@ -624,6 +663,11 @@ class TheMovieDb extends ExternalAPI {
       const data = await this.get<TmdbSearchTvResponse>(`/tv/${tvId}/similar`, {
         params,
       });
+
+      // Apply unrated TV filtering when rating restrictions are enabled
+      if (this.maxTvRating) {
+        data.results = await this.filterUnratedTv(data.results);
+      }
 
       return data;
     } catch (e) {
@@ -714,7 +758,12 @@ class TheMovieDb extends ExternalAPI {
 
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch discover movies: ${e.message}`);
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
   };
 
@@ -724,7 +773,6 @@ class TheMovieDb extends ExternalAPI {
     language = 'en',
     firstAirDateGte,
     firstAirDateLte,
-    includeEmptyReleaseDate = false,
     originalLanguage,
     genre,
     network,
@@ -755,9 +803,17 @@ class TheMovieDb extends ExternalAPI {
         params: {
           sort_by: sortBy,
           page,
+          include_adult: this.shouldIncludeAdult(),
+          ...this.getTvCertification(),
           language,
           region: this.region,
-          // Set our release date values, but check if one is set and not the other,
+          with_original_language:
+            originalLanguage && originalLanguage !== 'all'
+              ? originalLanguage
+              : originalLanguage === 'all'
+              ? undefined
+              : this.originalLanguage,
+          // Set our first air date values, but check if one is set and not the other,
           // so we can force a past date or a future date. TMDB Requires both values if one is set!
           'first_air_date.gte':
             !firstAirDateGte && firstAirDateLte
@@ -767,13 +823,6 @@ class TheMovieDb extends ExternalAPI {
             !firstAirDateLte && firstAirDateGte
               ? defaultFutureDate
               : firstAirDateLte,
-          with_original_language:
-            originalLanguage && originalLanguage !== 'all'
-              ? originalLanguage
-              : originalLanguage === 'all'
-              ? undefined
-              : this.originalLanguage,
-          include_null_first_air_dates: includeEmptyReleaseDate,
           with_genres: genre,
           with_networks: network,
           with_keywords: keywords,
@@ -783,14 +832,24 @@ class TheMovieDb extends ExternalAPI {
           'vote_average.lte': voteAverageLte,
           'vote_count.gte': voteCountGte || curatedFilters['vote_count.gte'],
           'vote_count.lte': voteCountLte,
-          with_watch_providers: watchProviders,
           watch_region: watchRegion,
+          with_watch_providers: watchProviders,
         },
       });
 
+      // Post-process to filter out unrated TV shows when rating restrictions are enabled
+      if (this.maxTvRating) {
+        data.results = await this.filterUnratedTv(data.results);
+      }
+
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch discover TV: ${e.message}`);
+      return {
+        page: 1,
+        results: [],
+        total_pages: 0,
+        total_results: 0,
+      };
     }
   };
 
@@ -798,9 +857,9 @@ class TheMovieDb extends ExternalAPI {
     page = 1,
     language = 'en',
   }: {
-    page: number;
-    language: string;
-  }): Promise<TmdbUpcomingMoviesResponse> => {
+    page?: number;
+    language?: string;
+  } = {}): Promise<TmdbUpcomingMoviesResponse> => {
     try {
       const data = await this.get<TmdbUpcomingMoviesResponse>(
         '/movie/upcoming',
@@ -830,14 +889,20 @@ class TheMovieDb extends ExternalAPI {
     language?: string;
   } = {}): Promise<TmdbSearchMultiResponse> => {
     try {
+      // Ensure trending calls respect filtering preferences
+      const params = {
+        page,
+        language,
+        region: this.region,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getMovieCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchMultiResponse>(
         `/trending/all/${timeWindow}`,
         {
-          params: {
-            page,
-            language,
-            region: this.region,
-          },
+          params,
         }
       );
 
@@ -850,46 +915,74 @@ class TheMovieDb extends ExternalAPI {
   public getMovieTrending = async ({
     page = 1,
     timeWindow = 'day',
+    language = 'en',
   }: {
     page?: number;
     timeWindow?: 'day' | 'week';
+    language?: string;
   } = {}): Promise<TmdbSearchMovieResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        region: this.region,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getMovieCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchMovieResponse>(
         `/trending/movie/${timeWindow}`,
         {
-          params: {
-            page,
-          },
+          params,
         }
       );
 
+      // Apply unrated movie filtering when rating restrictions are enabled
+      if (this.maxMovieRating) {
+        data.results = await this.filterUnratedMovies(data.results);
+      }
+
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch all trending: ${e.message}`);
+      throw new Error(`[TMDB] Failed to fetch movie trending: ${e.message}`);
     }
   };
 
   public getTvTrending = async ({
     page = 1,
     timeWindow = 'day',
+    language = 'en',
   }: {
     page?: number;
     timeWindow?: 'day' | 'week';
+    language?: string;
   } = {}): Promise<TmdbSearchTvResponse> => {
     try {
+      const params = {
+        page,
+        language,
+        region: this.region,
+        include_adult: this.shouldIncludeAdult(),
+        ...this.getTvCertification(),
+        ...this.getCuratedFilteringParams(),
+      };
+
       const data = await this.get<TmdbSearchTvResponse>(
         `/trending/tv/${timeWindow}`,
         {
-          params: {
-            page,
-          },
+          params,
         }
       );
 
+      // Apply unrated TV filtering when rating restrictions are enabled
+      if (this.maxTvRating) {
+        data.results = await this.filterUnratedTv(data.results);
+      }
+
       return data;
     } catch (e) {
-      throw new Error(`[TMDB] Failed to fetch all trending: ${e.message}`);
+      throw new Error(`[TMDB] Failed to fetch TV trending: ${e.message}`);
     }
   };
 

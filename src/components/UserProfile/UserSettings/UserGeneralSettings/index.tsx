@@ -57,10 +57,17 @@ const messages = defineMessages({
     'Automatically request series on your <PlexWatchlistSupportLink>Plex Watchlist</PlexWatchlistSupportLink>',
 
   maxMovieRating: 'Maximum Movie Rating',
-  maxMovieRatingTip: 'Block content at the selected rating level and above',
+  maxMovieRatingTip: 'Allow content at the selected rating level and below',
   maxTvRating: 'Maximum TV Rating', 
-  maxTvRatingTip: 'Block TV content at the selected rating level and above',
+  maxTvRatingTip: 'Allow TV content at the selected rating level and below',
   ratingFilteringTitle: 'Content Rating Filtering',
+  
+  curatedFilteringTitle: 'Content Quality Filtering',
+  curatedFilteringTip: 'Control minimum quality thresholds for content discovery',
+  curatedMinVotes: 'Minimum Vote Count',
+  curatedMinVotesTip: 'Only show content with at least this many votes on TMDB',
+  curatedMinRating: 'Minimum Rating',
+  curatedMinRatingTip: 'Only show content with at least this rating on TMDB',
 });
 
 const UserGeneralSettings = () => {
@@ -138,6 +145,8 @@ const UserGeneralSettings = () => {
           watchlistSyncTv: data?.watchlistSyncTv,
           maxMovieRating: data?.maxMovieRating ?? 'Adult',
           maxTvRating: data?.maxTvRating ?? '',
+          curatedMinVotes: data?.curatedMinVotes ?? 3000,
+          curatedMinRating: data?.curatedMinRating ?? 6.0,
         }}
         validationSchema={UserGeneralSettingsSchema}
         enableReinitialize
@@ -159,6 +168,8 @@ const UserGeneralSettings = () => {
               watchlistSyncTv: values.watchlistSyncTv,
               maxMovieRating: values.maxMovieRating,
               maxTvRating: values.maxTvRating,
+              curatedMinVotes: values.curatedMinVotes,
+              curatedMinRating: values.curatedMinRating,
             });
 
             if (currentUser?.id === user?.id && setLocale) {
@@ -316,7 +327,7 @@ const UserGeneralSettings = () => {
                   {intl.formatMessage(messages.ratingFilteringTitle)}
                 </h3>
                 <p className="text-sm text-gray-400 mb-4">
-                  Block content at the selected rating level and above
+                  Allow content at the selected rating level and below
                 </p>
               </div>
 
@@ -332,9 +343,9 @@ const UserGeneralSettings = () => {
                     <Field as="select" id="maxMovieRating" name="maxMovieRating">
                       <option value="">No restrictions - Allow all content</option>
                       <option value="G">G - Allow only G (block PG and above)</option>
-                      <option value="PG">PG - Block PG and above (allow G only)</option>
-                      <option value="PG-13">PG-13 - Block PG-13 and above (allow G, PG)</option>
-                      <option value="R">R - Block R and above (allow G, PG, PG-13)</option>
+                      <option value="PG">PG - Allow G and PG (block PG-13 and above)</option>
+                      <option value="PG-13">PG-13 - Allow G, PG, and PG-13 (block R and above)</option>
+                      <option value="R">R - Allow G, PG, PG-13, and R (block Adult/XXX)</option>
                       <option value="Adult">Adult - Block only Adult/XXX content (allow R and below)</option>
                     </Field>
                   </div>
@@ -353,12 +364,61 @@ const UserGeneralSettings = () => {
                     <Field as="select" id="maxTvRating" name="maxTvRating">
                       <option value="">No restriction - Allow all TV content</option>
                       <option value="TV-Y">TV-Y - Allow only TV-Y (block TV-Y7 and above)</option>
-                      <option value="TV-Y7">TV-Y7 - Block TV-Y7 and above</option>
-                      <option value="TV-G">TV-G - Block TV-G and above</option>
-                      <option value="TV-PG">TV-PG - Block TV-PG and above</option>
-                      <option value="TV-14">TV-14 - Block TV-14 and above</option>
-                      <option value="TV-MA">TV-MA - Block only TV-MA (allow all others)</option>
+                      <option value="TV-Y7">TV-Y7 - Allow TV-Y and TV-Y7 (block TV-G and above)</option>
+                      <option value="TV-G">TV-G - Allow TV-Y, TV-Y7, and TV-G (block TV-PG and above)</option>
+                      <option value="TV-PG">TV-PG - Allow through TV-PG (block TV-14 and above)</option>
+                      <option value="TV-14">TV-14 - Allow through TV-14 (block TV-MA)</option>
+                      <option value="TV-MA">TV-MA - Allow all content (no restrictions)</option>
                     </Field>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h3 className="mb-2 text-xl font-bold text-white">
+                  {intl.formatMessage(messages.curatedFilteringTitle)}
+                </h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  {intl.formatMessage(messages.curatedFilteringTip)}
+                </p>
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="curatedMinVotes" className="text-label">
+                  {intl.formatMessage(messages.curatedMinVotes)}
+                  <span className="label-tip">
+                    {intl.formatMessage(messages.curatedMinVotesTip)}
+                  </span>
+                </label>
+                <div className="form-input-area">
+                  <div className="form-input-field">
+                    <Field
+                      id="curatedMinVotes"
+                      name="curatedMinVotes"
+                      type="text"
+                      placeholder="e.g., 3000"
+                      className="block w-full min-w-0 flex-1 rounded-md border border-gray-500 bg-gray-700 text-white transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="curatedMinRating" className="text-label">
+                  {intl.formatMessage(messages.curatedMinRating)}
+                  <span className="label-tip">
+                    {intl.formatMessage(messages.curatedMinRatingTip)}
+                  </span>
+                </label>
+                <div className="form-input-area">
+                  <div className="form-input-field">
+                    <Field
+                      id="curatedMinRating"
+                      name="curatedMinRating"
+                      type="text"
+                      placeholder="e.g., 6.5"
+                      className="block w-full min-w-0 flex-1 rounded-md border border-gray-500 bg-gray-700 text-white transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                    />
                   </div>
                 </div>
               </div>
