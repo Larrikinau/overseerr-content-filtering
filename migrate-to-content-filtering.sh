@@ -435,7 +435,7 @@ EOF
 
         # Extract TMDB API key from backup
         EXTRACTED_TMDB_KEY=$(grep "^TMDB_API_KEY=" /tmp/overseerr_env_backup | head -1 | cut -d'=' -f2-)
-        if [ -n "$EXTRACTED_TMDB_KEY" ] && [ "$EXTRACTED_TMDB_KEY" != "null" ] && [ "$EXTRACTED_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+        if [ -n "$EXTRACTED_TMDB_KEY" ] && [ "$EXTRACTED_TMDB_KEY" != "null" ] && [ "$EXTRACTED_TMDB_KEY" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
             echo "TMDB_API_KEY=$EXTRACTED_TMDB_KEY" >> env.list
             TMDB_KEY_FOUND=true
             log_success "Found valid TMDB API key in backup: ${EXTRACTED_TMDB_KEY:0:8}..."
@@ -462,7 +462,7 @@ EOF
                 # Try to extract TMDB API key from bind mount settings.json
                 if [ "$TMDB_KEY_FOUND" = "false" ] && [ -f "$DOCKER_CONFIG_PATH/settings.json" ] && command -v jq > /dev/null 2>&1; then
                     TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "$DOCKER_CONFIG_PATH/settings.json" 2>/dev/null)
-                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                    if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
                         log_success "Found TMDB API key in bind mount settings: ${TMDB_API_KEY:0:8}..."
                         echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
                         TMDB_KEY_FOUND=true
@@ -502,7 +502,7 @@ EOF
                     if [ "$TMDB_KEY_FOUND" = "false" ]; then
                         if grep -q "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" 2>/dev/null; then
                             ENV_TMDB_KEY=$(grep "^TMDB_API_KEY=" "$DOCKER_CONFIG_PATH/.env" | head -1 | cut -d'=' -f2-)
-                            if [ -n "$ENV_TMDB_KEY" ] && [ "$ENV_TMDB_KEY" != "null" ] && [ "$ENV_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                            if [ -n "$ENV_TMDB_KEY" ] && [ "$ENV_TMDB_KEY" != "null" ] && [ "$ENV_TMDB_KEY" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
                                 echo "TMDB_API_KEY=$ENV_TMDB_KEY" >> env.list
                                 TMDB_KEY_FOUND=true
                                 log_success "Found TMDB API key in .env file: ${ENV_TMDB_KEY:0:8}..."
@@ -519,7 +519,7 @@ EOF
                     # Extract TMDB API key
                     if [ "$TMDB_KEY_FOUND" = "false" ]; then
                         CONTAINER_TMDB_KEY=$(docker inspect "$CONTAINER_NAME" --format='{{range .Config.Env}}{{println .}}{{end}}' | grep "^TMDB_API_KEY=" | head -1 | cut -d'=' -f2- 2>/dev/null)
-                        if [ -n "$CONTAINER_TMDB_KEY" ] && [ "$CONTAINER_TMDB_KEY" != "null" ] && [ "$CONTAINER_TMDB_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                        if [ -n "$CONTAINER_TMDB_KEY" ] && [ "$CONTAINER_TMDB_KEY" != "null" ] && [ "$CONTAINER_TMDB_KEY" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
                             echo "TMDB_API_KEY=$CONTAINER_TMDB_KEY" >> env.list
                             TMDB_KEY_FOUND=true
                             log_success "Found TMDB API key in container environment: ${CONTAINER_TMDB_KEY:0:8}..."
@@ -543,7 +543,7 @@ EOF
                 if [ "$TMDB_KEY_FOUND" = "false" ]; then
                     if [ -f "/var/snap/overseerr/common/settings.json" ] && command -v jq > /dev/null 2>&1; then
                         TMDB_API_KEY=$(jq -r '.main.tmdbApiKey // null' "/var/snap/overseerr/common/settings.json" 2>/dev/null)
-                        if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "YOUR_TMDB_API_KEY_HERE" ]; then
+                        if [ "$TMDB_API_KEY" != "null" ] && [ "$TMDB_API_KEY" != "" ] && [ "$TMDB_API_KEY" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
                             log "Found TMDB API key in snap settings"
                             echo "TMDB_API_KEY=$TMDB_API_KEY" >> env.list
                             TMDB_KEY_FOUND=true
@@ -585,7 +585,7 @@ EOF
     
     # Final check: add default TMDB API key if none found
     if [ "$TMDB_KEY_FOUND" = "false" ]; then
-        echo "TMDB_API_KEY=db55323b8d3e4154498498a75642b381" >> env.list
+        echo "TMDB_API_KEY=8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" >> env.list
         log_success "Default TMDB API key added (from Overseerr)"
     elif [ "$TMDB_KEY_FOUND" = "true" ]; then
         log_success "TMDB API key successfully migrated from existing installation"
@@ -630,7 +630,7 @@ EOF
             echo "      - TMDB_API_KEY=$EXTRACTED_TMDB_KEY" >> docker-compose.yml
             log_success "TMDB API key added to docker-compose.yml: ${EXTRACTED_TMDB_KEY:0:8}..."
         else
-            echo "      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381" >> docker-compose.yml
+            echo "      - TMDB_API_KEY=8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" >> docker-compose.yml
             log_success "Default TMDB API key added to docker-compose.yml (from Overseerr)"
         fi
         
@@ -765,7 +765,7 @@ verify_installation() {
     
     # Verify TMDB API key configuration
     log "Verifying TMDB API key configuration..."
-    if docker logs overseerr-content-filtering 2>&1 | grep -q "YOUR_TMDB_API_KEY_HERE"; then
+    if docker logs overseerr-content-filtering 2>&1 | grep -q "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c"; then
         log_warning "TMDB API key may not be configured correctly. You may need to set it in the settings."
     else
         log_success "TMDB API key appears to be configured"

@@ -25,7 +25,7 @@ docker pull larrikinau/overseerr-content-filtering:latest
 docker run -d \
   --name overseerr-content-filtering \
   -p 5055:5055 \
-  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
+  -e TMDB_API_KEY=8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
   larrikinau/overseerr-content-filtering:latest
@@ -43,7 +43,7 @@ services:
     image: larrikinau/overseerr-content-filtering:latest
     container_name: overseerr-content-filtering
     environment:
-      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381  # Required for movie/TV data
+      - TMDB_API_KEY=8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c  # Required for movie/TV data
       - TZ=Asia/Tokyo # optional
     ports:
       - '5055:5055'

@@ -230,7 +230,7 @@ check_configuration() {
         
         # Check TMDB API key in settings
         TMDB_KEY_IN_SETTINGS=$(docker exec ${CONTAINER_NAME} cat /app/config/settings.json 2>/dev/null | jq -r '.main.tmdbApiKey // "not found"' 2>/dev/null || echo "not found")
-        if [ "$TMDB_KEY_IN_SETTINGS" != "not found" ] && [ "$TMDB_KEY_IN_SETTINGS" != "null" ] && [ "$TMDB_KEY_IN_SETTINGS" != "YOUR_TMDB_API_KEY_HERE" ]; then
+        if [ "$TMDB_KEY_IN_SETTINGS" != "not found" ] && [ "$TMDB_KEY_IN_SETTINGS" != "null" ] && [ "$TMDB_KEY_IN_SETTINGS" != "8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c" ]; then
             log_success "TMDB API key is configured in settings.json"
         else
             log_warning "TMDB API key not properly configured in settings.json"

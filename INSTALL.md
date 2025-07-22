@@ -81,7 +81,7 @@ If you prefer to install manually, follow these steps:
    RestartSec=10
    Environment=NODE_ENV=production
    Environment=PORT=5055
-   Environment=TMDB_API_KEY=db55323b8d3e4154498498a75642b381
+   Environment=TMDB_API_KEY=8d7fa4b62f7a2b0e6d5f8c9a1e3b4d7c
 
    [Install]
    WantedBy=multi-user.target
