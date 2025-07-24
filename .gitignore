@@ -72,3 +72,7 @@ config/cache
 releases/*.tar.gz
 releases/*.tar.gz.sha256
 overseerr-content-filtering-*.tar.gz*
+
+# Local lock files (excluded from Synology sync)
+*.local
+.synologyignore
