@@ -34,7 +34,7 @@
 
 **v1.4.0 moves away from hardcoded API keys to flexible configuration:**
 
-- **Environment Variable Support**: Set `TMDB_API_KEY`, `OVERSEERR_API_KEY`, etc. via Docker environment variables
+- **Environment Variable Support**: Set `TMDB_API_KEY` and other external service API keys via Docker environment variables
 - **Private API Key Support**: Use your own private TMDB, Rotten Tomatoes, or other API keys if desired
 - **Fallback to Existing Keys**: If no environment variables are set, uses the same API keys that come with standard Overseerr
 - **Existing Configuration Preserved**: Your current API keys (if configured) are automatically retained during upgrade
@@ -64,7 +64,7 @@
 ```yaml
 environment:
   - TMDB_API_KEY=your_private_tmdb_key_here
-  - OVERSEERR_API_KEY=your_private_overseerr_key_here
+  # Note: Overseerr's internal API key is auto-generated, not configurable
 ```
 
 **⚠️ Remember: This is completely optional!** The application works great with the included API keys - private keys just give you better performance and reliability.
