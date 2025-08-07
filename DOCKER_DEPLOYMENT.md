@@ -2,16 +2,15 @@
 
 ## Overseerr Content Filtering Docker Setup
 
-This guide covers Docker deployment options for Overseerr Content Filtering, including both pre-built images and local building.
+This guide covers advanced Docker deployment options for Overseerr Content Filtering v1.4.0, including security, networking, and troubleshooting.
 
-## 🎉 Now Available on Docker Hub!
+## 🎉 Official Docker Hub Release
 
-**✅ Official Docker Hub Registration Complete**
+**✅ Production-Ready Docker Images Available**
 
 - **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
-- **No workarounds needed** - Pull directly from Docker Hub
-- **Latest version**: `larrikinau/overseerr-content-filtering:latest` (v1.3.1)
-- **Versioned tags**: `larrikinau/overseerr-content-filtering:1.3.1` (enhanced content filtering)
+- **Current Version**: `larrikinau/overseerr-content-filtering:latest` (v1.4.0)
+- **Multi-Platform Support**: AMD64, ARM64, ARMv7
 
 ## 🐳 Quick Start with Pre-built Images
 
@@ -381,11 +380,9 @@ sudo docker exec overseerr-content-filtering ps aux
 
 ### Available Tags
 
-- `latest` - Latest stable release (v1.3.1)
-- `1.3.1` - Enhanced content filtering release
-- `1.2.2` - Previous version with migration fixes
-- `1.2.1` - Previous version
-- `1.2.0` - Previous version
+- `latest` - Latest stable release (v1.4.0)
+- `1.4.0` - Enhanced content filtering with admin controls
+- `1.3.5` - Previous stable version
 - `develop` - Development branch (unstable)
 
 ### Docker Versioning Strategy
@@ -405,7 +402,7 @@ sudo docker exec overseerr-content-filtering ps aux
 
 **Recommended Usage**:
 
-- **Production**: Use specific version tags (e.g., `1.3.1`) for reproducible deployments
+- **Production**: Use specific version tags (e.g., `1.4.0`) for reproducible deployments
 - **Development/Testing**: Use `latest` for the most current stable features
 - **Bleeding Edge**: Use `develop` for unreleased features (not recommended for production)
 
