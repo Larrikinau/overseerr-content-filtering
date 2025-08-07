@@ -31,7 +31,7 @@ These commands will:
 - **Notifications**: All notification agent configurations
 
 ### 🆕 **New Features Added**
-- **Global adult content blocking**: Immediate family safety
+- **Smart content blocking**: Adult content blocked by default, with admin-configurable per-user overrides
 - **Admin-only rating controls**: Centralized content management
 - **TMDB Curated Discovery**: Quality-filtered content discovery
 - **Enhanced safety controls**: Multi-layer content filtering
