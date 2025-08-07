@@ -1,83 +1,104 @@
-# Overseerr Content Filtering with TMDB Curated Discovery
+# Overseerr Content Filtering
 
 <p align="center">
 <img src="./public/logo_full.svg" alt="Overseerr Content Filtering" style="margin: 20px 0;">
 </p>
 
 <p align="center">
-<strong>🔒 Enhanced Content Management</strong>
+<strong>🔒 Enhanced Content Management with Admin-Controlled Rating Filters</strong>
 </p>
 
 <p align="center">
-<a href="#installation"><img src="https://img.shields.io/badge/Install-Quick%20Setup-brightgreen" alt="Quick Install"></a>&nbsp;
+<a href="#installation"><img src="https://img.shields.io/badge/Install-Docker%20Ready-brightgreen" alt="Docker Install"></a>&nbsp;
 <a href="#features"><img src="https://img.shields.io/badge/Feature-Content%20Filtering-orange" alt="Content Filtering"></a>&nbsp;
 <a href="LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/sct/overseerr"></a>
 </p>
 
 ## Overview
 
-**Overseerr Content Filtering** is an enhanced fork of Overseerr that adds intelligent content filtering capabilities with enterprise-grade family safety controls. **Version 1.3.5** represents a major stability and feature release with comprehensive improvements to content discovery, API handling, and user experience.
+**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.4.0** provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
 
-### 🚀 **What's New in v1.3.5: Major Feature & Stability Release**
+### 🚀 **What's New in v1.4.0**
 
-- **🎯 Enhanced Content Filtering System**: Complete overhaul with advanced genre, rating, and keyword filters
-- **🌟 TMDB Curated Discovery**: Advanced movie and TV show discovery with curated content recommendations
-- **🔧 API Improvements**: Enhanced Sonarr/Radarr integration with better error handling and retry logic
-- **🐛 Critical Bug Fixes**: Fixed TMDB API key handling and database migration issues
-- **🏗️ Technical Improvements**: Enhanced error handling, performance optimizations, and code quality
-- **📚 Documentation**: Updated installation guides and comprehensive setup instructions
-- **🚀 Docker Hub**: Updated images larrikinau/overseerr-content-filtering:1.3.5 and :latest
+- **🔒 Admin-Only Content Controls**: Only administrators can set content rating limits for users
+- **🛡️ Global Adult Content Blocking**: Adult content never appears regardless of user settings  
+- **🎬 Content Rating Filtering**: Filter by G, PG, PG-13, R, NC-17 (movies) and TV-Y through TV-MA (TV shows)
+- **👤 Per-User Configuration**: Admins can set different rating limits for each individual user
+- **🔐 User Protection**: Regular users cannot see or change their own rating restrictions
+- **🔑 Flexible API Key Management**: Environment variable support for TMDB and other APIs
+- **🐳 Enhanced Docker Support**: Containerized deployment with automatic migrations
+- **📊 Database Schema Updates**: Added content filtering columns with automatic migration
+- **⚡ Performance Optimized**: Minimal overhead on existing Overseerr functionality
 
-**📋 Major Changes in v1.3.5:**
+### 🔑 **API Key Improvements in v1.4.0**
 
-- **✨ Advanced Discover Interface**: Redesigned discovery page with enhanced filtering capabilities
-- **🎮 Content Rating Preferences**: User-configurable rating system preferences (TMDB, IMDB, RT)
-- **🔄 Database Schema Updates**: Added content filtering columns and rating preference storage
-- **🛡️ Better TMDB API Management**: Robust API key validation and error handling
-- **⚡ Performance Optimizations**: Improved query performance and caching strategies
+**v1.4.0 moves away from hardcoded API keys to flexible configuration:**
 
-### 📋 **TMDB Curated Discovery**
+- **Environment Variable Support**: Set `TMDB_API_KEY`, `OVERSEERR_API_KEY`, etc. via Docker environment variables
+- **Private API Key Support**: Use your own private TMDB, Rotten Tomatoes, or other API keys if desired
+- **Fallback to Existing Keys**: If no environment variables are set, uses the same API keys that come with standard Overseerr
+- **Existing Configuration Preserved**: Your current API keys (if configured) are automatically retained during upgrade
+- **No Configuration Required**: Works out-of-the-box with default API keys, just like standard Overseerr
 
-This major release introduces an entirely new content discovery paradigm:
+### 🎆 **Why Use Private API Keys? (Optional but Recommended)**
 
-- **🎯 Quality-First Discovery**: Admin-configurable minimum vote counts and ratings ensure only high-quality content appears in discovery
-- **🔄 Dual Discovery Modes**: Users can toggle between 'Standard' (all content) and 'Curated' (quality-filtered) discovery experiences
-- **🎬 Enhanced Recommendations**: Movie/TV recommendations and "similar content" suggestions now use intelligent quality filtering
-- **⚙️ Admin Control**: Set global quality thresholds (default: 3000+ votes, 6.0+ rating) with granular user permissions
-- **🚀 Performance Optimized**: Smart API parameter combination minimizes external calls while maximizing content quality
+**✨ This application works perfectly without private API keys**, but using your own provides several benefits:
 
-## 📋 Why This Fork Exists: Comprehensive Content Filtering
+#### **💰 They're Free!**
+- **TMDB API**: Free forever - just sign up at https://www.themoviedb.org/settings/api
+- **Rotten Tomatoes API**: Free tier available - sign up at https://developer.fandango.com/rotten_tomatoes
+- **Takes 2-3 minutes** to get your keys
 
-Overseerr with TMDB Curated Discovery provides a refined content experience:
+#### **🚀 Performance Benefits:**
+- **Higher Rate Limits**: Your own dedicated API quota instead of shared limits
+- **Faster Response Times**: Direct API access without potential throttling
+- **More Reliable Service**: Not dependent on shared API key availability
+- **Better Uptime**: If shared keys have issues, your private keys keep working
 
-### Key Features:
+#### **🔒 Privacy Benefits:**
+- **Your Own Quota**: API calls don't count against shared community limits
+- **Independent Service**: Not affected by other users' API usage patterns
+- **Direct Relationship**: You control your own API terms and usage
 
-- **Standard Discovery Mode**: Shows content with all existing safety and age rating controls active (no quality filtering)
-- **Curated Discovery Mode**: Adds quality-based filtering on top of existing safety controls (vote counts, ratings)
-- Separate TV rating filters for precise content control
-- Search offers results within admin-configured safety boundaries
-- Discovery and recommendations incorporate curated quality filtering when enabled
+#### **🔧 Easy Setup:**
+```yaml
+environment:
+  - TMDB_API_KEY=your_private_tmdb_key_here
+  - OVERSEERR_API_KEY=your_private_overseerr_key_here
+```
 
-Adult content is universally blocked for enhanced safety. Users can toggle between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls) discovery modes.
+**⚠️ Remember: This is completely optional!** The application works great with the included API keys - private keys just give you better performance and reliability.
 
-1. **User Preference Storage**: Individual rating limits stored in user settings
-2. **Multi-Layer Protection**: Combined API-level and application-level filtering
-3. **Automatic Application**: All discovery, search, and browse results filtered
-4. **Performance Optimized**: Minimal overhead on existing functionality
+## 🎯 What This Fork Provides
 
-### How Content Filtering Works
+### **Core Content Filtering Features:**
 
-This fork uses **dual-layer filtering architecture** to ensure reliable content management across all age rating categories.
+✅ **Administrator-Controlled Rating Limits**
+- Only admins can modify content rating settings for any user
+- Per-user configuration with different rating limits for each user
+- Centralized management through standard admin interface
 
-**📖 For detailed technical explanation:** See [TECHNICAL_IMPLEMENTATION.md](TECHNICAL_IMPLEMENTATION.md)
+✅ **Comprehensive Rating System**
+- **Movies**: G, PG, PG-13, R, NC-17 filtering
+- **TV Shows**: TV-Y, TV-Y7, TV-G, TV-PG, TV-14, TV-MA filtering
+- **Default Settings**: New users start with family-safe PG-13/TV-PG limits
 
-**Key Features:**
+✅ **Universal Adult Content Blocking**
+- Adult content blocked across all discovery, search, and browsing
+- Applied globally regardless of individual user settings
+- Hardcoded safety parameters bypass API inconsistencies
 
-- Admin-configurable movie ratings (G, PG, PG-13, R, NC-17)
-- Admin-configurable TV ratings (TV-Y, TV-Y7, TV-G, TV-PG, TV-14, TV-MA)
-- Hardcoded baseline safety parameters for API reliability
-- Database-driven user preferences with family-safe defaults
-- Comprehensive filtering across all discovery and search endpoints
+✅ **Seamless Integration**
+- All original Overseerr features preserved and functional
+- Content filtering applied automatically to all endpoints
+- No impact on existing workflows or user experience
+
+### **Enhanced Discovery Features:**
+
+✅ **Quality-Based Filtering**: Content filtered by vote count and rating thresholds  
+✅ **Curated Discovery Mode**: Enhanced discovery with quality controls  
+✅ **Admin-Configurable Thresholds**: Set minimum votes and ratings for content  
+✅ **Multi-Layer Content Filtering**: Combined rating and quality filtering system
 
 ## ✨ Enhanced Features
 
@@ -108,19 +129,9 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 - **Movie Ratings**: Admin-configurable limits from G through NC-17
 - **TV Ratings**: Admin-configurable limits from TV-Y through TV-MA
-- **Automatic application**: Filtering works across all discovery and search
-- **Family-safe defaults**: New users start with age-appropriate content settings
-- **Professional implementation**: Dual-layer filtering architecture for reliability
-
-### 🎯 **TMDB Curated Discovery**
-
-- **Standard Mode**: Shows content with all existing safety and age rating controls (no quality filtering added)
-- **Curated Mode**: Adds admin-configurable quality thresholds on top of existing safety controls
-- **Discovery vs Search**: Search returns results within safety boundaries; discovery applies additional quality filters in curated mode
-- **Recommendation Enhancement**: Movie/TV recommendations and similar content use curated filtering when enabled
-- **User Control**: Toggle between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls)
-- **Admin Configuration**: Set global quality thresholds that I define (default: 3000+ votes, 6.0+ rating)
-- **Performance Optimized**: Intelligent parameter combination minimizes API calls
+- **Automatic Application**: Filtering works across all discovery and search
+- **Family-Safe Defaults**: New users start with age-appropriate content settings
+- **Reliable Implementation**: Content filtering applied consistently across all endpoints
 
 ### 🚀 **All Original Overseerr Features**
 
@@ -134,21 +145,47 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 ## 🔄 Migrating from Existing Overseerr?
 
+### 📋 **One-Time Migration to v1.4.0**
+
 **Already have Overseerr installed?** Migrate to overseerr-content-filtering with these commands that preserve all your data:
 
 ```bash
-curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
-chmod +x migrate-to-content-filtering.sh
-sudo ./migrate-to-content-filtering.sh
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-overseerr-content-filtering.sh -o migrate-to-overseerr-content-filtering.sh
+chmod +x migrate-to-overseerr-content-filtering.sh
+./migrate-to-overseerr-content-filtering.sh
 ```
 
-**Migration Features:**
+### 🔑 **What This Migration Preserves:**
 
-- ✅ **Migrates FROM**: Docker, Snap, or systemd installations
-- ✅ **Migrates TO**: Docker container (larrikinau/overseerr-content-filtering:latest)
-- ✅ **100% data preservation**: Users, requests, settings, database
-- ✅ **Automatic backup**: Creates timestamped backups before migration
-- ✅ **Seamless transition**: ~2-5 minutes with zero downtime
+- ✅ **Your Complete Docker Setup**: All volumes, networks, ports, restart policies, and custom configurations
+- ✅ **Your Existing API Keys**: If you've configured private TMDB, TVDB, or other API keys, they're kept exactly as-is
+- ✅ **All Your Data**: Users, requests, settings, Plex configuration, notification settings, everything
+- ✅ **Custom Environment Variables**: Any custom environment variables you've added are preserved
+- ✅ **Network Configuration**: Custom networks, port mappings, and Docker Compose configurations maintained
+
+### ⚡ **After v1.4.0: Containerized Updates**
+
+**🎉 This migration script is ONLY needed once for v1.4.0!**
+
+After migrating to v1.4.0, all future updates are **containerized** and only require:
+
+```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+docker-compose up -d  # or your preferred restart method
+```
+
+**Why only once?**
+- v1.4.0 **containerizes** the entire application properly
+- Future releases will be **standard Docker image updates**
+- No more migration scripts needed - just regular `docker pull` updates
+- Your configuration becomes **portable** and **version-controlled**
+
+### 👥 **Who Needs the Migration Script:**
+
+- **✅ Existing Overseerr users** upgrading to v1.4.0 content filtering
+- **✅ Users migrating** from other Overseerr forks to this one
+- **❌ New users** - just use Docker installation directly
+- **❌ Existing v1.4.0+ users** - just use `docker pull` for updates
 
 📖 **[Complete Migration Guide](MIGRATION_GUIDE.md)** - Detailed instructions and troubleshooting
 
@@ -204,35 +241,17 @@ This script will:
 
 **Two Installation Options Available:**
 
-### 🚀 Option 1: Pre-built Installation (Recommended)
+### 🚀 Option 1: Docker Installation (Recommended)
 
-**Best for:** Most users who want quick setup without compilation
+**Best for:** Most users who want quick setup and easy updates
 
 **Advantages:**
 
-- ✅ **Instant deployment** - no compilation time
-- ✅ **Tested binaries** - pre-built and verified
-- ✅ **Minimal dependencies** - no Node.js/build tools required
-- ✅ **Easy updates** - simple container/package updates
-- ✅ **Production ready** - optimized builds
-
-#### Quick Install Script
-
-```bash
-curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/install-overseerr-filtering.sh | bash
-```
-
-#### Pre-built Package Download
-
-```bash
-# Download the latest pre-built package (v1.3.5)
-wget https://github.com/Larrikinau/overseerr-content-filtering/releases/download/v1.3.5/overseerr-content-filtering-v1.3.5-ubuntu.tar.gz
-
-# Extract and install
-tar -xzf overseerr-content-filtering-v1.3.5-ubuntu.tar.gz
-cd overseerr-content-filtering-v1.3.5-ubuntu
-sudo ./install.sh
-```
+- ✅ **Instant deployment** - pre-built Docker images
+- ✅ **Tested and verified** - production-ready containers
+- ✅ **Easy updates** - simple `docker pull` updates
+- ✅ **Isolated environment** - containerized for security
+- ✅ **Cross-platform** - works on any Docker-capable system
 
 #### Docker (Recommended)
 
@@ -315,9 +334,9 @@ yarn start
 
 | Use Case                     | Recommended Option | Why                          |
 | ---------------------------- | ------------------ | ---------------------------- |
-| **Home media server**        | Pre-built (Docker) | Quick setup, reliable        |
-| **Production deployment**    | Pre-built (Docker) | Tested, optimized            |
-| **Quick testing**            | Pre-built (Script) | Fastest to try               |
+| **Home media server**        | Docker             | Quick setup, reliable        |
+| **Production deployment**    | Docker             | Tested, optimized            |
+| **Quick testing**            | Docker             | Fastest to try               |
 | **Development/Contributing** | Build from Source  | Full development environment |
 | **Custom modifications**     | Build from Source  | Need to modify code          |
 | **Learning the codebase**    | Build from Source  | Understand implementation    |
@@ -343,29 +362,12 @@ yarn start
 - **User Restrictions**: Regular users cannot see or change their own rating restrictions
 - **Centralized Management**: All content filtering decisions are made by administrators
 
-### TMDB Curated Discovery Setup
-
-**Admin Configuration:**
-
-1. Navigate to **Settings** → **General**
-2. Configure **TMDB Curated Discovery** settings:
-   - **Default Min Votes**: Set global minimum vote count threshold (default: 3000)
-   - **Default Min Rating**: Set global minimum rating threshold (default: 6.0)
-   - **Allow User Override**: Whether users can change their discovery mode
-
-**User Configuration:**
-
-1. Navigate to **Settings** → **General** (if allowed by admin)
-2. Configure **Discovery Preferences**:
-   - **Discovery Mode**: Choose between 'Standard' (safety + age rating controls) and 'Curated' (safety + age rating + quality controls)
-   - **Custom Thresholds**: Adjust personal quality preferences within admin-defined ranges (if enabled)
-
 ### Rating System
 
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)
 - **TV Shows**: TV-Y → TV-Y7 → TV-G → TV-PG → TV-14 → TV-MA (admins set maximum allowed rating per user)
 - **Defaults**: New users start with PG-13 (movies) and TV-PG (TV shows) for family-safe browsing
-- **Curated Quality**: Default 3000+ votes and 6.0+ rating for curated discovery
+- **Universal**: Adult content is always blocked regardless of individual user settings
 
 ## 🤝 Contributing
 
