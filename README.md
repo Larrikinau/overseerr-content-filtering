@@ -64,7 +64,6 @@
 ```yaml
 environment:
   - TMDB_API_KEY=your_private_tmdb_key_here
-  # Note: Overseerr's internal API key is auto-generated, not configurable
 ```
 
 **⚠️ Remember: This is completely optional!** The application works great with the included API keys - private keys just give you better performance and reliability.
