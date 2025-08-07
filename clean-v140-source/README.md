@@ -81,12 +81,12 @@ This fork uses **dual-layer filtering architecture** to ensure reliable content 
 
 ## ✨ Enhanced Features
 
-### 🛡️ **Global Adult Content Blocking**
+### 🛡️ **Smart Content Blocking**
 
-- **Zero Tolerance**: Adult content never appears regardless of user settings
-- **Global Enforcement**: Applied to all discovery, search, and genre browsing
+- **Default Safety**: Adult content blocked by default for all users
+- **Admin Override**: Administrators can configure individual user rating limits as needed
+- **Consistent Enforcement**: Applied to all discovery, search, and genre browsing
 - **TMDb API Override**: Hardcoded filtering bypasses API inconsistencies
-- **Family-Safe Discovery**: All genre images and content safe for all ages
 
 ### 👥 **Admin-Only Content Controls**
 

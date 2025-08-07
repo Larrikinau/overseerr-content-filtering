@@ -21,7 +21,7 @@
 ### 🚀 **What's New in v1.4.0**
 
 - **🔒 Admin-Only Content Controls**: Only administrators can set content rating limits for users
-- **🛡️ Global Adult Content Blocking**: Adult content never appears regardless of user settings  
+- **🛡️ Smart Content Blocking**: Adult content blocked by default, with admin-configurable per-user rating limits
 - **🎬 Content Rating Filtering**: Filter by G, PG, PG-13, R, NC-17 (movies) and TV-Y through TV-MA (TV shows)
 - **👤 Per-User Configuration**: Admins can set different rating limits for each individual user
 - **🔐 User Protection**: Regular users cannot see or change their own rating restrictions
@@ -82,10 +82,10 @@ environment:
 - **TV Shows**: TV-Y, TV-Y7, TV-G, TV-PG, TV-14, TV-MA filtering
 - **Default Settings**: New users start with family-safe PG-13/TV-PG limits
 
-✅ **Universal Adult Content Blocking**
-- Adult content blocked across all discovery, search, and browsing
-- Applied globally regardless of individual user settings
-- Hardcoded safety parameters bypass API inconsistencies
+✅ **Smart Content Blocking**
+- Adult content blocked by default for all users, with admin-configurable rating overrides
+- Applied consistently across all discovery, search, and browsing
+- Hardcoded filtering logic bypasses API inconsistencies for reliable results
 
 ✅ **Seamless Integration**
 - All original Overseerr features preserved and functional
@@ -101,12 +101,12 @@ environment:
 
 ## ✨ Enhanced Features
 
-### 🛡️ **Global Adult Content Blocking**
+### 🛡️ **Smart Content Blocking**
 
-- **Zero Tolerance**: Adult content never appears regardless of user settings
-- **Global Enforcement**: Applied to all discovery, search, and genre browsing
+- **Default Safety**: Adult content blocked by default for all users
+- **Admin Override**: Administrators can configure individual user rating limits as needed
+- **Consistent Enforcement**: Applied to all discovery, search, and genre browsing
 - **TMDb API Override**: Hardcoded filtering bypasses API inconsistencies
-- **Family-Safe Discovery**: All genre images and content safe for all ages
 
 ### 👥 **Admin-Only Content Controls**
 
@@ -366,7 +366,7 @@ yarn start
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)
 - **TV Shows**: TV-Y → TV-Y7 → TV-G → TV-PG → TV-14 → TV-MA (admins set maximum allowed rating per user)
 - **Defaults**: New users start with PG-13 (movies) and TV-PG (TV shows) for family-safe browsing
-- **Universal**: Adult content is always blocked regardless of individual user settings
+- **Smart Default**: Adult content blocked by default, with admin-configurable overrides per user
 
 ## 🤝 Contributing
 
