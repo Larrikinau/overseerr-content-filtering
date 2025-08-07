@@ -5,7 +5,30 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.5] - 2025-01-22 (LATEST RELEASE)
+## [1.4.0] - 2025-08-07 (LATEST RELEASE)
+
+### ✨ **MAJOR RELEASE - Production Ready**
+
+#### 🚀 Core Features
+- 🔒 **Admin-Only Content Controls**: Only administrators can set content rating limits for users
+- 🛡️ **Global Adult Content Blocking**: Adult content never appears regardless of user settings  
+- 🎬 **Comprehensive Content Rating Filtering**: Filter by G-NC-17 (movies) and TV-Y-TV-MA (TV shows)
+- 👤 **Per-User Configuration**: Admins can set different rating limits for each individual user
+- 🔐 **User Protection**: Regular users cannot see or change their own rating restrictions
+- 🔑 **Flexible API Key Management**: Environment variable support for TMDB and other APIs
+- 🐳 **Enhanced Docker Support**: Containerized deployment with automatic migrations
+- 📊 **Database Schema Updates**: Added content filtering columns with automatic migration
+- ⚡ **Performance Optimized**: Minimal overhead on existing Overseerr functionality
+
+#### 🎆 Enhanced Distribution
+- **Docker Hub Release**: Official `larrikinau/overseerr-content-filtering:latest` images
+- **Universal Migration Script**: One-command migration from any existing Overseerr installation
+- **Privacy Protection**: Sanitized codebase with real names removed from Git history
+- **Complete Documentation**: Migration guides, troubleshooting, and deployment documentation
+
+---
+
+## [1.3.5] - 2025-01-22 (Previous Release)
 
 ### 🚀 Major Features
 - **Enhanced Content Filtering System**: Complete overhaul of content filtering with advanced genre, rating, and keyword filters

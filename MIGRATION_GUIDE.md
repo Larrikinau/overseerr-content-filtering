@@ -1,4 +1,4 @@
-# Migration Guide: From Overseerr to Overseerr Content Filtering
+# Migration Guide: From Overseerr to Overseerr Content Filtering v1.4.0
 
 ## 🚀 One-Command Migration
 
@@ -6,11 +6,11 @@
 
 ```bash
 # Download migration script
-curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-content-filtering.sh -o migrate-to-content-filtering.sh
-chmod +x migrate-to-content-filtering.sh
+curl -fsSL https://github.com/Larrikinau/overseerr-content-filtering/raw/main/migrate-to-overseerr-content-filtering.sh -o migrate-to-overseerr-content-filtering.sh
+chmod +x migrate-to-overseerr-content-filtering.sh
 
 # Run migration script (add sudo if you get Docker permission errors)
-sudo ./migrate-to-content-filtering.sh
+sudo ./migrate-to-overseerr-content-filtering.sh
 ```
 
 These commands will:
@@ -287,6 +287,6 @@ If migration fails or you encounter issues:
 - **📖 Documentation**: [Complete guide](README.md)
 - **🐛 Issues**: [GitHub Issues](https://github.com/Larrikinau/overseerr-content-filtering/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/Larrikinau/overseerr-content-filtering/discussions)
-- **📋 Migration Script**: [migrate-to-content-filtering.sh](migrate-to-content-filtering.sh)
+- **📋 Migration Script**: [migrate-to-overseerr-content-filtering.sh](migrate-to-overseerr-content-filtering.sh)
 
 **Migration takes ~2-5 minutes and preserves all your data!**
