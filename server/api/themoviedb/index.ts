@@ -144,7 +144,9 @@ class TheMovieDb extends ExternalAPI {
   private shouldIncludeAdult(): boolean {
     // Include adult content only if no restriction is set (empty string)
     // If "Adult" is selected, we should NOT include adult content
-    return false; // Global adult content blocking - never include adult content regardless of user preferences
+    // Allow adult content only if the max movie rating allows it (R or no restrictions)
+    // Only include adult content when NO rating restrictions are set (unrestricted)
+    return !this.maxMovieRating || this.maxMovieRating === "";
   }
   
   private getMovieCertification(): { [key: string]: string } {

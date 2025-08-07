@@ -54,10 +54,6 @@ const messages = defineMessages({
   validationApplicationUrl: 'You must provide a valid URL',
   validationApplicationUrlTrailingSlash: 'URL must not end in a trailing slash',
   partialRequestsEnabled: 'Allow Partial Series Requests',
-  curatedMinVotes: 'Curated Minimum Votes',
-  curatedMinVotesTip: 'Minimum number of votes required for content to appear in curated mode',
-  curatedMinRating: 'Curated Minimum Rating',
-  curatedMinRatingTip: 'Minimum rating required for content to appear in curated mode',
   locale: 'Display Language',
 });
 
@@ -136,8 +132,6 @@ const SettingsMain = () => {
             region: data?.region,
             originalLanguage: data?.originalLanguage,
             partialRequestsEnabled: data?.partialRequestsEnabled,
-            curatedMinVotes: data?.curatedMinVotes ?? 3000,
-            curatedMinRating: data?.curatedMinRating ?? 6.0,
             trustProxy: data?.trustProxy,
             cacheImages: data?.cacheImages,
           }}
@@ -151,11 +145,9 @@ const SettingsMain = () => {
                 csrfProtection: values.csrfProtection,
                 hideAvailable: values.hideAvailable,
                 locale: values.locale,
+                partialRequestsEnabled: values.partialRequestsEnabled,
                 region: values.region,
                 originalLanguage: values.originalLanguage,
-                partialRequestsEnabled: values.partialRequestsEnabled,
-                curatedMinVotes: values.curatedMinVotes,
-                curatedMinRating: values.curatedMinRating,
                 trustProxy: values.trustProxy,
                 cacheImages: values.cacheImages,
               });
@@ -432,47 +424,6 @@ const SettingsMain = () => {
                           !values.partialRequestsEnabled
                         );
                       }}
-                    />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <label htmlFor="curatedMinVotes" className="text-label">
-                    <span className="mr-2">
-                      {intl.formatMessage(messages.curatedMinVotes)}
-                    </span>
-                    <Tooltip content={intl.formatMessage(messages.curatedMinVotesTip)}>
-                      <span className="text-gray-400">?</span>
-                    </Tooltip>
-                  </label>
-                  <div className="form-input-area">
-                    <Field
-                      type="number"
-                      id="curatedMinVotes"
-                      name="curatedMinVotes"
-                      className="form-input"
-                      min="0"
-                      step="100"
-                    />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <label htmlFor="curatedMinRating" className="text-label">
-                    <span className="mr-2">
-                      {intl.formatMessage(messages.curatedMinRating)}
-                    </span>
-                    <Tooltip content={intl.formatMessage(messages.curatedMinRatingTip)}>
-                      <span className="text-gray-400">?</span>
-                    </Tooltip>
-                  </label>
-                  <div className="form-input-area">
-                    <Field
-                      type="number"
-                      id="curatedMinRating"
-                      name="curatedMinRating"
-                      className="form-input"
-                      min="0"
-                      max="10"
-                      step="0.1"
                     />
                   </div>
                 </div>
