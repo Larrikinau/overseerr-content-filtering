@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  overseerr-content-filtering:
+    image: larrikinau/overseerr-content-filtering:latest
+    container_name: overseerr-content-filtering
+    ports:
+      - "5055:5055"
+    volumes:
+      - overseerr-config:/app/config
+      - overseerr-logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - TZ=UTC
+      # TMDB API Key - Required for movie/TV data
+      # This is a working API key for immediate setup
+      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055/api/v1/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - overseerr-network
+
+  # Optional: Development/Local build service
+  overseerr-dev:
+    profiles: ["development"]
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: overseerr-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app:rw,cached
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    networks:
+      - overseerr-network
+
+volumes:
+  overseerr-config:
+    driver: local
+  overseerr-logs:
+    driver: local
+
+networks:
+  overseerr-network:
+    driver: bridge

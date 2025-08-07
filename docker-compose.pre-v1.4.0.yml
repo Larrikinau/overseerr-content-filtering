@@ -1,0 +1,27 @@
+# Simulated current user docker-compose.yml (before v1.4.0)
+version: '3.8'
+
+services:
+  overseerr-content-filtering:
+    image: larrikinau/overseerr-content-filtering:latest
+    container_name: overseerr-content-filtering
+    ports:
+      - "5055:5055"
+    volumes:
+      - overseerr-config:/app/config
+      - overseerr-logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - TZ=UTC
+      # User might already have private TMDB key
+      - TMDB_API_KEY=user_private_tmdb_key_12345
+      # No Algolia key (should get default)
+      # Missing RUN_MIGRATIONS (should get default)
+    restart: unless-stopped
+
+volumes:
+  overseerr-config:
+    driver: local
+  overseerr-logs:
+    driver: local

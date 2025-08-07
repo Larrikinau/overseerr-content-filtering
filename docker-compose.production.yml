@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  overseerr-content-filtering:
+    image: larrikinau/overseerr-content-filtering:1.4.0
+    container_name: overseerr-content-filtering
+    restart: unless-stopped
+    ports:
+      - 5055:5055
+    volumes:
+      - overseerr_config:/app/config
+    environment:
+      # Core Application Settings
+      - NODE_ENV=production
+      - RUN_MIGRATIONS=true
+      
+      # API Keys (public defaults - customize with your own private keys)
+      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381
+      - ALGOLIA_API_KEY=175588f6e5f8319b27702e4cc4013561
+      
+      # Application Settings  
+      - LOG_LEVEL=info
+      - TZ=UTC
+      
+      # NOTE: Plex and notification services (Pushover, Discord, etc.) 
+      # are configured through the web interface - not environment variables
+
+volumes:
+  overseerr_config:
+    driver: local

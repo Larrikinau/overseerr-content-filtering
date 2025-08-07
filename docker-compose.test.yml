@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  overseerr-test-v1-4-0:
+    build: .
+    container_name: overseerr-test-v1-4-0
+    restart: unless-stopped
+    ports:
+      - "5056:5055"
+    volumes:
+      - /tmp/overseerr-test-data:/app/config
+    environment:
+      # Core Application Settings
+      - NODE_ENV=production
+      - RUN_MIGRATIONS=true
+      
+      # API Keys (using public defaults for testing - can be overridden)
+      - TMDB_API_KEY=db55323b8d3e4154498498a75642b381
+      - ALGOLIA_API_KEY=175588f6e5f8319b27702e4cc4013561
+      
+      # Optional settings
+      - LOG_LEVEL=debug
+      - TZ=UTC

@@ -9,95 +9,116 @@ import { Router } from 'express';
 import { createTmdbWithRegionLanguage } from './discover';
 
 const filterResultsByRating = (results: any[], user?: User): any[] => {
-  // Always apply basic adult content filtering, even if no user rating limits are set
-  if (!user?.settings) {
-    // If no user settings, apply basic adult content filtering only
-    return results.filter((result: any) => !result.adult);
-  }
-  
-  // If user settings exist but no rating limits are set, apply basic filtering
-  if (!user.settings.maxMovieRating && !user.settings.maxTvRating) {
-    return results.filter((result: any) => !result.adult);
-  }
+  // Define explicit adult content keywords that should always be blocked unless user allows XXX
+  const adultKeywords = [
+    'porn', 'porno', 'xxx', 'sex', 'adult', 'erotic', 'nude', 'naked', 'sexy',
+    'milf', 'lesbian', 'gay', 'bisexual', 'orgasm', 'masturbat', 'dildo',
+    'fetish', 'bdsm', 'kinky', 'horny', 'cumshot', 'blowjob', 'anal',
+    'threesome', 'gangbang', 'stripper', 'prostitut', 'hooker', 'escort',
+    'playboy', 'penthouse', 'hustler', 'vivid', 'wicked', 'bangbros'
+  ];
 
-  return results.filter((result: any) => {
+  const isAdultContent = (title: string): boolean => {
+    const lowerTitle = title.toLowerCase();
+    // Be more specific - avoid false positives with names
+    return adultKeywords.some(keyword => {
+      // For "porn", make sure it's a standalone word or part of "porno"
+      if (keyword === 'porn') {
+        return lowerTitle.includes('porn ') || lowerTitle.includes(' porn') || 
+               lowerTitle.startsWith('porn') || lowerTitle.endsWith('porn') ||
+               lowerTitle.includes('porno');
+      }
+      return lowerTitle.includes(keyword);
+    });
+  };
+
+  console.log('=== FILTER DEBUG ===');
+  console.log('User settings:', user?.settings);
+  console.log('Total results before filtering:', results.length);
+  
+  const filtered = results.filter((result: any) => {
     if (!user?.settings) return true;
 
     const isMovie = result.media_type === 'movie' || (!result.media_type && result.title);
     const isTv = result.media_type === 'tv' || (!result.media_type && result.name);
+    const title = result.title || result.name || '';
     
-    // Movie filtering based on user setting
-    if (isMovie && user.settings.maxMovieRating) {
-      const maxRating = user.settings.maxMovieRating;
+    // Check if content appears to be adult based on title/keywords
+    const seemsAdult = isAdultContent(title);
+    
+    // Always filter adult content - block XXX content based on user setting
+    if (result.adult || seemsAdult) {
+      console.log(`Adult content detected: "${title}", TMDB adult flag: ${result.adult}, keyword match: ${seemsAdult}`);
       
-      // Always block adult content unless no restrictions
-      if (result.adult && maxRating !== '') {
+      // For movies: if maxMovieRating is 'Adult', it means "Block only Adult/XXX content"
+      // So we should block XXX content when this setting is active
+      if (isMovie && user.settings.maxMovieRating === 'Adult') {
+        console.log(`Blocking XXX movie content: ${title}`);
         return false;
       }
       
-      // Use genre-based heuristics to filter content since certification data is unreliable
+      // For TV: if no maxTvRating is set (empty), allow all TV content
+      // But if a rating is set and it's not allowing adult content, block it
+      if (isTv && user.settings.maxTvRating && user.settings.maxTvRating !== 'XXX_ALLOWED') {
+        console.log(`Blocking adult TV content: ${title}`);
+        return false;
+      }
+      
+      // If it's TV and no rating restriction, allow it
+      if (isTv && !user.settings.maxTvRating) {
+        console.log(`Allowing adult TV content (no restriction): ${title}`);
+        return true;
+      }
+    }
+
+    // If no rating limits are set, allow non-adult content
+    if (!user.settings.maxMovieRating && !user.settings.maxTvRating) {
+      return true;
+    }
+
+    // Movie filtering based on user setting
+    if (isMovie && user.settings.maxMovieRating) {
+      const maxRating = user.settings.maxMovieRating;
       const genreIds = result.genre_ids || [];
       
       if (maxRating === 'G') {
-        // Block PG and above - very restrictive
-        // Block: Action, Adventure, Thriller, Horror, Crime, War, Western
         if (genreIds.some((id: number) => [28, 12, 53, 27, 80, 10752, 37].includes(id))) {
           return false;
         }
       }
       
       if (maxRating === 'PG') {
-        // Block PG-13 and above - moderately restrictive
-        // Block: Thriller, Horror, Crime, War
-        if (genreIds.some((id: number) => [53, 27, 80, 10752].includes(id))) {
+        if (genreIds.some((id: number) => [27, 80, 10752, 53].includes(id))) {
           return false;
         }
       }
       
       if (maxRating === 'PG-13') {
-        // Block R and above - less restrictive
-        // Block: Horror, very violent content
-        if (genreIds.some((id: number) => [27].includes(id))) {
+        if (genreIds.includes(27)) {
           return false;
         }
       }
     }
-    
+
     // TV filtering based on user setting
     if (isTv && user.settings.maxTvRating) {
       const maxRating = user.settings.maxTvRating;
-      
-      // Use genre-based heuristics for TV shows
       const genreIds = result.genre_ids || [];
       
-      if (maxRating === 'TV-Y' || maxRating === 'TV-Y7') {
-        // Very restrictive - only children's content
-        // Block most genres except Animation, Family
-        if (genreIds.some((id: number) => ![16, 10751].includes(id)) && genreIds.length > 0) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'TV-G') {
-        // Block PG and above content
-        // Block: Drama with serious themes, Crime, War
-        if (genreIds.some((id: number) => [18, 80, 10752].includes(id))) {
+      if (maxRating === 'TV-Y' || maxRating === 'TV-G') {
+        if (genreIds.some((id: number) => [28, 12, 53, 27, 80, 10752, 37, 18].includes(id))) {
           return false;
         }
       }
       
       if (maxRating === 'TV-PG') {
-        // Block TV-14 and above
-        // Block: Thriller, Crime, War, Adult-oriented content
-        if (genreIds.some((id: number) => [53, 80, 10752].includes(id))) {
+        if (genreIds.some((id: number) => [27, 80, 10752, 53, 18].includes(id))) {
           return false;
         }
       }
       
       if (maxRating === 'TV-14') {
-        // Block TV-MA content
-        // Block: Very mature content indicators
-        if (genreIds.some((id: number) => [27].includes(id))) { // Horror typically TV-MA
+        if (genreIds.includes(18)) {
           return false;
         }
       }
@@ -105,6 +126,10 @@ const filterResultsByRating = (results: any[], user?: User): any[] => {
 
     return true;
   });
+  
+  console.log('Total results after filtering:', filtered.length);
+  console.log('=== END FILTER DEBUG ===');
+  return filtered;
 };
 
 const searchRoutes = Router();
