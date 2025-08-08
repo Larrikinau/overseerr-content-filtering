@@ -26,6 +26,10 @@ CONFIG_DIR="./overseerr-config"
 COMPOSE_FILE="docker-compose.yml"
 BACKUP_DIR="./overseerr-backup-$(date +%Y%m%d_%H%M%S)"
 
+# Docker command prefixes (will be set by sudo detection)
+DOCKER_CMD="docker"
+COMPOSE_CMD="docker-compose"
+
 # Default API keys (users can override in docker-compose.yml)
 DEFAULT_TMDB_API_KEY="db55323b8d3e4154498498a75642b381"
 DEFAULT_ALGOLIA_API_KEY="175588f6e5f8319b27702e4cc4013561"
@@ -47,6 +51,38 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Detect if sudo is needed for Docker commands
+detect_docker_sudo() {
+    local needs_sudo=false
+    
+    # Test if docker works without sudo
+    if ! docker ps &> /dev/null; then
+        # Try with sudo
+        if sudo docker ps &> /dev/null; then
+            needs_sudo=true
+            log_info "Docker requires sudo - will use sudo automatically for all Docker commands"
+        else
+            log_error "Docker is not accessible even with sudo. Please check Docker installation."
+            exit 1
+        fi
+    else
+        log_info "Docker is accessible without sudo"
+    fi
+    
+    # Set Docker command with or without sudo
+    if [ "$needs_sudo" = true ]; then
+        DOCKER_CMD="sudo docker"
+        # Also check if docker-compose needs sudo
+        if command -v docker-compose &> /dev/null; then
+            COMPOSE_CMD="sudo docker-compose"
+        elif sudo docker compose version &> /dev/null; then
+            COMPOSE_CMD="sudo docker compose"
+        fi
+    else
+        DOCKER_CMD="docker"
+    fi
+}
+
 # Check if Docker is installed and running
 check_docker() {
     if ! command -v docker &> /dev/null; then
@@ -55,29 +91,44 @@ check_docker() {
         exit 1
     fi
     
-    if ! docker info &> /dev/null; then
-        log_error "Docker is not running. Please start Docker first."
+    # Detect sudo requirements and set commands accordingly
+    detect_docker_sudo
+    
+    # Test Docker daemon connectivity
+    if ! $DOCKER_CMD info &> /dev/null; then
+        log_error "Docker daemon is not running. Please start Docker first."
         log_info "Try: sudo systemctl start docker (Linux) or start Docker Desktop (Windows/Mac)"
         exit 1
     fi
-    
-    # Check Docker permissions
-    if ! docker ps &> /dev/null; then
-        log_warning "Docker requires sudo permissions. This is normal on some systems."
-        log_info "The script will use 'docker' commands. Add 'sudo' manually if needed."
-    fi
 }
 
-# Check if docker-compose is available
+# Check if docker-compose is available (sudo already handled by detect_docker_sudo)
 check_compose() {
-    if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
-    elif docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    else
-        log_error "Neither docker-compose nor 'docker compose' is available."
-        exit 1
+    # COMPOSE_CMD is already set by detect_docker_sudo, but verify it works
+    if ! $COMPOSE_CMD version &> /dev/null; then
+        # Fallback detection if the auto-detection failed
+        if [[ "$DOCKER_CMD" == *"sudo"* ]]; then
+            if command -v docker-compose &> /dev/null; then
+                COMPOSE_CMD="sudo docker-compose"
+            elif sudo docker compose version &> /dev/null; then
+                COMPOSE_CMD="sudo docker compose"
+            else
+                log_error "Neither docker-compose nor 'docker compose' is available, even with sudo."
+                exit 1
+            fi
+        else
+            if command -v docker-compose &> /dev/null; then
+                COMPOSE_CMD="docker-compose"
+            elif docker compose version &> /dev/null; then
+                COMPOSE_CMD="docker compose"
+            else
+                log_error "Neither docker-compose nor 'docker compose' is available."
+                exit 1
+            fi
+        fi
     fi
+    
+    log_info "Using compose command: $COMPOSE_CMD"
 }
 
 # Detect and preserve existing Docker setup details
@@ -98,7 +149,7 @@ detect_existing_setup() {
             # Extract container name if specified
             local container_name_line=$(grep -A 20 "$detected_service_name:" "$compose_file" | grep "container_name:" | head -n1)
             if [ -n "$container_name_line" ]; then
-                detected_container_name=$(echo "$container_name_line" | sed 's/.*container_name:[[:space:]]*\([^[:space:]]*\).*/\1/' | tr -d '"'\''' )
+                detected_container_name=$(echo "$container_name_line" | sed 's/.*container_name:[[:space:]]*\([^[:space:]]*\).*/\1/' | tr -d '"'\'' )
             fi
             break
         fi
@@ -107,7 +158,7 @@ detect_existing_setup() {
     # If no compose file found, check for running containers
     if [ -z "$detected_container_name" ]; then
         # Look for containers with overseerr-like names
-        local running_containers=$(docker ps -a --format "{{.Names}}" | grep -i "overseerr\|seerr")
+        local running_containers=$($DOCKER_CMD ps -a --format "{{.Names}}" | grep -i "overseerr\|seerr")
         if [ -n "$running_containers" ]; then
             detected_container_name=$(echo "$running_containers" | head -n1)
         fi
@@ -141,7 +192,7 @@ detect_installation() {
     
     # Also check running containers if compose file doesn't give us enough info
     if [ "$installation_type" = "none" ]; then
-        local containers=$(docker ps -a --format "{{.Names}}\t{{.Image}}" | grep -i "overseerr\|seerr")
+        local containers=$($DOCKER_CMD ps -a --format "{{.Names}}\t{{.Image}}" | grep -i "overseerr\|seerr")
         if [ -n "$containers" ]; then
             local image=$(echo "$containers" | head -n1 | awk '{print $2}')
             if echo "$image" | grep -q "larrikinau/overseerr-content-filtering"; then
@@ -161,9 +212,9 @@ detect_docker_volumes() {
     local volume_type="none"
     
     # Check if container exists and get volume info
-    if docker inspect "$CONTAINER_NAME" &> /dev/null; then
+    if $DOCKER_CMD inspect "$CONTAINER_NAME" &> /dev/null; then
         # Get volume mount information
-        config_volume=$(docker inspect "$CONTAINER_NAME" --format '{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || echo "")
+        config_volume=$($DOCKER_CMD inspect "$CONTAINER_NAME" --format '{{range .Mounts}}{{if eq .Destination "/app/config"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || echo "")
         
         if [ -n "$config_volume" ]; then
             if [[ "$config_volume" == /var/lib/docker/volumes/* ]]; then
@@ -199,7 +250,7 @@ create_backup() {
         "docker_volume")
             log_info "Backing up Docker volume: $volume_path"
             # Create a backup of the volume using docker
-            docker run --rm -v "$volume_path":/source -v "$PWD/$BACKUP_DIR":/backup alpine sh -c "cd /source && tar czf /backup/config-volume-backup.tar.gz ."
+            $DOCKER_CMD run --rm -v "$volume_path":/source -v "$PWD/$BACKUP_DIR":/backup alpine sh -c "cd /source && tar czf /backup/config-volume-backup.tar.gz ."
             log_success "Docker volume backed up to $BACKUP_DIR/config-volume-backup.tar.gz"
             ;;
         "bind_mount")
@@ -221,16 +272,16 @@ create_backup() {
     esac
     
     # Stop container safely for migration
-    if docker ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+    if $DOCKER_CMD ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
         log_info "Stopping container for migration..."
-        docker stop "$CONTAINER_NAME" || true
+        $DOCKER_CMD stop "$CONTAINER_NAME" || true
         sleep 2  # Give it time to fully stop
     fi
     
     # Remove old container to avoid conflicts
-    if docker ps -a --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+    if $DOCKER_CMD ps -a --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
         log_info "Removing old container to avoid conflicts..."
-        docker rm "$CONTAINER_NAME" || true
+        $DOCKER_CMD rm "$CONTAINER_NAME" || true
     fi
 }
 
@@ -293,7 +344,7 @@ verify_repository() {
     log_info "Verifying repository access and image availability..."
     
     # Try to pull the image to verify it exists and is accessible
-    if docker pull "${IMAGE_NAME}:${TAG}" > /dev/null 2>&1; then
+    if $DOCKER_CMD pull "${IMAGE_NAME}:${TAG}" > /dev/null 2>&1; then
         log_success "Repository verified: ${IMAGE_NAME}:${TAG} is accessible"
         return 0
     else
@@ -516,10 +567,10 @@ verify_service_health() {
     
     while [ $retry_count -lt $max_retries ]; do
         # Check if container is running
-        if ! docker ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+        if ! $DOCKER_CMD ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
             log_error "Container '$CONTAINER_NAME' is not running!"
             log_info "Container logs:"
-            docker logs "$CONTAINER_NAME" --tail 20 2>/dev/null || true
+            $DOCKER_CMD logs "$CONTAINER_NAME" --tail 20 2>/dev/null || true
             return 1
         fi
         
@@ -532,7 +583,7 @@ verify_service_health() {
         # Check for common startup issues every 10 retries
         if [ $((retry_count % 10)) -eq 0 ] && [ $retry_count -gt 0 ]; then
             log_info "Still starting... checking container logs for issues:"
-            docker logs "$CONTAINER_NAME" --tail 10 2>/dev/null | head -5
+            $DOCKER_CMD logs "$CONTAINER_NAME" --tail 10 2>/dev/null | head -5
         fi
         
         sleep 2
@@ -551,7 +602,7 @@ start_services() {
     log_info "Pulling latest image..."
     local pull_retries=3
     while [ $pull_retries -gt 0 ]; do
-        if docker pull "${IMAGE_NAME}:${TAG}"; then
+        if $DOCKER_CMD pull "${IMAGE_NAME}:${TAG}"; then
             break
         else
             log_warning "Image pull failed, retrying... ($pull_retries attempts remaining)"
@@ -592,7 +643,7 @@ start_services() {
         log_info "4. Verify Docker has sufficient resources"
         log_info ""
         log_info "Recent container logs:"
-        docker logs "$CONTAINER_NAME" --tail 30 2>/dev/null || true
+        $DOCKER_CMD logs "$CONTAINER_NAME" --tail 30 2>/dev/null || true
         exit 1
     fi
 }
@@ -612,7 +663,7 @@ show_completion_info() {
     echo ""
     echo " Future Updates:"
     echo "   To update to newer versions, simply run:"
-    echo "   docker pull ${IMAGE_NAME}:${TAG} && $COMPOSE_CMD up -d"
+    echo "   $DOCKER_CMD pull ${IMAGE_NAME}:${TAG} && $COMPOSE_CMD up -d"
     echo ""
     
     if [ "$installation_type" = "original" ]; then
@@ -658,6 +709,9 @@ show_completion_info() {
 main() {
     echo ""
     echo " Overseerr Content Filtering Migration Script v1.4.0"
+    echo "======================================================="
+    echo " This script will automatically detect if sudo is needed"
+    echo " and use it appropriately for all Docker commands."
     echo "======================================================="
     echo ""
     
