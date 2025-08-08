@@ -149,7 +149,7 @@ detect_existing_setup() {
             # Extract container name if specified
             local container_name_line=$(grep -A 20 "$detected_service_name:" "$compose_file" | grep "container_name:" | head -n1)
             if [ -n "$container_name_line" ]; then
-                detected_container_name=$(echo "$container_name_line" | sed 's/.*container_name:[[:space:]]*\([^[:space:]]*\).*/\1/' | tr -d '"'\'' )
+                detected_container_name=$(echo "$container_name_line" | sed 's/.*container_name:[[:space:]]*\([^[:space:]]*\).*/\1/' | tr -d '"\''')
             fi
             break
         fi
