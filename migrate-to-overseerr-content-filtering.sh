@@ -80,6 +80,12 @@ detect_docker_sudo() {
         fi
     else
         DOCKER_CMD="docker"
+        # Also check if docker-compose works without sudo
+        if command -v docker-compose &> /dev/null; then
+            COMPOSE_CMD="docker-compose"
+        elif docker compose version &> /dev/null; then
+            COMPOSE_CMD="docker compose"
+        fi
     fi
 }
 
