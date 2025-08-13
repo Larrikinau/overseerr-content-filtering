@@ -72,3 +72,7 @@ config/cache
 releases/*.tar.gz
 releases/*.tar.gz.sha256
 overseerr-content-filtering-*.tar.gz*
+
+# Local development and testing scripts
+clean-v140-test.sh
+v140-success-summary.sh
