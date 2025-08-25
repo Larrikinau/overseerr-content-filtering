@@ -5,7 +5,36 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2025-08-07 (LATEST RELEASE)
+## [1.4.1] - 2025-01-25 (LATEST RELEASE)
+
+### 🔧 **HOTFIX - Plex Watchlist API Update**
+
+#### 🛠️ Critical Fixes
+- **🔗 Plex Watchlist API Endpoints**: Updated Plex watchlist API endpoints from deprecated `metadata.provider.plex.tv` to new `discover.provider.plex.tv` base URL
+- **✅ Resolves 404 Errors**: Fixes persistent 404 errors in Plex watchlist synchronization caused by Plex Media Server API changes in version 1.42.1+
+- **🚀 Improved Watchlist Sync**: Enhanced reliability of Plex watchlist fetching and caching mechanisms
+- **📡 Updated API Calls**: Both watchlist retrieval and detailed metadata fetching now use the correct Plex discovery endpoints
+
+#### 🎯 What This Fixes
+- **No More 404s**: Eliminates "Failed to retrieve watchlist items" errors in logs
+- **Reliable Watchlist**: Plex watchlist items now load correctly in Overseerr
+- **Updated for Current Plex**: Compatible with latest Plex Media Server versions (1.42.1+)
+- **Seamless Integration**: Maintains all existing Plex functionality while using updated APIs
+
+#### ⚡ Upgrade Instructions
+
+**For v1.4.0 users (Simple Docker Update):**
+```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+docker-compose restart overseerr-content-filtering
+# OR: docker stop/rm and re-run with :latest
+```
+
+**For pre-v1.4.0 users:** Use the migration script as described in [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+
+---
+
+## [1.4.0] - 2025-08-07 (Previous Release)
 
 ### ✨ **MAJOR RELEASE - Production Ready**
 
