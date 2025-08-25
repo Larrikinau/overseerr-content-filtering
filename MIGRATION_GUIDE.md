@@ -1,8 +1,27 @@
-# Migration Guide: From Overseerr to Overseerr Content Filtering v1.4.0
+# Migration Guide: From Overseerr to Overseerr Content Filtering v1.4.1
 
-## 🚀 One-Command Migration
+## ⚡ **Already Running v1.4.0? Quick Update!**
 
-**The easiest way to migrate is with our automated script:**
+**If you're already running v1.4.0, upgrading to v1.4.1 is just a standard Docker update:**
+
+```bash
+# Pull the latest version with Plex API fixes
+docker pull larrikinau/overseerr-content-filtering:latest
+
+# Restart your container
+docker-compose restart overseerr-content-filtering
+# OR if using docker run:
+docker stop overseerr-content-filtering && docker rm overseerr-content-filtering
+# Then run your original docker run command with :latest
+```
+
+**That's it! No migration script needed for v1.4.0 → v1.4.1 upgrades.**
+
+---
+
+## 🚀 Migration Script (For Pre-v1.4.0 Users Only)
+
+**The migration script below is ONLY for users coming from versions before v1.4.0:**
 
 ```bash
 # Download migration script

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Universal Overseerr Content Filtering Migration Script v1.4.0
+# Universal Overseerr Content Filtering Migration Script v1.4.1
 # This script handles:
-# 1. Fresh installation of Overseerr Content Filtering v1.4.0
+# 1. Fresh installation of Overseerr Content Filtering v1.4.1
 # 2. Migration from existing fork version (maintains volumes/setup)
 # 3. Migration from original Overseerr to Content Filtering fork
 #
@@ -486,7 +486,7 @@ EOF
 
 # Fresh installation
 fresh_install() {
-    log_info "Performing fresh installation of Overseerr Content Filtering v1.4.0..."
+    log_info "Performing fresh installation of Overseerr Content Filtering v1.4.1..."
     
     # Create config directory
     mkdir -p config
@@ -500,7 +500,7 @@ fresh_install() {
 
 # Migrate from existing fork
 migrate_from_fork() {
-    log_info "Migrating existing fork installation to v1.4.0..."
+    log_info "Migrating existing fork installation to v1.4.1..."
     
     # Verify repository first
     verify_repository || log_warning "Repository verification failed, proceeding with migration..."
@@ -536,7 +536,7 @@ migrate_from_fork() {
 
 # Migrate from original Overseerr
 migrate_from_original() {
-    log_info "Migrating from original Overseerr to Content Filtering fork v1.4.0..."
+    log_info "Migrating from original Overseerr to Content Filtering fork v1.4.1..."
     
     # Extract existing settings  
     local settings=$(extract_existing_settings)
@@ -602,7 +602,7 @@ verify_service_health() {
 
 # Start services with comprehensive error handling
 start_services() {
-    log_info "Starting Overseerr Content Filtering v1.4.0..."
+    log_info "Starting Overseerr Content Filtering v1.4.1..."
     
     # Pull the latest image with retry logic
     log_info "Pulling latest image..."
@@ -659,7 +659,7 @@ show_completion_info() {
     local installation_type="$1"
     
     echo ""
-    log_success "Overseerr Content Filtering v1.4.0 migration completed!"
+    log_success "Overseerr Content Filtering v1.4.1 migration completed!"
     echo ""
     echo " Your Overseerr installation is now ready with Content Filtering features!"
     echo ""
@@ -714,7 +714,7 @@ show_completion_info() {
 # Main execution
 main() {
     echo ""
-    echo " Overseerr Content Filtering Migration Script v1.4.0"
+    echo " Overseerr Content Filtering Migration Script v1.4.1"
     echo "======================================================="
     echo " This script will automatically detect if sudo is needed"
     echo " and use it appropriately for all Docker commands."
