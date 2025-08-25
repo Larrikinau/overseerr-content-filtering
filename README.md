@@ -16,9 +16,16 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.4.0** provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
+**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.4.1** provides comprehensive content filtering capabilities while preserving all original Overseerr functionality, with the latest Plex API compatibility fixes.
 
-### 🚀 **What's New in v1.4.0**
+### 🔧 **What's Fixed in v1.4.1**
+
+- **🔗 Updated Plex API Endpoints**: Fixed Plex watchlist synchronization by updating from deprecated `metadata.provider.plex.tv` to new `discover.provider.plex.tv`
+- **✅ Resolved 404 Errors**: Eliminates persistent "Failed to retrieve watchlist items" errors in logs
+- **🚀 Enhanced Compatibility**: Full compatibility with Plex Media Server 1.42.1+ versions
+- **📱 Seamless Integration**: All existing Plex functionality preserved with updated APIs
+
+### 🚀 **Core Features from v1.4.0**
 
 - **🔒 Admin-Only Content Controls**: Only administrators can set content rating limits for users
 - **🛡️ Smart Content Blocking**: Adult content blocked by default, with admin-configurable per-user rating limits
@@ -162,29 +169,43 @@ chmod +x migrate-to-overseerr-content-filtering.sh
 - ✅ **Custom Environment Variables**: Any custom environment variables you've added are preserved
 - ✅ **Network Configuration**: Custom networks, port mappings, and Docker Compose configurations maintained
 
-### ⚡ **After v1.4.0: Containerized Updates**
+### ⚡ **Simple Updates for v1.4.0+ Users**
 
-**🎉 This migration script is ONLY needed once for v1.4.0!**
+**🎉 Already running v1.4.0? Upgrading to v1.4.1 is just a standard Docker update!**
 
-After migrating to v1.4.0, all future updates are **containerized** and only require:
+#### **For v1.4.0 → v1.4.1 (Simple Docker Update)**
 
 ```bash
+# Pull the latest version with Plex API fixes
 docker pull larrikinau/overseerr-content-filtering:latest
-docker-compose up -d  # or your preferred restart method
+
+# Restart your container
+docker-compose restart overseerr-content-filtering
+# OR if using docker run:
+docker stop overseerr-content-filtering
+docker rm overseerr-content-filtering
+# Then run your original docker run command with :latest
 ```
 
-**Why only once?**
-- v1.4.0 **containerizes** the entire application properly
-- Future releases will be **standard Docker image updates**
-- No more migration scripts needed - just regular `docker pull` updates
-- Your configuration becomes **portable** and **version-controlled**
+**That's it! No migration script needed for v1.4.0 → v1.4.1 upgrades.**
 
-### 👥 **Who Needs the Migration Script:**
+### 🔄 **Migration Script vs Simple Updates**
 
-- **✅ Existing Overseerr users** upgrading to v1.4.0 content filtering
-- **✅ Users migrating** from other Overseerr forks to this one
-- **❌ New users** - just use Docker installation directly
-- **❌ Existing v1.4.0+ users** - just use `docker pull` for updates
+#### **Migration Script Required For:**
+- **Pre-v1.4.0 Overseerr installations** (any version before 1.4.0)
+- **Other Overseerr forks** migrating to this content filtering fork
+- **Snap/Systemd installations** moving to Docker
+
+#### **Simple Docker Pull For:**
+- **✅ v1.4.0 → v1.4.1** - Just pull latest image and restart
+- **✅ Any future v1.4.x updates** - Standard Docker workflows
+- **✅ v1.4.0+ users** - No migration scripts ever needed again
+
+**Why the difference?**
+- v1.4.0 **containerized** the entire application properly
+- v1.4.1+ releases are **standard Docker image updates**
+- Your configuration is now **portable** and **version-controlled**
+- Database migrations run automatically in Docker containers
 
 📖 **[Complete Migration Guide](MIGRATION_GUIDE.md)** - Detailed instructions and troubleshooting
 
