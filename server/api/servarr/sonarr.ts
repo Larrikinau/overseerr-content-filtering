@@ -121,8 +121,7 @@ class SonarrAPI extends ServarrBase<{
 
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      throw new Error(`[Sonarr] Failed to retrieve series: ${errorMessage}`);
+      throw new Error(`[Sonarr] Failed to retrieve series: ${e.message}`);
     }
   }
 
@@ -132,8 +131,7 @@ class SonarrAPI extends ServarrBase<{
 
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      throw new Error(`[Sonarr] Failed to retrieve series by ID: ${errorMessage}`);
+      throw new Error(`[Sonarr] Failed to retrieve series by ID: ${e.message}`);
     }
   }
 
@@ -151,10 +149,9 @@ class SonarrAPI extends ServarrBase<{
 
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error('Error retrieving series by series title', {
         label: 'Sonarr API',
-        errorMessage,
+        errorMessage: e.message,
         title,
       });
       throw new Error('No series found');
@@ -175,10 +172,9 @@ class SonarrAPI extends ServarrBase<{
 
       return response.data[0];
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error('Error retrieving series by tvdb ID', {
         label: 'Sonarr API',
-        errorMessage,
+        errorMessage: e.message,
         tvdbId: id,
       });
       throw new Error('Series not found');
@@ -270,13 +266,11 @@ class SonarrAPI extends ServarrBase<{
 
       return createdSeriesResponse.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      const responseData = (e as any)?.response?.data;
       logger.error('Something went wrong while adding a series to Sonarr.', {
         label: 'Sonarr API',
-        errorMessage,
+        errorMessage: e.message,
         options,
-        response: responseData,
+        response: e?.response?.data,
       });
       throw new Error('Failed to add series');
     }
@@ -292,12 +286,11 @@ class SonarrAPI extends ServarrBase<{
 
       return data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error(
         'Something went wrong while retrieving Sonarr language profiles.',
         {
           label: 'Sonarr API',
-          errorMessage,
+          errorMessage: e.message,
         }
       );
 
@@ -314,12 +307,11 @@ class SonarrAPI extends ServarrBase<{
     try {
       await this.runCommand('SeriesSearch', { seriesId });
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error(
         'Something went wrong while executing Sonarr series search.',
         {
           label: 'Sonarr API',
-          errorMessage,
+          errorMessage: e.message,
           seriesId,
         }
       );

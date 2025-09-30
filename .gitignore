@@ -67,8 +67,3 @@ tsconfig.tsbuildinfo
 
 # Config Cache Directory
 config/cache
-
-# Release binaries (too large for Git, distributed via GitHub Releases)
-releases/*.tar.gz
-releases/*.tar.gz.sha256
-overseerr-content-filtering-*.tar.gz*
