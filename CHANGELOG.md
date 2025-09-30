@@ -5,7 +5,88 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.2] - 2025-09-30 (LATEST RELEASE)
+## [1.5.0] - 2025-09-30 (LATEST RELEASE)
+
+### 🎉 **MAJOR RELEASE - Upstream Overseerr v1.34.0 + Content Filtering Improvements**
+
+#### 🔄 **Merged Upstream Overseerr v1.34.0**
+
+This release incorporates all improvements from **official Overseerr v1.34.0** (released March 26, 2025) while **preserving all content filtering functionality**:
+
+**From Upstream Overseerr v1.34.0:**
+- 🏷️ **PWA Badge Indicators**: Request and issue count badges on sidebar and mobile menu
+- 📺 **TV Show Specials**: Support for requesting "Specials" seasons
+- 🔔 **Web Push Improvements**: Better management of web push notifications
+- 🎬 **Trailer Fallbacks**: English trailers as fallback when using other languages
+- 🎨 **Updated Plex Logo**: Refreshed Plex branding in UI
+- 🔒 **Password Manager**: Prevents interference and improves service links
+- 🏷️ **Servarr Tag Merging**: Series tags now merge instead of overwriting
+- 🍪 **Cookie Store TTL**: Correct session cookie expiration
+- 🌐 **Localhost Fix**: Proper HOST environment variable handling
+- 📱 **Mobile UI**: Improved count badge styling and notification indicators
+- 🛠️ **Build System**: Updated dependencies and Snap build improvements
+
+#### 🛡️ **Content Filtering Preserved and Enhanced**
+
+During the merge, **all 12 content filtering files were intelligently preserved**:
+- ✅ `server/api/themoviedb/index.ts` - Core filtering logic
+- ✅ `server/entity/UserSettings.ts` - Rating preferences storage
+- ✅ `server/routes/discover.ts` - Discovery page filtering
+- ✅ `server/routes/movie.ts`, `server/routes/tv.ts` - Content endpoints
+- ✅ `server/routes/search.ts` - Search filtering
+- ✅ `src/components/UserProfile/UserSettings/UserGeneralSettings/` - Admin UI
+- ✅ All other content filtering components
+
+### 🐛 **BUGFIX - All Trending Content Filtering**
+
+#### 🔧 Fixed
+- **🎬 All Trending Filtering**: Fixed `/discover/trending` endpoint ("Trending" section on homepage) to properly filter mixed content (movies + TV shows)
+- **🔍 Mixed Content Post-Processing**: Added intelligent post-filtering for `/trending/all/` TMDb API endpoint which doesn't support certification parameters
+- **📺 Comprehensive Coverage**: Trending section now respects both movie rating filters AND TV rating filters for mixed results
+
+#### ❌ What Was Broken
+- The "Trending" section on homepage showed unfiltered content regardless of user rating restrictions
+- TMDb's `/trending/all/` API endpoint doesn't accept certification filtering parameters
+- Mixed content (movies + TV + people) wasn't being filtered server-side after API response
+
+#### ✅ What's Fixed
+- Trending section now applies post-filtering based on media_type:
+  - Movies: Filtered through content rating and unrated removal when restrictions enabled
+  - TV Shows: Filtered through TV rating and unrated removal when restrictions enabled  
+  - People/Collections: Passed through without filtering (not media content)
+- 100% content filtering coverage across entire Discovery page including Trending
+
+#### 📝 Technical Details
+- Updated `getAllTrending()` method in `server/api/themoviedb/index.ts`
+- Removed non-functional certification parameters from `/trending/all/` API calls
+- Added intelligent media_type-based post-processing using existing `filterUnratedMovies()` and `filterUnratedTv()` methods
+
+### 🔧 **Build Improvements**
+
+#### 🚀 Default Local Build Tag
+- **Set `COMMIT_TAG=local` as default** in Dockerfile
+- Prevents update notification loops when building locally
+- Production builds can still override with actual version tags
+- Improves developer and self-hosted user experience
+
+### 📖 **Documentation Overhaul**
+
+#### Simplified Documentation
+- ✅ **Removed migration complexity**: No more confusing version upgrade paths
+- ✅ **Clear API key guidance**: Explains standard Overseerr community key and optional private keys
+- ✅ **Simple switch from Overseerr**: 3-step Docker image swap instructions
+- ✅ **Focus on current version**: Removed outdated references to v1.4.0, v1.4.1, v1.4.2
+- ✅ **Updated to v1.5.0**: All version references current
+
+#### API Key Clarity
+Documentation now clearly explains:
+- **Standard key** (`db55323b8d3e4154498498a75642b381`) - Works out-of-the-box, same as Overseerr
+- **Optional private key** - How to get your own for better performance
+- **No signup required** - Application works immediately with community key
+
+---
+
+## [1.4.2] - 2025-09-30
 
 ### 🐛 **CRITICAL BUGFIX - Discovery Page Filtering**
 
