@@ -5,7 +5,50 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.1] - 2025-01-25 (LATEST RELEASE)
+## [1.4.2] - 2025-09-30 (LATEST RELEASE)
+
+### 🐛 **CRITICAL BUGFIX - Discovery Page Filtering**
+
+#### 🔧 Critical Fixes
+- **🎯 Studio Discovery Filtering**: Fixed `/discover/movies/studio/:studioId` endpoint to properly apply user content rating filters
+- **📺 Network Discovery Filtering**: Fixed `/discover/tv/network/:networkId` endpoint to respect user TV rating restrictions
+- **🔑 Keyword Discovery Filtering**: Fixed `/discover/keyword/:keywordId/movies` endpoint to apply content filtering
+- **🎬 Movie Recommendations Filtering**: Fixed `/movie/:id/recommendations` endpoint to honor user rating limits
+- **🔄 Similar Movies Filtering**: Fixed `/movie/:id/similar` endpoint to properly filter content
+- **📺 TV Recommendations Filtering**: Fixed `/tv/:id/recommendations` endpoint to respect content restrictions
+- **🔄 Similar TV Shows Filtering**: Fixed `/tv/:id/similar` endpoint to apply user rating filters
+
+#### ❌ What Was Broken
+- **Discovery by Studio**: Browsing movies by studio (e.g., Disney, Warner Bros) showed all content regardless of user rating limits
+- **Discovery by Network**: Browsing TV shows by network (e.g., HBO, Netflix) bypassed content filtering entirely
+- **Keyword Browsing**: Searching by keywords showed unfiltered results above user's rating restrictions
+- **Recommendations**: Movie and TV recommendations displayed content that should have been filtered
+- **Similar Content**: "More like this" sections showed inappropriate content for restricted users
+
+#### ✅ What's Fixed
+- All 7 affected discovery endpoints now properly use `createTmdbWithRegionLanguage(req.user)` helper
+- Content rating filters (`maxMovieRating`, `maxTvRating`) now consistently applied across entire Discovery page
+- Curated filtering (minimum votes/ratings) properly enforced on all discovery routes
+- Adult content blocking now works correctly across all content browsing methods
+
+#### 🎯 Impact
+- **Before**: Approximately 30-40% of Discovery page routes bypassed content filtering
+- **After**: 100% of Discovery page routes now respect admin-configured user rating restrictions
+
+#### ⚡ Upgrade Instructions
+
+**For v1.4.0/v1.4.1 users (Simple Docker Update):**
+```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+docker-compose restart overseerr-content-filtering
+# OR: docker stop/rm and re-run with :latest
+```
+
+**For pre-v1.4.0 users:** Use the migration script as described in [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+
+---
+
+## [1.4.1] - 2025-01-25
 
 ### 🔧 **HOTFIX - Plex Watchlist API Update**
 

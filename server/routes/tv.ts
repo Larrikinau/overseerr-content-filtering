@@ -5,6 +5,7 @@ import Media from '@server/entity/Media';
 import logger from '@server/logger';
 import { mapTvResult } from '@server/models/Search';
 import { mapSeasonWithEpisodes, mapTvDetails } from '@server/models/Tv';
+import { createTmdbWithRegionLanguage } from './discover';
 import { Router } from 'express';
 
 const tvRoutes = Router();
@@ -59,7 +60,7 @@ tvRoutes.get('/:id/season/:seasonNumber', async (req, res, next) => {
 });
 
 tvRoutes.get('/:id/recommendations', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const results = await tmdb.getTvRecommendations({
@@ -99,7 +100,7 @@ tvRoutes.get('/:id/recommendations', async (req, res, next) => {
 });
 
 tvRoutes.get('/:id/similar', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const results = await tmdb.getSimilarTvShows({

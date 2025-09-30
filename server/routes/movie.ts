@@ -7,6 +7,7 @@ import Media from '@server/entity/Media';
 import logger from '@server/logger';
 import { mapMovieDetails } from '@server/models/Movie';
 import { mapMovieResult } from '@server/models/Search';
+import { createTmdbWithRegionLanguage } from './discover';
 import { Router } from 'express';
 
 const movieRoutes = Router();
@@ -37,7 +38,7 @@ movieRoutes.get('/:id', async (req, res, next) => {
 });
 
 movieRoutes.get('/:id/recommendations', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const results = await tmdb.getMovieRecommendations({
@@ -78,7 +79,7 @@ movieRoutes.get('/:id/recommendations', async (req, res, next) => {
 });
 
 movieRoutes.get('/:id/similar', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const results = await tmdb.getSimilarMovies({
