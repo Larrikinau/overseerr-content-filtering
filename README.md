@@ -16,9 +16,9 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.4.1** provides comprehensive content filtering capabilities while preserving all original Overseerr functionality, with the latest Plex API compatibility fixes.
+**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.4.2** provides comprehensive content filtering capabilities while preserving all original Overseerr functionality, with the latest Plex API compatibility fixes.
 
-### 🔧 **What's Fixed in v1.4.1**
+### 🔧 **What's Fixed in v1.4.2**
 
 - **🔗 Updated Plex API Endpoints**: Fixed Plex watchlist synchronization by updating from deprecated `metadata.provider.plex.tv` to new `discover.provider.plex.tv`
 - **✅ Resolved 404 Errors**: Eliminates persistent "Failed to retrieve watchlist items" errors in logs
@@ -171,9 +171,9 @@ chmod +x migrate-to-overseerr-content-filtering.sh
 
 ### ⚡ **Simple Updates for v1.4.0+ Users**
 
-**🎉 Already running v1.4.0? Upgrading to v1.4.1 is just a standard Docker update!**
+**🎉 Already running v1.4.0? Upgrading to v1.4.2 is just a standard Docker update!**
 
-#### **For v1.4.0 → v1.4.1 (Simple Docker Update)**
+#### **For v1.4.0 → v1.4.2 (Simple Docker Update)**
 
 ```bash
 # Pull the latest version with Plex API fixes
@@ -187,7 +187,7 @@ docker rm overseerr-content-filtering
 # Then run your original docker run command with :latest
 ```
 
-**That's it! No migration script needed for v1.4.0 → v1.4.1 upgrades.**
+**That's it! No migration script needed for v1.4.0 → v1.4.2 upgrades.**
 
 ### 🔄 **Migration Script vs Simple Updates**
 
@@ -197,13 +197,13 @@ docker rm overseerr-content-filtering
 - **Snap/Systemd installations** moving to Docker
 
 #### **Simple Docker Pull For:**
-- **✅ v1.4.0 → v1.4.1** - Just pull latest image and restart
+- **✅ v1.4.0 → v1.4.2** - Just pull latest image and restart
 - **✅ Any future v1.4.x updates** - Standard Docker workflows
 - **✅ v1.4.0+ users** - No migration scripts ever needed again
 
 **Why the difference?**
 - v1.4.0 **containerized** the entire application properly
-- v1.4.1+ releases are **standard Docker image updates**
+- v1.4.2+ releases are **standard Docker image updates**
 - Your configuration is now **portable** and **version-controlled**
 - Database migrations run automatically in Docker containers
 
