@@ -1,8 +1,8 @@
-# Migration Guide: From Overseerr to Overseerr Content Filtering v1.4.1
+# Migration Guide: From Overseerr to Overseerr Content Filtering v1.4.2
 
 ## ⚡ **Already Running v1.4.0? Quick Update!**
 
-**If you're already running v1.4.0, upgrading to v1.4.1 is just a standard Docker update:**
+**If you're already running v1.4.0, upgrading to v1.4.2 is just a standard Docker update:**
 
 ```bash
 # Pull the latest version with Plex API fixes
@@ -15,7 +15,7 @@ docker stop overseerr-content-filtering && docker rm overseerr-content-filtering
 # Then run your original docker run command with :latest
 ```
 
-**That's it! No migration script needed for v1.4.0 → v1.4.1 upgrades.**
+**That's it! No migration script needed for v1.4.0 → v1.4.2 upgrades.**
 
 ---
 
