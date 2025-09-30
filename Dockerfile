@@ -1,4 +1,4 @@
-FROM node:18.18.2-alpine AS build_image
+FROM node:18.18.2-alpine AS BUILD_IMAGE
 
 WORKDIR /app
 
@@ -29,40 +29,19 @@ RUN yarn install --production --ignore-scripts --prefer-offline
 
 RUN rm -rf src server .next/cache
 
-RUN mkdir -p config && touch config/DOCKER
+RUN touch config/DOCKER
 
-# Create committag.json with proper fallback to 'local' if COMMIT_TAG is not provided
-# This prevents version loop issues when building locally
-RUN if [ -z "$COMMIT_TAG" ] || [ "$COMMIT_TAG" = "" ]; then \
-      echo '{"commitTag": "local"}' > committag.json; \
-    else \
-      echo "{\"commitTag\": \"${COMMIT_TAG}\"}" > committag.json; \
-    fi
+RUN echo "{\"commitTag\": \"${COMMIT_TAG}\"}" > committag.json
 
 
 FROM node:18.18.2-alpine
 
 WORKDIR /app
 
-# Install sqlite3 for database operations and other dependencies
-RUN apk add --no-cache tzdata tini sqlite && rm -rf /tmp/*
+RUN apk add --no-cache tzdata tini && rm -rf /tmp/*
 
 # copy from build image
-COPY --from=build_image /app ./
-
-# Set production environment and ensure migrations run
-ENV NODE_ENV=production
-ENV RUN_MIGRATIONS=true
-
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S overseerr -u 1001
-
-# Ensure config directory exists and has proper permissions
-RUN mkdir -p /app/config && chown -R overseerr:nodejs /app/config
-
-# Switch to non-root user
-USER overseerr
+COPY --from=BUILD_IMAGE /app ./
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 CMD [ "yarn", "start" ]

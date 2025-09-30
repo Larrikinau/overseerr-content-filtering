@@ -42,8 +42,7 @@ class RadarrAPI extends ServarrBase<{ movieId: number }> {
 
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      throw new Error(`[Radarr] Failed to retrieve movies: ${errorMessage}`);
+      throw new Error(`[Radarr] Failed to retrieve movies: ${e.message}`);
     }
   };
 
@@ -53,8 +52,7 @@ class RadarrAPI extends ServarrBase<{ movieId: number }> {
 
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      throw new Error(`[Radarr] Failed to retrieve movie: ${errorMessage}`);
+      throw new Error(`[Radarr] Failed to retrieve movie: ${e.message}`);
     }
   };
 
@@ -72,10 +70,9 @@ class RadarrAPI extends ServarrBase<{ movieId: number }> {
 
       return response.data[0];
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error('Error retrieving movie by TMDB ID', {
         label: 'Radarr API',
-        errorMessage,
+        errorMessage: e.message,
         tmdbId: id,
       });
       throw new Error('Movie not found');
@@ -185,15 +182,13 @@ class RadarrAPI extends ServarrBase<{ movieId: number }> {
       }
       return response.data;
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      const responseData = (e as any)?.response?.data;
       logger.error(
         'Failed to add movie to Radarr. This might happen if the movie already exists, in which case you can safely ignore this error.',
         {
           label: 'Radarr',
-          errorMessage,
+          errorMessage: e.message,
           options,
-          response: responseData,
+          response: e?.response?.data,
         }
       );
       throw new Error('Failed to add movie to Radarr');
@@ -209,12 +204,11 @@ class RadarrAPI extends ServarrBase<{ movieId: number }> {
     try {
       await this.runCommand('MoviesSearch', { movieIds: [movieId] });
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
       logger.error(
         'Something went wrong while executing Radarr movie search.',
         {
           label: 'Radarr API',
-          errorMessage,
+          errorMessage: e.message,
           movieId,
         }
       );

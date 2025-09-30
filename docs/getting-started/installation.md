@@ -24,14 +24,14 @@ For details on the Docker CLI, please [review the official `docker run` document
 **Installation:**
 
 ```bash
-sudo docker run -d \\
-  --name overseerr \\
-  -e LOG_LEVEL=debug \\
-  -e TZ=Asia/Tokyo \\
-  -e PORT=5055 `#optional` \\
-  -p 5055:5055 \\
-  -v /path/to/appdata/config:/app/config \\
-  --restart unless-stopped \\
+docker run -d \
+  --name overseerr \
+  -e LOG_LEVEL=debug \
+  -e TZ=Asia/Tokyo \
+  -e PORT=5055 `#optional` \
+  -p 5055:5055 \
+  -v /path/to/appdata/config:/app/config \
+  --restart unless-stopped \
   sctx/overseerr
 ```
 
@@ -42,19 +42,19 @@ To run the container as a specific user/group, you may optionally add `--user=[ 
 Stop and remove the existing container:
 
 ```bash
-sudo docker stop overseerr && sudo docker rm overseerr
+docker stop overseerr && docker rm overseerr
 ```
 
 Pull the latest image:
 
 ```bash
-sudo docker pull sctx/overseerr
+docker pull sctx/overseerr
 ```
 
 Finally, run the container with the same parameters originally used to create the container:
 
 ```bash
-sudo docker run -d ...
+docker run -d ...
 ```
 
 {% hint style="info" %}
@@ -76,11 +76,13 @@ Define the `overseerr` service in your `docker-compose.yml` as follows:
 version: '3'
 
 services:
-  overseerr-content-filtering:
-    image: larrikinau/overseerr-content-filtering:latest
-    container_name: overseerr-content-filtering
+  overseerr:
+    image: sctx/overseerr:latest
+    container_name: overseerr
     environment:
+      - LOG_LEVEL=debug
       - TZ=Asia/Tokyo
+      - PORT=5055 #optional
     ports:
       - 5055:5055
     volumes:
@@ -99,7 +101,7 @@ docker-compose up -d
 Pull the latest image:
 
 ```bash
-docker-compose pull overseerr-content-filtering
+docker-compose pull overseerr
 ```
 
 Then, restart all services defined in the Compose file:
@@ -130,7 +132,7 @@ Please refer to the [Docker Desktop for Windows user manual](https://docs.docker
 First, create a volume to store the configuration data for Overseerr using using either the Docker CLI:
 
 ```bash
-sudo docker volume create overseerr-data
+docker volume create overseerr-data
 ```
 
 or the Docker Desktop app:
@@ -143,7 +145,7 @@ or the Docker Desktop app:
 Then, create and start the Overseerr container:
 
 ```bash
-sudo docker run -d --name overseerr-content-filtering -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped larrikinau/overseerr-content-filtering:latest
+docker run -d --name overseerr -e LOG_LEVEL=debug -e TZ=Asia/Tokyo -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped sctx/overseerr:latest
 ```
 
 To access the files inside the volume created above, navigate to `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\overseerr-data\_data` using File Explorer.

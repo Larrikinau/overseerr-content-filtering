@@ -145,9 +145,9 @@ const SettingsMain = () => {
                 csrfProtection: values.csrfProtection,
                 hideAvailable: values.hideAvailable,
                 locale: values.locale,
-                partialRequestsEnabled: values.partialRequestsEnabled,
                 region: values.region,
                 originalLanguage: values.originalLanguage,
+                partialRequestsEnabled: values.partialRequestsEnabled,
                 trustProxy: values.trustProxy,
                 cacheImages: values.cacheImages,
               });

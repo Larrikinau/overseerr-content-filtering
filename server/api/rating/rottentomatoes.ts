@@ -65,7 +65,7 @@ class RottenTomatoes extends ExternalAPI {
       {
         'x-algolia-agent':
           'Algolia%20for%20JavaScript%20(4.14.3)%3B%20Browser%20(lite)',
-        'x-algolia-api-key': process.env.ALGOLIA_API_KEY,
+        'x-algolia-api-key': '175588f6e5f8319b27702e4cc4013561',
         'x-algolia-application-id': '79FRDP12PN',
       },
       {

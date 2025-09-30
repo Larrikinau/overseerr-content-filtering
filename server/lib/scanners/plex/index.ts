@@ -70,51 +70,11 @@ class PlexScanner
         return this.log('No admin configured. Plex scan skipped.', 'warn');
       }
 
-      if (!admin.plexToken) {
-        return this.log('Admin user has no Plex token. Plex scan skipped.', 'warn');
-      }
-
       this.plexClient = new PlexAPI({ plexToken: admin.plexToken });
-
-      // Test connection to Plex before scanning
-      try {
-        await this.plexClient.getStatus();
-        this.log('Successfully connected to Plex server', 'info');
-      } catch (connectionError) {
-        return this.log('Failed to connect to Plex server', 'error', {
-          errorMessage: connectionError.message,
-        });
-      }
 
       this.libraries = settings.plex.libraries.filter(
         (library) => library.enabled
       );
-
-      if (this.libraries.length === 0) {
-        return this.log('No enabled libraries found. Plex scan skipped.', 'warn');
-      }
-
-      // Verify libraries are accessible
-      try {
-        const availableLibraries = await this.plexClient.getLibraries();
-        const accessibleLibraries = this.libraries.filter(lib => 
-          availableLibraries.some(availLib => availLib.key === lib.id)
-        );
-        
-        if (accessibleLibraries.length === 0) {
-          return this.log('No accessible libraries found. Check library permissions.', 'warn');
-        }
-        
-        if (accessibleLibraries.length < this.libraries.length) {
-          this.log(`Only ${accessibleLibraries.length} of ${this.libraries.length} libraries are accessible`, 'warn');
-        }
-        
-        this.libraries = accessibleLibraries;
-      } catch (libraryError) {
-        return this.log('Failed to fetch library list from Plex', 'error', {
-          errorMessage: libraryError.message,
-        });
-      }
 
       const hasHama = await this.hasHamaAgent();
       if (hasHama) {
