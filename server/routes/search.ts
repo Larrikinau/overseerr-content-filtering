@@ -32,10 +32,6 @@ const filterResultsByRating = (results: any[], user?: User): any[] => {
     });
   };
 
-  console.log('=== FILTER DEBUG ===');
-  console.log('User settings:', user?.settings);
-  console.log('Total results before filtering:', results.length);
-  
   const filtered = results.filter((result: any) => {
     if (!user?.settings) return true;
 
@@ -48,25 +44,20 @@ const filterResultsByRating = (results: any[], user?: User): any[] => {
     
     // Always filter adult content - block XXX content based on user setting
     if (result.adult || seemsAdult) {
-      console.log(`Adult content detected: "${title}", TMDB adult flag: ${result.adult}, keyword match: ${seemsAdult}`);
-      
       // For movies: if maxMovieRating is 'Adult', it means "Block only Adult/XXX content"
       // So we should block XXX content when this setting is active
       if (isMovie && user.settings.maxMovieRating === 'Adult') {
-        console.log(`Blocking XXX movie content: ${title}`);
         return false;
       }
       
       // For TV: if no maxTvRating is set (empty), allow all TV content
       // But if a rating is set and it's not allowing adult content, block it
       if (isTv && user.settings.maxTvRating && user.settings.maxTvRating !== 'XXX_ALLOWED') {
-        console.log(`Blocking adult TV content: ${title}`);
         return false;
       }
       
       // If it's TV and no rating restriction, allow it
       if (isTv && !user.settings.maxTvRating) {
-        console.log(`Allowing adult TV content (no restriction): ${title}`);
         return true;
       }
     }
@@ -127,8 +118,6 @@ const filterResultsByRating = (results: any[], user?: User): any[] => {
     return true;
   });
   
-  console.log('Total results after filtering:', filtered.length);
-  console.log('=== END FILTER DEBUG ===');
   return filtered;
 };
 
