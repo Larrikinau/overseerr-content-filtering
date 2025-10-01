@@ -5,7 +5,62 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0] - 2025-09-30 (LATEST RELEASE)
+## [1.5.2] - 2025-10-01 (LATEST RELEASE)
+
+### 🐛 **CRITICAL BUGFIX - Content Filtering for Trending, Recommendations, and Upcoming Content**
+
+#### 🔧 Fixed Issues
+
+**Issue #13 - Trending, Recommendations, and Similar Content Filtering:**
+- **🎬 Trending Content**: Fixed `/discover/trending` endpoint to properly filter movies and TV shows by user content rating restrictions
+- **🎯 Movie Recommendations**: Fixed `/movie/:id/recommendations` endpoint to apply content rating filters
+- **📺 TV Recommendations**: Fixed `/tv/:id/recommendations` endpoint to respect user TV rating limits
+- **🔄 Similar Movies**: Fixed `/movie/:id/similar` endpoint to honor user rating restrictions
+- **🔄 Similar TV Shows**: Fixed `/tv/:id/similar` endpoint to apply content filtering
+
+**Curated Filter Issue with Upcoming Content:**
+- **📅 Upcoming Movies**: Fixed empty results when curated discovery mode enabled for upcoming movies
+- **📅 Upcoming TV Shows**: Fixed empty results when curated discovery mode enabled for upcoming TV shows
+- **Root Cause**: Upcoming content in TMDb often has zero votes/ratings, causing curated filters to exclude all results
+- **Solution**: Skip curated quality filters (vote count/rating thresholds) for upcoming content while maintaining content rating restrictions
+
+#### ❌ What Was Broken
+- Trending section showed unfiltered content regardless of user rating restrictions
+- Movie and TV recommendations displayed content above user's rating limits
+- Similar content suggestions bypassed content filtering
+- Upcoming movies/TV shows returned empty results when curated discovery mode was enabled
+- Users with content restrictions saw inappropriate content in trending and recommendation sections
+
+#### ✅ What's Fixed
+- All trending, recommendation, and similar content endpoints now properly apply content rating filters
+- Upcoming content endpoints intelligently skip curated filters while maintaining rating restrictions
+- 100% content filtering coverage across all discovery, trending, and recommendation features
+- Curated discovery mode works correctly for both current and upcoming content
+
+#### 📝 Technical Details
+- Updated `getAllTrending()` in `server/api/themoviedb/index.ts` to apply content rating filters
+- Updated `getMovieRecommendations()` and `getTvRecommendations()` to respect user rating limits
+- Updated `getSimilarMovies()` and `getSimilarTvShows()` to apply content filtering
+- Modified `/movies/upcoming` endpoint in `server/routes/discover.ts` to conditionally use discover vs native upcoming API
+- Added `skipCuratedFilters` flag for `/tv/upcoming` endpoint to bypass vote/rating thresholds
+- Enhanced logic to distinguish between real content restrictions and adult-only blocking
+- Removed debug console.log statements from `server/routes/search.ts`
+
+#### ⚡ Upgrade Instructions
+
+**Simple Docker Update:**
+```bash
+docker pull larrikinau/overseerr-content-filtering:1.5.2
+# or
+docker pull larrikinau/overseerr-content-filtering:latest
+docker restart overseerr-content-filtering
+```
+
+No manual migration needed - existing settings preserved!
+
+---
+
+## [1.5.0] - 2025-09-30
 
 ### 🎉 **MAJOR RELEASE - Upstream Overseerr v1.34.0 + Content Filtering Improvements**
 
