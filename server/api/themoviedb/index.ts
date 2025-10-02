@@ -1,5 +1,6 @@
 import ExternalAPI from '@server/api/externalapi';
 import cacheManager from '@server/lib/cache';
+import logger from '@server/logger';
 import { sortBy } from 'lodash';
 import type {
   TmdbCollection,
@@ -11,6 +12,7 @@ import type {
   TmdbKeywordSearchResponse,
   TmdbLanguage,
   TmdbMovieDetails,
+  TmdbMovieResult,
   TmdbNetwork,
   TmdbPersonCombinedCredits,
   TmdbPersonDetails,
@@ -21,6 +23,7 @@ import type {
   TmdbSearchTvResponse,
   TmdbSeasonWithEpisodes,
   TmdbTvDetails,
+  TmdbTvResult,
   TmdbUpcomingMoviesResponse,
   TmdbWatchProviderDetails,
   TmdbWatchProviderRegion,
@@ -74,6 +77,7 @@ interface DiscoverMovieOptions {
   sortBy?: SortOptions;
   watchRegion?: string;
   watchProviders?: string;
+  skipCuratedFilters?: boolean;
 }
 
 interface DiscoverTvOptions {
@@ -95,6 +99,9 @@ interface DiscoverTvOptions {
   sortBy?: SortOptions;
   watchRegion?: string;
   watchProviders?: string;
+  skipCuratedFilters?: boolean;
+  skipCertificationForUnrestricted?: boolean;
+  serverSideRatingFilter?: boolean;
 }
 
 class TheMovieDb extends ExternalAPI {
@@ -149,31 +156,242 @@ class TheMovieDb extends ExternalAPI {
     return !this.maxMovieRating || this.maxMovieRating === "";
   }
   
+  // ========== GLOBAL CERTIFICATION CACHING (v1.5.1) ==========
+  // Static cache shared across all instances for certification data
+  private static certificationCache = new Map<string, { cert: string; expires: number }>();
+  private static CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+  private static BATCH_SIZE = 10; // Process in batches to respect rate limits
+  
+  /**
+   * Get cached movie certification or fetch from API
+   * @param movieId - TMDB movie ID
+   * @returns US certification string (e.g., "PG-13") or null if not available
+   */
+  private async getCachedMovieCertification(movieId: number): Promise<string | null> {
+    const cacheKey = `movie:${movieId}`;
+    const cached = TheMovieDb.certificationCache.get(cacheKey);
+    
+    // Return cached value if not expired
+    if (cached && cached.expires > Date.now()) {
+      return cached.cert;
+    }
+    
+    // Fetch from API
+    try {
+      const releaseDates = await this.get<any>(`/movie/${movieId}/release_dates`);
+      const usRelease = releaseDates?.results?.find((r: any) => r.iso_3166_1 === 'US');
+      const cert = usRelease?.release_dates?.[0]?.certification || '';
+      
+      // Cache the result
+      TheMovieDb.certificationCache.set(cacheKey, {
+        cert,
+        expires: Date.now() + TheMovieDb.CACHE_TTL,
+      });
+      
+      return cert || null;
+    } catch (error) {
+      return null; // Safe default: exclude on error
+    }
+  }
+  
+  /**
+   * Get cached TV rating or fetch from API
+   * @param tvId - TMDB TV show ID
+   * @returns US TV rating string (e.g., "TV-14") or null if not available
+   */
+  private async getCachedTvRating(tvId: number): Promise<string | null> {
+    const cacheKey = `tv:${tvId}`;
+    const cached = TheMovieDb.certificationCache.get(cacheKey);
+    
+    // Return cached value if not expired
+    if (cached && cached.expires > Date.now()) {
+      return cached.cert;
+    }
+    
+    // Fetch from API
+    try {
+      const ratings = await this.get<any>(`/tv/${tvId}/content_ratings`);
+      const usRating = ratings?.results?.find((r: any) => r.iso_3166_1 === 'US');
+      const rating = usRating?.rating || '';
+      
+      // Cache the result
+      TheMovieDb.certificationCache.set(cacheKey, {
+        cert: rating,
+        expires: Date.now() + TheMovieDb.CACHE_TTL,
+      });
+      
+      return rating || null;
+    } catch (error) {
+      return null; // Safe default: exclude on error
+    }
+  }
+  
+  /**
+   * Get list of allowed movie certifications based on user's max rating
+   * @returns Array of allowed certification strings
+   */
+  private getAllowedMovieCertifications(): string[] {
+    const allRatings = ['G', 'PG', 'PG-13', 'R', 'NC-17'];
+    
+    if (!this.maxMovieRating) {
+      return allRatings; // No restrictions
+    }
+    
+    const maxIndex = allRatings.indexOf(this.maxMovieRating);
+    if (maxIndex === -1) {
+      return allRatings; // Unknown rating, allow all
+    }
+    
+    return allRatings.slice(0, maxIndex + 1);
+  }
+  
+  /**
+   * Get list of allowed TV ratings based on user's max rating
+   * @returns Array of allowed TV rating strings
+   */
+  private getAllowedTvRatings(): string[] {
+    const allRatings = ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA'];
+    
+    if (!this.maxTvRating) {
+      return allRatings; // No restrictions
+    }
+    
+    // Map movie-style ratings to TV ratings (for backwards compatibility)
+    const ratingMap: { [key: string]: string } = {
+      'G': 'TV-G',
+      'PG': 'TV-PG',
+      'PG-13': 'TV-14',
+      'R': 'TV-14',
+      'Adult': 'TV-MA'
+    };
+    
+    const mappedRating = ratingMap[this.maxTvRating] || this.maxTvRating;
+    const maxIndex = allRatings.indexOf(mappedRating);
+    
+    if (maxIndex === -1) {
+      return allRatings; // Unknown rating, allow all
+    }
+    
+    return allRatings.slice(0, maxIndex + 1);
+  }
+  
+  /**
+   * Filter movies by certification with caching and batching
+   * @param movies - Array of movie results from TMDB
+   * @returns Filtered array of movies that meet certification requirements
+   */
+  private async filterMoviesByCertification(movies: TmdbMovieResult[]): Promise<TmdbMovieResult[]> {
+    // Check if user has no restrictions (null, undefined, empty string, or 'Adult')
+    // 'Adult' means block XXX porn, but allow all mainstream rated content (G through NC-17)
+    if (!this.maxMovieRating || this.maxMovieRating === 'Adult') {
+      return movies; // No filtering needed
+    }
+    
+    const allowedCertifications = this.getAllowedMovieCertifications();
+    const filtered: TmdbMovieResult[] = [];
+    
+    // Process in batches to respect rate limits
+    for (let i = 0; i < movies.length; i += TheMovieDb.BATCH_SIZE) {
+      const batch = movies.slice(i, i + TheMovieDb.BATCH_SIZE);
+      
+      const batchPromises = batch.map(async (movie) => {
+        const cert = await this.getCachedMovieCertification(movie.id);
+        
+        // If no certification data, exclude for restricted users (safe default)
+        if (!cert || cert === '') {
+          return null;
+        }
+        
+        // Check if certification is within allowed range
+        if (allowedCertifications.includes(cert)) {
+          return movie;
+        }
+        return null;
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      filtered.push(...batchResults.filter(m => m !== null) as TmdbMovieResult[]);
+    }
+    
+    return filtered;
+  }
+  
+  /**
+   * Filter TV shows by rating with caching and batching
+   * @param shows - Array of TV show results from TMDB
+   * @returns Filtered array of TV shows that meet rating requirements
+   */
+  private async filterTvByRating(shows: TmdbTvResult[]): Promise<TmdbTvResult[]> {
+    // Check if user has no restrictions (null, undefined, empty string, or 'Adult')
+    // 'Adult' means allow all TV content including TV-MA
+    if (!this.maxTvRating || this.maxTvRating === 'Adult') {
+      return shows; // No filtering needed
+    }
+    
+    const allowedRatings = this.getAllowedTvRatings();
+    const filtered: TmdbTvResult[] = [];
+    
+    // Process in batches to respect rate limits
+    for (let i = 0; i < shows.length; i += TheMovieDb.BATCH_SIZE) {
+      const batch = shows.slice(i, i + TheMovieDb.BATCH_SIZE);
+      
+      const batchPromises = batch.map(async (show) => {
+        const rating = await this.getCachedTvRating(show.id);
+        
+        // If no rating data, exclude for restricted users (safe default)
+        if (!rating || rating === '') {
+          return null;
+        }
+        
+        // Check if rating is within allowed range
+        if (allowedRatings.includes(rating)) {
+          return show;
+        }
+        return null;
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      filtered.push(...batchResults.filter(s => s !== null) as TmdbTvResult[]);
+    }
+    
+    return filtered;
+  }
+  // ========== END GLOBAL CERTIFICATION CACHING ==========
+  
   private getMovieCertification(): { [key: string]: string } {
-    if (!this.maxMovieRating) return {}; // No restrictions
+    // No restrictions if undefined, null, or 'Adult'
+    // 'Adult' means block XXX porn only, allow all mainstream content
+    if (!this.maxMovieRating || this.maxMovieRating === 'Adult') {
+      return {}; // No certification filtering
+    }
     
-    // Correct logic: maxMovieRating is the MAXIMUM allowed rating
-    // "G" = Allow only G-rated content
-    // "PG" = Allow G and PG-rated content (block PG-13 and above)
-    // "PG-13" = Allow G, PG, and PG-13 content (block R and above)
-    // "R" = Allow G, PG, PG-13, and R content (block Adult/XXX)
-    // "Adult" = Allow all content including Adult/XXX
+    // TMDB Discover API requires explicit certification list, not .lte
+    // Map max rating to list of allowed certifications
+    const movieRatingMapping: { [key: string]: string[] } = {
+      'G': ['G'],
+      'PG': ['G', 'PG'],
+      'PG-13': ['G', 'PG', 'PG-13'],
+      'R': ['G', 'PG', 'PG-13', 'R'],
+    };
     
-    if (this.maxMovieRating === 'G') {
+    const allowedRatings = movieRatingMapping[this.maxMovieRating];
+    if (allowedRatings) {
+      // Use pipe-separated values for multiple allowed certifications
       return {
         'certification_country': 'US',
-        'certification': 'G'
+        'certification': allowedRatings.join('|')
       };
     }
     
-    return {
-      'certification_country': 'US',
-      'certification.lte': this.maxMovieRating
-    };
+    return {}; // No restrictions if rating not recognized
   }
   
   private getTvCertification(): { [key: string]: string } {
-    if (!this.maxTvRating) return {}; // No restrictions
+    // No restrictions if undefined, null, or 'Adult'
+    // 'Adult' means allow all TV content including TV-MA
+    if (!this.maxTvRating || this.maxTvRating === 'Adult') {
+      return {}; // No certification filtering
+    }
     
     // TMDB TV Discover API uses "certification" parameter differently than movies
     // It accepts exact certification values, not "certification.lte"
@@ -186,7 +404,6 @@ class TheMovieDb extends ExternalAPI {
       'PG': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 
       'PG-13': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
       'R': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
-      'Adult': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
     };
     
     const allowedRatings = tvRatingMapping[this.maxTvRating];
@@ -226,6 +443,18 @@ class TheMovieDb extends ExternalAPI {
   private async filterUnratedMovies(movies: any[]): Promise<any[]> {
     if (!this.maxMovieRating) return movies;
     
+    // Define rating order for comparison (G < PG < PG-13 < R < NC-17)
+    const ratingOrder: { [key: string]: number } = {
+      'G': 1,
+      'PG': 2,
+      'PG-13': 3,
+      'R': 4,
+      'NC-17': 5,
+      'NR': 999, // Not Rated - filter these out
+      'UR': 999  // Unrated - filter these out
+    };
+    
+    const maxRatingOrder = ratingOrder[this.maxMovieRating] || 999;
     const filteredMovies = [];
     
     for (const movie of movies) {
@@ -279,6 +508,28 @@ class TheMovieDb extends ExternalAPI {
   private async filterUnratedTv(tvShows: any[]): Promise<any[]> {
     if (!this.maxTvRating) return tvShows;
     
+    // Define TV rating order for comparison
+    const ratingOrder: { [key: string]: number } = {
+      'TV-Y': 1,
+      'TV-Y7': 2,
+      'TV-G': 3,
+      'TV-PG': 4,
+      'TV-14': 5,
+      'TV-MA': 6,
+      'NR': 999, // Not Rated - filter these out
+      'UR': 999  // Unrated - filter these out
+    };
+    
+    // Map movie-style max rating to TV rating order
+    const maxRatingMapping: { [key: string]: number } = {
+      'G': 3,      // Allow up to TV-G
+      'PG': 4,     // Allow up to TV-PG
+      'PG-13': 5,  // Allow up to TV-14
+      'R': 5,      // Allow up to TV-14 (R movies ~= TV-14)
+      'Adult': 6   // Allow up to TV-MA
+    };
+    
+    const maxRatingOrder = maxRatingMapping[this.maxTvRating] || 999;
     const filteredTvShows = [];
     
     for (const tvShow of tvShows) {
@@ -547,9 +798,9 @@ class TheMovieDb extends ExternalAPI {
         }
       );
 
-      // Apply unrated movie filtering when rating restrictions are enabled
+      // Apply server-side filtering with caching (v1.5.1 - fixes Issue #13)
       if (this.maxMovieRating) {
-        data.results = await this.filterUnratedMovies(data.results);
+        data.results = await this.filterMoviesByCertification(data.results);
       }
 
       return data;
@@ -588,9 +839,9 @@ class TheMovieDb extends ExternalAPI {
         }
       );
 
-      // Apply unrated movie filtering when rating restrictions are enabled
+      // Apply server-side filtering with caching (v1.5.1 - fixes Issue #13)
       if (this.maxMovieRating) {
-        data.results = await this.filterUnratedMovies(data.results);
+        data.results = await this.filterMoviesByCertification(data.results);
       }
 
       return data;
@@ -655,9 +906,9 @@ class TheMovieDb extends ExternalAPI {
         }
       );
 
-      // Apply unrated TV filtering when rating restrictions are enabled
+      // Apply server-side filtering with caching (v1.5.1 - fixes Issue #13)
       if (this.maxTvRating) {
-        data.results = await this.filterUnratedTv(data.results);
+        data.results = await this.filterTvByRating(data.results);
       }
 
       return data;
@@ -693,9 +944,9 @@ class TheMovieDb extends ExternalAPI {
         params,
       });
 
-      // Apply unrated TV filtering when rating restrictions are enabled
+      // Apply server-side filtering with caching (v1.5.1 - fixes Issue #13)
       if (this.maxTvRating) {
-        data.results = await this.filterUnratedTv(data.results);
+        data.results = await this.filterTvByRating(data.results);
       }
 
       return data;
@@ -728,6 +979,7 @@ class TheMovieDb extends ExternalAPI {
     voteCountLte,
     watchProviders,
     watchRegion,
+    skipCuratedFilters = false,
   }: DiscoverMovieOptions = {}): Promise<TmdbSearchMovieResponse> => {
     try {
       const defaultFutureDate = new Date(
@@ -740,7 +992,8 @@ class TheMovieDb extends ExternalAPI {
         .toISOString()
         .split('T')[0];
 
-      const curatedFilters = this.getCuratedFilteringParams();
+      // Skip curated filters for upcoming/unreleased content as they often have no votes/ratings yet
+      const curatedFilters = skipCuratedFilters ? {} : this.getCuratedFilteringParams();
       
       const data = await this.get<TmdbSearchMovieResponse>('/discover/movie', {
         params: {
@@ -780,11 +1033,8 @@ class TheMovieDb extends ExternalAPI {
         },
       });
 
-      // NEW: Post-process to filter out unrated movies when rating restrictions are enabled
-      if (this.maxMovieRating) {
-        data.results = await this.filterUnratedMovies(data.results);
-      }
-
+      // Discover endpoints already use TMDB's certification filtering parameters
+      // No need for additional post-filtering here
       return data;
     } catch (e) {
       return {
@@ -814,6 +1064,9 @@ class TheMovieDb extends ExternalAPI {
     voteCountLte,
     watchProviders,
     watchRegion,
+    skipCuratedFilters = false,
+    skipCertificationForUnrestricted = false,
+    serverSideRatingFilter = false,
   }: DiscoverTvOptions = {}): Promise<TmdbSearchTvResponse> => {
     try {
       const defaultFutureDate = new Date(
@@ -826,14 +1079,20 @@ class TheMovieDb extends ExternalAPI {
         .toISOString()
         .split('T')[0];
 
-      const curatedFilters = this.getCuratedFilteringParams();
+      // Skip curated filters for upcoming/unreleased content as they often have no votes/ratings yet
+      const curatedFilters = skipCuratedFilters ? {} : this.getCuratedFilteringParams();
+      
+      // Skip TV certification only if skipCertificationForUnrestricted is true AND user has no TV restrictions
+      // Also skip certification in API call if using server-side filtering
+      const skipTvCert = (skipCertificationForUnrestricted && !this.maxTvRating) || serverSideRatingFilter;
+      const tvCert = skipTvCert ? {} : this.getTvCertification();
       
       const data = await this.get<TmdbSearchTvResponse>('/discover/tv', {
         params: {
           sort_by: sortBy,
           page,
           include_adult: this.shouldIncludeAdult(),
-          ...this.getTvCertification(),
+          ...tvCert,
           language,
           region: this.region,
           with_original_language:
@@ -866,11 +1125,17 @@ class TheMovieDb extends ExternalAPI {
         },
       });
 
-      // Post-process to filter out unrated TV shows when rating restrictions are enabled
-      if (this.maxTvRating) {
-        data.results = await this.filterUnratedTv(data.results);
+      // If server-side filtering is enabled AND user has TV restrictions, filter now
+      if (serverSideRatingFilter && this.maxTvRating) {
+        const filteredResults = await this.filterTvByRating(data.results);
+        return {
+          ...data,
+          results: filteredResults,
+        };
       }
 
+      // Discover endpoints already use TMDB's certification filtering parameters
+      // No need for additional post-filtering unless serverSideRatingFilter is enabled
       return data;
     } catch (e) {
       return {
@@ -890,6 +1155,8 @@ class TheMovieDb extends ExternalAPI {
     language?: string;
   } = {}): Promise<TmdbUpcomingMoviesResponse> => {
     try {
+      // Use TMDB's native upcoming endpoint
+      // Note: This endpoint doesn't support certification filtering
       const data = await this.get<TmdbUpcomingMoviesResponse>(
         '/movie/upcoming',
         {
@@ -897,12 +1164,60 @@ class TheMovieDb extends ExternalAPI {
             page,
             language,
             region: this.region,
-            originalLanguage: this.originalLanguage,
           },
         }
       );
 
       return data;
+    } catch (e) {
+      throw new Error(`[TMDB] Failed to fetch upcoming movies: ${e.message}`);
+    }
+  };
+
+  /**
+   * Get upcoming movies with server-side certification filtering (v1.5.1)
+   * Uses native TMDB /movie/upcoming endpoint and applies certification filtering via cache
+   */
+  public getUpcomingMoviesFiltered = async ({
+    page = 1,
+    language = 'en',
+  }: {
+    page?: number;
+    language?: string;
+  }): Promise<TmdbSearchMovieResponse> => {
+    try {
+      // Fetch from native upcoming endpoint
+      const response = await this.get<TmdbUpcomingMoviesResponse>(
+        '/movie/upcoming',
+        {
+          params: {
+            page,
+            language,
+            region: this.region,
+            include_adult: this.shouldIncludeAdult(),
+          },
+        }
+      );
+
+      // If user has no movie rating restriction, return all results
+      if (!this.maxMovieRating || this.maxMovieRating === '') {
+        return {
+          page: response.page,
+          total_pages: response.total_pages,
+          total_results: response.total_results,
+          results: response.results,
+        };
+      }
+
+      // Apply server-side filtering with caching
+      const filteredResults = await this.filterMoviesByCertification(response.results);
+
+      return {
+        page: response.page,
+        total_pages: response.total_pages,
+        total_results: response.total_results,
+        results: filteredResults,
+      };
     } catch (e) {
       throw new Error(`[TMDB] Failed to fetch upcoming movies: ${e.message}`);
     }
@@ -918,24 +1233,37 @@ class TheMovieDb extends ExternalAPI {
     language?: string;
   } = {}): Promise<TmdbSearchMultiResponse> => {
     try {
-      // Ensure trending calls respect filtering preferences
-      const params = {
+      // TMDB's /trending endpoint doesn't support certification filtering
+      // Instead, use discover endpoints sorted by popularity which DO support filtering
+      const [moviesData, tvData] = await Promise.all([
+        this.getDiscoverMovies({
+          page,
+          language,
+          sortBy: 'popularity.desc',
+        }),
+        this.getDiscoverTv({
+          page,
+          language,
+          sortBy: 'popularity.desc',
+        }),
+      ]);
+
+      // Combine and sort results by popularity
+      const combinedResults: (TmdbMovieResult | TmdbTvResult)[] = [
+        ...moviesData.results.map((movie) => ({ ...movie, media_type: 'movie' as const })),
+        ...tvData.results.map((tv) => ({ ...tv, media_type: 'tv' as const })),
+      ].sort((a, b) => b.popularity - a.popularity);
+
+      // Calculate combined pagination info
+      const totalResults = moviesData.total_results + tvData.total_results;
+      const totalPages = Math.ceil(totalResults / 20);
+
+      return {
         page,
-        language,
-        region: this.region,
-        include_adult: this.shouldIncludeAdult(),
-        ...this.getMovieCertification(),
-        ...this.getCuratedFilteringParams(),
+        results: combinedResults,
+        total_pages: totalPages,
+        total_results: totalResults,
       };
-
-      const data = await this.get<TmdbSearchMultiResponse>(
-        `/trending/all/${timeWindow}`,
-        {
-          params,
-        }
-      );
-
-      return data;
     } catch (e) {
       throw new Error(`[TMDB] Failed to fetch all trending: ${e.message}`);
     }
@@ -1440,6 +1768,89 @@ class TheMovieDb extends ExternalAPI {
       );
     }
   }
+
+  /**
+   * Mapping of network IDs to watch provider IDs for major streaming services
+   * This allows us to fetch both TV shows (by network) and movies (by watch provider)
+   */
+  private readonly NETWORK_TO_PROVIDER: { [key: number]: number } = {
+    213: 8,      // Netflix
+    1024: 9,     // Amazon Prime Video
+    2739: 337,   // Disney+
+    3186: 384,   // HBO Max
+    2552: 350,   // Apple TV+
+    453: 15,     // Hulu
+    4330: 531,   // Paramount+
+    3353: 387,   // Peacock
+  };
+
+  /**
+   * Get both movies and TV shows from a network/streaming service
+   * For movies, we use watch providers; for TV, we use the network ID
+   */
+  public getNetworkAll = async ({
+    networkId,
+    page = 1,
+    language = 'en',
+    watchProviders,
+    watchRegion,
+  }: {
+    networkId?: number;
+    page?: number;
+    language?: string;
+    watchProviders?: string;
+    watchRegion?: string;
+  } = {}): Promise<TmdbSearchMultiResponse> => {
+    try {
+      const region = watchRegion || this.region || 'US';
+      
+      // Check if this network has a known watch provider mapping
+      const providerIdForMovies = networkId ? this.NETWORK_TO_PROVIDER[networkId] : undefined;
+      
+      // Always fetch TV shows by network
+      const tvPromise = this.getDiscoverTv({
+        page: 1,
+        language,
+        network: networkId,
+        sortBy: 'popularity.desc',
+      });
+      
+      // Fetch movies if we have a watch provider mapping
+      const moviesPromise = providerIdForMovies
+        ? this.getDiscoverMovies({
+            page: 1,
+            language,
+            watchProviders: providerIdForMovies.toString(),
+            watchRegion: region,
+            sortBy: 'popularity.desc',
+          }).catch(() => ({ page: 1, results: [], total_pages: 0, total_results: 0 }))
+        : Promise.resolve({ page: 1, results: [], total_pages: 0, total_results: 0 });
+      
+      const [moviesData, tvData] = await Promise.all([moviesPromise, tvPromise]);
+
+      // Combine results
+      const allResults = [
+        ...moviesData.results.map((movie) => ({ ...movie, media_type: 'movie' as const })),
+        ...tvData.results.map((tv) => ({ ...tv, media_type: 'tv' as const })),
+      ].sort((a, b) => b.popularity - a.popularity);
+
+      // Paginate combined results
+      const startIdx = (page - 1) * 20;
+      const endIdx = startIdx + 20;
+      const paginatedResults = allResults.slice(startIdx, endIdx);
+
+      return {
+        page,
+        results: paginatedResults,
+        total_pages: Math.ceil(allResults.length / 20),
+        total_results: allResults.length,
+      };
+    } catch (e) {
+      throw new Error(
+        `[TMDB] Failed to fetch network content: ${e.message}`
+      );
+    }
+  };
 }
 
 export default TheMovieDb;

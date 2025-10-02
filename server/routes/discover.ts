@@ -86,6 +86,13 @@ discoverRoutes.get('/movies', async (req, res, next) => {
   try {
     const query = QueryFilterOptions.parse(req.query);
     const keywords = query.keywords;
+    
+    // Skip curated filters (vote count, rating average) for upcoming content
+    // Upcoming movies don't have enough votes/ratings yet
+    // Content rating restrictions (G/PG/PG-13/R) are still enforced separately
+    const isUpcoming = !!(query.primaryReleaseDateGte && 
+                       new Date(query.primaryReleaseDateGte) >= new Date());
+    
     const data = await tmdb.getDiscoverMovies({
       page: Number(query.page),
       sortBy: query.sortBy as SortOptions,
@@ -108,6 +115,7 @@ discoverRoutes.get('/movies', async (req, res, next) => {
       voteCountLte: query.voteCountLte,
       watchProviders: query.watchProviders,
       watchRegion: query.watchRegion,
+      skipCuratedFilters: isUpcoming, // Skip vote/rating filters for upcoming movies
     });
 
     const media = await Media.getRelatedMedia(
@@ -314,18 +322,35 @@ discoverRoutes.get<{ studioId: string }>(
 discoverRoutes.get('/movies/upcoming', async (req, res, next) => {
   const tmdb = createTmdbWithRegionLanguage(req.user);
 
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  const date = new Date(now.getTime() - offset * 60 * 1000)
-    .toISOString()
-    .split('T')[0];
-
   try {
-    const data = await tmdb.getDiscoverMovies({
-      page: Number(req.query.page),
-      language: (req.query.language as string) ?? req.locale,
-      primaryReleaseDateGte: date,
-    });
+    let data;
+    
+    // Check if user has REAL content restrictions (not just "Block Adult")
+    const hasRealRestrictions = !!(req.user?.settings?.maxMovieRating && 
+                                req.user.settings.maxMovieRating !== 'Adult');
+    
+    if (hasRealRestrictions) {
+      // User has restrictions (G/PG/PG-13/R): Use discover with certification filtering
+      // Only shows certified movies that meet their rating (safe default)
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      const date = new Date(now.getTime() - offset * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
+      
+      data = await tmdb.getDiscoverMovies({
+        page: Number(req.query.page),
+        language: (req.query.language as string) ?? req.locale,
+        primaryReleaseDateGte: date,
+      });
+    } else {
+      // No restrictions or just "Block Adult": Use native upcoming endpoint
+      // Shows ALL upcoming movies (porn blocked via include_adult: false)
+      data = await tmdb.getUpcomingMovies({
+        page: Number(req.query.page),
+        language: (req.query.language as string) ?? req.locale,
+      });
+    }
 
     const media = await Media.getRelatedMedia(
       data.results.map((result) => result.id)
@@ -363,6 +388,13 @@ discoverRoutes.get('/tv', async (req, res, next) => {
   try {
     const query = QueryFilterOptions.parse(req.query);
     const keywords = query.keywords;
+    
+    // Skip curated filters (vote count, rating average) for upcoming content
+    // Upcoming TV shows don't have enough votes/ratings yet
+    // Content rating restrictions (TV-Y/TV-PG/TV-14) are still enforced separately
+    const isUpcoming = !!(query.firstAirDateGte && 
+                       new Date(query.firstAirDateGte) >= new Date());
+    
     const data = await tmdb.getDiscoverTv({
       page: Number(query.page),
       sortBy: query.sortBy as SortOptions,
@@ -385,6 +417,7 @@ discoverRoutes.get('/tv', async (req, res, next) => {
       voteCountLte: query.voteCountLte,
       watchProviders: query.watchProviders,
       watchRegion: query.watchRegion,
+      skipCuratedFilters: isUpcoming, // Skip vote/rating filters for upcoming TV
     });
 
     const media = await Media.getRelatedMedia(
@@ -548,10 +581,11 @@ discoverRoutes.get<{ networkId: string }>(
     try {
       const network = await tmdb.getNetwork(Number(req.params.networkId));
 
-      const data = await tmdb.getDiscoverTv({
+      // Fetch both movies and TV shows from this network
+      const data = await tmdb.getNetworkAll({
+        networkId: Number(req.params.networkId),
         page: Number(req.query.page),
         language: (req.query.language as string) ?? req.locale,
-        network: Number(req.params.networkId),
       });
 
       const media = await Media.getRelatedMedia(
@@ -564,24 +598,36 @@ discoverRoutes.get<{ networkId: string }>(
         totalResults: data.total_results,
         network: mapNetwork(network),
         results: data.results.map((result) =>
-          mapTvResult(
-            result,
-            media.find(
-              (med) =>
-                med.tmdbId === result.id && med.mediaType === MediaType.TV
-            )
-          )
+          isMovie(result)
+            ? mapMovieResult(
+                result,
+                media.find(
+                  (med) =>
+                    med.tmdbId === result.id && med.mediaType === MediaType.MOVIE
+                )
+              )
+            : isPerson(result)
+            ? mapPersonResult(result)
+            : isCollection(result)
+            ? mapCollectionResult(result)
+            : mapTvResult(
+                result,
+                media.find(
+                  (med) =>
+                    med.tmdbId === result.id && med.mediaType === MediaType.TV
+                )
+              )
         ),
       });
     } catch (e) {
-      logger.debug('Something went wrong retrieving series by network', {
+      logger.debug('Something went wrong retrieving content by network', {
         label: 'API',
         errorMessage: e.message,
         networkId: req.params.networkId,
       });
       return next({
         status: 500,
-        message: 'Unable to retrieve series by network.',
+        message: 'Unable to retrieve content by network.',
       });
     }
   }
@@ -597,10 +643,16 @@ discoverRoutes.get('/tv/upcoming', async (req, res, next) => {
     .split('T')[0];
 
   try {
+    // Check if user has REAL content restrictions (not just "Block Adult")
+    const hasRealRestrictions = !!(req.user?.settings?.maxTvRating && 
+                                req.user.settings.maxTvRating !== 'Adult');
+    
     const data = await tmdb.getDiscoverTv({
       page: Number(req.query.page),
       language: (req.query.language as string) ?? req.locale,
       firstAirDateGte: date,
+      skipCuratedFilters: true, // Upcoming TV shows often have no ratings/votes yet
+      serverSideRatingFilter: hasRealRestrictions, // Only filter for restricted users (v1.5.2)
     });
 
     const media = await Media.getRelatedMedia(
