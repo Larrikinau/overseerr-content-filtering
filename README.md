@@ -16,7 +16,7 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.5.2** is based on **upstream Overseerr v1.34.0** (latest release) and provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
+**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.5.4** is based on **upstream Overseerr v1.34.0** (latest release) and provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
 
 ### 🚀 **Core Features**
 

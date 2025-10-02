@@ -5,7 +5,64 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.3] - 2025-10-02 (LATEST RELEASE)
+## [1.5.4] - 2025-10-02 (LATEST RELEASE)
+
+### 🐛 **CRITICAL BUGFIXES - Content Discovery Issues**
+
+#### 🔧 Fixed Issues
+
+**Issue #1 - Upcoming Movies and TV Shows Not Displaying:**
+- **🎬 Frontend Routing Fix**: Fixed slider routing to use dedicated `/discover/movies/upcoming` and `/discover/tv/upcoming` pages instead of generic discovery
+- **📡 API Endpoint Correction**: Changed API calls from generic discovery endpoints to specialized upcoming endpoints
+- **🎯 Conditional Backend Logic**: Users with no restrictions see all upcoming content via native TMDB endpoints; users with rating restrictions see appropriately filtered upcoming content
+- **✨ Smart Filtering**: Curated filters (vote/rating thresholds) bypassed for upcoming content to ensure results display
+
+**Issue #2 - Network Pages Only Showing TV Shows:**
+- **🎥 Movie Discovery Fix**: Added `skipCuratedFilters: true` parameter to movie discovery in `getNetworkAll` method
+- **📺 Balanced Content**: Network pages (Netflix, HBO, Apple TV+, etc.) now display both movies and TV shows as intended
+- **🔍 Maintained Restrictions**: Content rating restrictions still apply while showing broader catalog
+
+**Issue #13/#16 - NR (Not Rated) Content Filtering:**
+- **✅ Already Working**: NR content filtering verified working in production since v1.5.2
+- **🔒 Adult Flag Usage**: NR content properly filtered using TMDB's `adult` flag
+- **🛡️ Comprehensive Coverage**: Applied across Trending, Recommendations, Similar, and Discovery pages
+
+#### ❌ What Was Broken
+- Upcoming Movies and Upcoming TV slider links navigated to generic discovery pages instead of dedicated upcoming pages
+- Backend API calls were using discovery endpoints instead of upcoming-specific endpoints
+- Network pages (like Netflix, HBO) only showed TV shows, completely omitting movies
+- Movies on network pages were being filtered out by overly aggressive curated filtering logic
+
+#### ✅ What's Fixed
+- Upcoming content pages now display correctly for all user permission levels
+- Users without restrictions see full upcoming catalogs via native TMDB endpoints
+- Users with rating restrictions see appropriately filtered upcoming content
+- Network pages now show mixed content (both movies and TV shows) as designed
+- Content rating restrictions still apply appropriately across all pages
+- NR content filtering continues to work as implemented in v1.5.2
+
+#### 📝 Technical Details
+- Updated `src/components/Discover/index.tsx` (lines 244-253, 271-280) to fix slider routing and API endpoints
+- Updated `server/api/themoviedb/index.ts` (line ~1826) to add `skipCuratedFilters: true` for network movie discovery
+- No database migrations required - fully compatible with existing v1.5.2+ databases
+- Thoroughly tested in isolated development environment with production database copy
+- All three major issues verified as resolved with no regressions detected
+
+#### ⚡ Upgrade Instructions
+
+**Simple Docker Update:**
+```bash
+docker pull larrikinau/overseerr-content-filtering:1.5.4
+# or
+docker pull larrikinau/overseerr-content-filtering:latest
+docker restart overseerr-content-filtering
+```
+
+No manual migration needed - existing settings and database fully preserved!
+
+---
+
+## [1.5.3] - 2025-10-02
 
 ### 🐛 **CRITICAL BUGFIX - NR (Not Rated) Content Filtering**
 
