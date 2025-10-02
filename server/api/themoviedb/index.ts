@@ -1823,6 +1823,7 @@ class TheMovieDb extends ExternalAPI {
             watchProviders: providerIdForMovies.toString(),
             watchRegion: region,
             sortBy: 'popularity.desc',
+            skipCuratedFilters: true, // Skip curated filters for network browsing
           }).catch(() => ({ page: 1, results: [], total_pages: 0, total_results: 0 }))
         : Promise.resolve({ page: 1, results: [], total_pages: 0, total_results: 0 });
       
