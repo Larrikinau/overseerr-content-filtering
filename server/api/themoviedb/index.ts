@@ -241,7 +241,23 @@ class TheMovieDb extends ExternalAPI {
         if (usCertification && usCertification.release_dates?.length > 0) {
           // Check if any release date has certification data
           const hasCertification = usCertification.release_dates.some(
-            (release: any) => release.certification && release.certification.trim() !== ''
+            (release: any) => {
+              const cert = release.certification?.trim();
+              if (!cert || cert === '') {
+                return false;
+              }
+              // If it's NR (Not Rated), check the type of restriction
+              if (cert === 'NR') {
+                // "Adult" means "Block XXX Porn only" - allow non-adult NR content
+                if (this.maxMovieRating === 'Adult') {
+                  return details.adult !== true;  // Only block if marked as adult
+                }
+                // G/PG/PG-13/R restrictions - block ALL NR content (safe default)
+                return false;
+              }
+              // Has valid certification - include it
+              return true;
+            }
           );
           
           if (hasCertification) {
@@ -275,9 +291,20 @@ class TheMovieDb extends ExternalAPI {
           (rating: any) => rating.iso_3166_1 === 'US'
         );
         
-        if (usContentRating && usContentRating.rating && usContentRating.rating.trim() !== '') {
-          // TV show has rating data - include it (TMDB filter already handled appropriateness)
-          filteredTvShows.push(tvShow);
+        if (usContentRating) {
+          const rating = usContentRating.rating?.trim();
+          if (rating && rating !== '') {
+            // If it's NR (Not Rated), block it for ALL TV rating restrictions
+            // (Note: TMDB TV shows don't have an 'adult' flag like movies,
+            //  so we can't distinguish safe NR from adult NR content)
+            if (rating === 'NR') {
+              // Block ALL NR content when any TV rating restriction is set
+              // Don't add to array - excludes the show
+            } else {
+              // Has valid TV rating - include it
+              filteredTvShows.push(tvShow);
+            }
+          }
         }
         // If no rating data - exclude it when strict filtering is enabled
         

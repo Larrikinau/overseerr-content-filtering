@@ -368,7 +368,7 @@ const UserGeneralSettings = () => {
                       <option value="TV-G">TV-G - Allow TV-Y, TV-Y7, and TV-G (block TV-PG and above)</option>
                       <option value="TV-PG">TV-PG - Allow through TV-PG (block TV-14 and above)</option>
                       <option value="TV-14">TV-14 - Allow through TV-14 (block TV-MA)</option>
-                      <option value="TV-MA">TV-MA - Allow all content (no restrictions)</option>
+                      <option value="TV-MA">TV-MA - Allow TV-MA and below (blocks NR/unrated content)</option>
                     </Field>
                   </div>
                 </div>

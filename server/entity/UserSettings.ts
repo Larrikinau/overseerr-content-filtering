@@ -130,8 +130,8 @@ export class UserSettings {
   @Column({ nullable: true, default: "Adult" })
   public maxMovieRating?: string = "Adult"; // e.g., "PG-13", "R", etc.
   
-  @Column({ nullable: true })
-  public maxTvRating?: string; // e.g., "TV-14", "TV-MA", etc.
+  @Column({ nullable: true, default: "TV-MA" })
+  public maxTvRating?: string = "TV-MA"; // Default: Allow TV-MA and below, block NR/unrated
 
   // TMDB Curated Discovery Mode - Enhanced content quality control
   @Column({ nullable: true, default: "curated" })
