@@ -246,9 +246,8 @@ const Discover = () => {
               <MediaSlider
                 sliderKey="upcoming"
                 title={intl.formatMessage(sliderTitles.upcoming)}
-                linkUrl={`/discover/movies?primaryReleaseDateGte=${upcomingDate}`}
-                url="/api/v1/discover/movies"
-                extraParams={`primaryReleaseDateGte=${upcomingDate}`}
+                linkUrl="/discover/movies/upcoming"
+                url="/api/v1/discover/movies/upcoming"
               />
             );
             break;
@@ -273,9 +272,8 @@ const Discover = () => {
               <MediaSlider
                 sliderKey="upcoming-tv"
                 title={intl.formatMessage(sliderTitles.upcomingtv)}
-                linkUrl={`/discover/tv?firstAirDateGte=${upcomingDate}`}
-                url="/api/v1/discover/tv"
-                extraParams={`firstAirDateGte=${upcomingDate}`}
+                linkUrl="/discover/tv/upcoming"
+                url="/api/v1/discover/tv/upcoming"
               />
             );
             break;
