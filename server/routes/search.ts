@@ -8,117 +8,31 @@ import { mapSearchResults } from '@server/models/Search';
 import { Router } from 'express';
 import { createTmdbWithRegionLanguage } from './discover';
 
-const filterResultsByRating = (results: any[], user?: User): any[] => {
-  // Define explicit adult content keywords that should always be blocked unless user allows XXX
-  const adultKeywords = [
-    'porn', 'porno', 'xxx', 'sex', 'adult', 'erotic', 'nude', 'naked', 'sexy',
-    'milf', 'lesbian', 'gay', 'bisexual', 'orgasm', 'masturbat', 'dildo',
-    'fetish', 'bdsm', 'kinky', 'horny', 'cumshot', 'blowjob', 'anal',
-    'threesome', 'gangbang', 'stripper', 'prostitut', 'hooker', 'escort',
-    'playboy', 'penthouse', 'hustler', 'vivid', 'wicked', 'bangbros'
-  ];
+/**
+ * Filter search results by certification-based content ratings
+ * This replaces the old genre-based heuristic filtering with proper TMDB certification lookup
+ * @param results - Array of search results from TMDB
+ * @param tmdb - TheMovieDb instance with user's rating preferences
+ * @returns Promise of filtered results using certification data
+ */
+const filterResultsByRating = async (results: any[], tmdb: TheMovieDb): Promise<any[]> => {
+  // Separate results by media type for proper certification filtering
+  const movieResults = results.filter(
+    (result) => result.media_type === 'movie' || (!result.media_type && result.title)
+  );
+  const tvResults = results.filter(
+    (result) => result.media_type === 'tv' || (!result.media_type && result.name)
+  );
+  const otherResults = results.filter(
+    (result) => result.media_type !== 'movie' && result.media_type !== 'tv' && result.media_type !== undefined
+  );
 
-  const isAdultContent = (title: string): boolean => {
-    const lowerTitle = title.toLowerCase();
-    // Be more specific - avoid false positives with names
-    return adultKeywords.some(keyword => {
-      // For "porn", make sure it's a standalone word or part of "porno"
-      if (keyword === 'porn') {
-        return lowerTitle.includes('porn ') || lowerTitle.includes(' porn') || 
-               lowerTitle.startsWith('porn') || lowerTitle.endsWith('porn') ||
-               lowerTitle.includes('porno');
-      }
-      return lowerTitle.includes(keyword);
-    });
-  };
+  // Apply certification-based filtering using TheMovieDb methods
+  const filteredMovies = await tmdb.filterMoviesByCertification(movieResults);
+  const filteredTv = await tmdb.filterTvByRating(tvResults);
 
-  const filtered = results.filter((result: any) => {
-    if (!user?.settings) return true;
-
-    const isMovie = result.media_type === 'movie' || (!result.media_type && result.title);
-    const isTv = result.media_type === 'tv' || (!result.media_type && result.name);
-    const title = result.title || result.name || '';
-    
-    // Check if content appears to be adult based on title/keywords
-    const seemsAdult = isAdultContent(title);
-    
-    // Always filter adult content - block XXX content based on user setting
-    if (result.adult || seemsAdult) {
-      // For movies: if maxMovieRating is 'Adult', it means "Block only Adult/XXX content"
-      // So we should block XXX content when this setting is active
-      if (isMovie && user.settings.maxMovieRating === 'Adult') {
-        return false;
-      }
-      
-      // For TV: if no maxTvRating is set (empty), allow all TV content
-      // But if a rating is set and it's not allowing adult content, block it
-      if (isTv && user.settings.maxTvRating && user.settings.maxTvRating !== 'XXX_ALLOWED') {
-        return false;
-      }
-      
-      // If it's TV and no rating restriction, allow it
-      if (isTv && !user.settings.maxTvRating) {
-        return true;
-      }
-    }
-
-    // If no rating limits are set, allow non-adult content
-    if (!user.settings.maxMovieRating && !user.settings.maxTvRating) {
-      return true;
-    }
-
-    // Movie filtering based on user setting
-    if (isMovie && user.settings.maxMovieRating) {
-      const maxRating = user.settings.maxMovieRating;
-      const genreIds = result.genre_ids || [];
-      
-      if (maxRating === 'G') {
-        if (genreIds.some((id: number) => [28, 12, 53, 27, 80, 10752, 37].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'PG') {
-        if (genreIds.some((id: number) => [27, 80, 10752, 53].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'PG-13') {
-        if (genreIds.includes(27)) {
-          return false;
-        }
-      }
-    }
-
-    // TV filtering based on user setting
-    if (isTv && user.settings.maxTvRating) {
-      const maxRating = user.settings.maxTvRating;
-      const genreIds = result.genre_ids || [];
-      
-      if (maxRating === 'TV-Y' || maxRating === 'TV-G') {
-        if (genreIds.some((id: number) => [28, 12, 53, 27, 80, 10752, 37, 18].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'TV-PG') {
-        if (genreIds.some((id: number) => [27, 80, 10752, 53, 18].includes(id))) {
-          return false;
-        }
-      }
-      
-      if (maxRating === 'TV-14') {
-        if (genreIds.includes(18)) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  });
-  
-  return filtered;
+  // Combine filtered results, maintaining original order as much as possible
+  return [...filteredMovies, ...filteredTv, ...otherResults];
 };
 
 const searchRoutes = Router();
@@ -127,6 +41,7 @@ searchRoutes.get('/', async (req, res, next) => {
   const queryString = req.query.query as string;
   const searchProvider = findSearchProvider(queryString.toLowerCase());
   let results: TmdbSearchMultiResponse;
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     if (searchProvider) {
@@ -139,8 +54,6 @@ searchRoutes.get('/', async (req, res, next) => {
         query: queryString,
       });
     } else {
-      const tmdb = createTmdbWithRegionLanguage(req.user);
-
       results = await tmdb.searchMulti({
         query: queryString,
         page: Number(req.query.page),
@@ -148,8 +61,8 @@ searchRoutes.get('/', async (req, res, next) => {
       });
     }
 
-    // Apply content filtering based on user preferences
-    const filteredResults = filterResultsByRating(results.results, req.user as User);
+    // Apply certification-based content filtering (Issue #13 fix)
+    const filteredResults = await filterResultsByRating(results.results, tmdb);
 
     const media = await Media.getRelatedMedia(
       filteredResults.map((result) => result.id)

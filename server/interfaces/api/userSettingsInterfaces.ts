@@ -16,11 +16,11 @@ export interface UserSettingsGeneralResponse {
   globalTvQuotaDays?: number;
   watchlistSyncMovies?: boolean;
   watchlistSyncTv?: boolean;
-  maxMovieRating?: string;
-  maxTvRating?: string;
-  tmdbSortingMode?: string;
-  curatedMinVotes?: number;
-  curatedMinRating?: number;
+  maxMovieRating?: string | null;
+  maxTvRating?: string | null;
+  tmdbSortingMode?: string | null;
+  curatedMinVotes?: number | null;
+  curatedMinRating?: number | null;
 }
 
 export type NotificationAgentTypes = Record<NotificationAgentKey, number>;

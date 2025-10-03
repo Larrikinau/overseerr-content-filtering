@@ -127,21 +127,23 @@ export class UserSettings {
   public notificationTypes: Partial<NotificationAgentTypes>;
 
   // User-configurable content rating filters following proven methodology
-  @Column({ nullable: true, default: "Adult" })
-  public maxMovieRating?: string = "Adult"; // e.g., "PG-13", "R", etc.
+  // Made nullable without DB defaults for safe migration from vanilla Overseerr
+  @Column({ type: 'varchar', nullable: true })
+  public maxMovieRating?: string | null;
   
-  @Column({ nullable: true, default: "TV-MA" })
-  public maxTvRating?: string = "TV-MA"; // Default: Allow TV-MA and below, block NR/unrated
+  @Column({ type: 'varchar', nullable: true })
+  public maxTvRating?: string | null;
 
   // TMDB Curated Discovery Mode - Enhanced content quality control
-  @Column({ nullable: true, default: "curated" })
-  public tmdbSortingMode?: string = "curated";
+  // Made nullable without DB defaults for safe migration from vanilla Overseerr
+  @Column({ type: 'varchar', nullable: true })
+  public tmdbSortingMode?: string | null;
 
-  @Column({ nullable: true, type: "int", default: 3000 })
-  public curatedMinVotes?: number = 3000;
+  @Column({ type: 'int', nullable: true })
+  public curatedMinVotes?: number | null;
 
-  @Column({ nullable: true, type: "float", default: 6.0 })
-  public curatedMinRating?: number = 6.0;
+  @Column({ type: 'float', nullable: true })
+  public curatedMinRating?: number | null;
 
   public hasNotificationType(
     key: NotificationAgentKey,

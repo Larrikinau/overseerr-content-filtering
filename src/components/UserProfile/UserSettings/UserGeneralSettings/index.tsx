@@ -341,12 +341,12 @@ const UserGeneralSettings = () => {
                 <div className="form-input-area">
                   <div className="form-input-field">
                     <Field as="select" id="maxMovieRating" name="maxMovieRating">
-                      <option value="">No restrictions - Allow all content</option>
-                      <option value="G">G - Allow only G (block PG and above)</option>
-                      <option value="PG">PG - Allow G and PG (block PG-13 and above)</option>
-                      <option value="PG-13">PG-13 - Allow G, PG, and PG-13 (block R and above)</option>
-                      <option value="R">R - Allow G, PG, PG-13, and R (block Adult/XXX)</option>
-                      <option value="Adult">Adult - Block only Adult/XXX content (allow R and below)</option>
+                      <option value="">No restrictions - Allow all content (Allows NR)</option>
+                      <option value="G">G - Allow only G (Blocks NR and PG+)</option>
+                      <option value="PG">PG - Allow G and PG (Blocks NR and PG-13+)</option>
+                      <option value="PG-13">PG-13 - Allow G, PG, and PG-13 (Blocks NR and R+)</option>
+                      <option value="R">R - Allow G, PG, PG-13, and R (Blocks NR and Adult/XXX)</option>
+                      <option value="Adult">Adult - Block only Adult/XXX (Allows NR content)</option>
                     </Field>
                   </div>
                 </div>
@@ -362,13 +362,13 @@ const UserGeneralSettings = () => {
                 <div className="form-input-area">
                   <div className="form-input-field">
                     <Field as="select" id="maxTvRating" name="maxTvRating">
-                      <option value="">No restriction - Allow all TV content</option>
-                      <option value="TV-Y">TV-Y - Allow only TV-Y (block TV-Y7 and above)</option>
-                      <option value="TV-Y7">TV-Y7 - Allow TV-Y and TV-Y7 (block TV-G and above)</option>
-                      <option value="TV-G">TV-G - Allow TV-Y, TV-Y7, and TV-G (block TV-PG and above)</option>
-                      <option value="TV-PG">TV-PG - Allow through TV-PG (block TV-14 and above)</option>
-                      <option value="TV-14">TV-14 - Allow through TV-14 (block TV-MA)</option>
-                      <option value="TV-MA">TV-MA - Allow TV-MA and below (blocks NR/unrated content)</option>
+                      <option value="">No restriction - Allow all TV content (Allows NR)</option>
+                      <option value="TV-Y">TV-Y - Allow only TV-Y (Blocks NR and TV-Y7+)</option>
+                      <option value="TV-Y7">TV-Y7 - Allow TV-Y and TV-Y7 (Blocks NR and TV-G+)</option>
+                      <option value="TV-G">TV-G - Allow TV-Y, TV-Y7, and TV-G (Blocks NR and TV-PG+)</option>
+                      <option value="TV-PG">TV-PG - Allow through TV-PG (Blocks NR and TV-14+)</option>
+                      <option value="TV-14">TV-14 - Allow through TV-14 (Blocks NR and TV-MA)</option>
+                      <option value="TV-MA">TV-MA - Allow TV-MA and below (Blocks NR)</option>
                     </Field>
                   </div>
                 </div>

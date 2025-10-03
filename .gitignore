@@ -67,3 +67,45 @@ tsconfig.tsbuildinfo
 
 # Config Cache Directory
 config/cache
+
+# Private/Confidential Development Files
+WARP.md
+CHANGES-v1.5.0.md
+COPY-PROD-TO-DEV.md
+DEPLOY-TEST-TO-PLEX-UB.md
+DEPLOYMENT_v1.5.2.md
+NETWORK-PROVIDER-MAPPING.md
+TEST-ENVIRONMENT-READY.md
+
+# Obsolete migration and test scripts (Docker handles migrations now)
+migrate-to-overseerr-content-filtering.sh
+test-migrate-api-keys.sh
+test-migration-production.sh
+test-migration-updated.yml
+test-migration.yml
+test-tmdb-api.js
+
+# Obsolete directories and infrastructure files
+clean-v140-source/
+docker-compose.current-production.yml
+docker-compose.pre-v1.4.0.yml
+docker-compose.production.yml
+docker-compose.test.yml
+docker-compose.yml
+docker-compose.yml.pre-v1.4.0-backup
+docker-compose-dev.yml
+diagnose-overseerr-issues.sh
+docker-manager.sh
+migrate-to-content-filtering.sh
+migrate-to-v1.4.0.sh
+universal-migrate-to-v1.4.0.sh
+MIGRATION_GUIDE.md.backup
+TVDB_CONFIGURATION.md.backup
+plan.md
+plan.md.bak
+
+# Local test environment files (v1.5.5)
+docker-compose-test.yml
+committag.json
+.gitignore.bak
+config/

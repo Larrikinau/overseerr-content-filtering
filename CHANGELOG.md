@@ -1,3 +1,45 @@
+## [1.5.5] - 2025-10-03 (LATEST RELEASE)
+
+### 🔐 **Security & Architecture Enhancement**
+
+#### 🛡️ API Security Hardening
+**Global API Content Filtering:**
+- **Implemented middleware content filter validation** for all API routes
+- **Previously**: Content filtering only applied to frontend discovery routes
+- **Now**: Backend API routes (e.g., `/api/v1/movie/{id}`) enforce content restrictions globally
+- **Impact**: Users can no longer bypass content filters via direct API access
+- **Behavior**: Restricted content returns 403 Forbidden instead of exposing details
+
+#### 🔧 Architecture Improvements
+**Middleware Validator Global Application:**
+- Content filtering middleware now applies to all API routes, not just frontend discovery
+- Ensures consistent security policy across all access patterns
+- Prevents information disclosure via direct API queries
+
+#### 📋 Configuration Management
+**Production Configuration Files:**
+- Added `overseerr-api.yml` to ensure proper API middleware initialization
+- Resolved production deployment config file issue from v1.5.5 rollback
+
+### 🐛 Bug Fixes
+- Fixed middleware routing errors causing frontend 404s in production
+- Resolved missing config file issues during Docker deployment
+- Ensured test environment properly isolated from production volumes
+
+### 📦 Deployment Notes
+- **Critical**: Requires `overseerr-api.yml` config file in deployment
+- **Docker Volume**: Test environment uses separate volume from production
+- **Database**: Compatible with v1.5.4 database schema (no migrations required)
+
+### 🧪 Testing
+- ✅ Health checks pass
+- ✅ Database migrations verified
+- ✅ Frontend routes respond correctly
+- ✅ API content filtering validated
+- ✅ Test environment isolated and functional
+
+---
+
 # Changelog
 
 All notable changes to Overseerr Content Filtering will be documented in this file.
@@ -5,7 +47,7 @@ All notable changes to Overseerr Content Filtering will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.4] - 2025-10-02 (LATEST RELEASE)
+## [1.5.4] - 2025-10-02
 
 ### 🐛 **CRITICAL BUGFIXES - Content Discovery Issues**
 

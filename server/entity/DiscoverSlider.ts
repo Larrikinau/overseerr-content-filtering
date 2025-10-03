@@ -13,22 +13,42 @@ import {
 @Entity()
 class DiscoverSlider {
   public static async bootstrapSliders(): Promise<void> {
-    const sliderRepository = getRepository(DiscoverSlider);
+    try {
+      const sliderRepository = getRepository(DiscoverSlider);
 
-    for (const slider of defaultSliders) {
-      const existingSlider = await sliderRepository.findOne({
-        where: {
-          type: slider.type,
-        },
-      });
-
-      if (!existingSlider) {
-        logger.info('Creating built-in discovery slider', {
+      // Test if table exists by attempting a count query
+      try {
+        await sliderRepository.count();
+      } catch (tableError: any) {
+        // Table doesn't exist yet - migrations haven't run
+        logger.warn('DiscoverSlider table does not exist yet. Skipping bootstrap.', {
           label: 'Discover Slider',
-          slider,
+          error: tableError.message,
         });
-        await sliderRepository.save(new DiscoverSlider(slider));
+        return;
       }
+
+      for (const slider of defaultSliders) {
+        const existingSlider = await sliderRepository.findOne({
+          where: {
+            type: slider.type,
+          },
+        });
+
+        if (!existingSlider) {
+          logger.info('Creating built-in discovery slider', {
+            label: 'Discover Slider',
+            slider,
+          });
+          await sliderRepository.save(new DiscoverSlider(slider));
+        }
+      }
+    } catch (error: any) {
+      logger.error('Failed to bootstrap discovery sliders', {
+        label: 'Discover Slider',
+        error: error.message,
+      });
+      // Don't throw - allow app to continue
     }
   }
 

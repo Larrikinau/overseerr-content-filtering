@@ -279,10 +279,11 @@ class TheMovieDb extends ExternalAPI {
    * Filter movies by certification with caching and batching
    * @param movies - Array of movie results from TMDB
    * @returns Filtered array of movies that meet certification requirements
+   * @public Exposed for use in search routes (Issue #13 fix)
    */
-  private async filterMoviesByCertification(movies: TmdbMovieResult[]): Promise<TmdbMovieResult[]> {
+  public async filterMoviesByCertification(movies: TmdbMovieResult[]): Promise<TmdbMovieResult[]> {
     // Check if user has no restrictions (null, undefined, empty string, or 'Adult')
-    // 'Adult' means block XXX porn, but allow all mainstream rated content (G through NC-17)
+    // 'Adult' means block XXX porn, but allow all mainstream rated content (G through NC-17) and NR
     if (!this.maxMovieRating || this.maxMovieRating === 'Adult') {
       return movies; // No filtering needed
     }
@@ -320,10 +321,11 @@ class TheMovieDb extends ExternalAPI {
    * Filter TV shows by rating with caching and batching
    * @param shows - Array of TV show results from TMDB
    * @returns Filtered array of TV shows that meet rating requirements
+   * @public Exposed for use in search routes (Issue #13 fix)
    */
-  private async filterTvByRating(shows: TmdbTvResult[]): Promise<TmdbTvResult[]> {
+  public async filterTvByRating(shows: TmdbTvResult[]): Promise<TmdbTvResult[]> {
     // Check if user has no restrictions (null, undefined, empty string, or 'Adult')
-    // 'Adult' means allow all TV content including TV-MA
+    // 'Adult' means allow all TV content including TV-MA and NR
     if (!this.maxTvRating || this.maxTvRating === 'Adult') {
       return shows; // No filtering needed
     }
@@ -360,7 +362,7 @@ class TheMovieDb extends ExternalAPI {
   
   private getMovieCertification(): { [key: string]: string } {
     // No restrictions if undefined, null, or 'Adult'
-    // 'Adult' means block XXX porn only, allow all mainstream content
+    // 'Adult' means block XXX porn only, allow all mainstream content and NR
     if (!this.maxMovieRating || this.maxMovieRating === 'Adult') {
       return {}; // No certification filtering
     }
@@ -388,7 +390,7 @@ class TheMovieDb extends ExternalAPI {
   
   private getTvCertification(): { [key: string]: string } {
     // No restrictions if undefined, null, or 'Adult'
-    // 'Adult' means allow all TV content including TV-MA
+    // 'Adult' means allow all TV content including TV-MA and NR
     if (!this.maxTvRating || this.maxTvRating === 'Adult') {
       return {}; // No certification filtering
     }

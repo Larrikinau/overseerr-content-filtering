@@ -46,9 +46,9 @@ export const createTmdbWithRegionLanguage = (user?: User): TheMovieDb => {
   return new TheMovieDb({
     region,
     originalLanguage,
-    maxMovieRating: user?.settings?.maxMovieRating,
-    maxTvRating: user?.settings?.maxTvRating,
-    tmdbSortingMode: user?.settings?.tmdbSortingMode,
+    maxMovieRating: user?.settings?.maxMovieRating ?? undefined,
+    maxTvRating: user?.settings?.maxTvRating ?? undefined,
+    tmdbSortingMode: user?.settings?.tmdbSortingMode ?? undefined,
     curatedMinVotes: user?.settings?.curatedMinVotes ?? 3000,
     curatedMinRating: user?.settings?.curatedMinRating ?? 6.0,
   });

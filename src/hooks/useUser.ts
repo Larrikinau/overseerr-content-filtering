@@ -33,11 +33,11 @@ export interface UserSettings {
   notificationTypes: Partial<NotificationAgentTypes>;
   watchlistSyncMovies?: boolean;
   watchlistSyncTv?: boolean;
-  maxMovieRating?: string;
-  maxTvRating?: string;
-  tmdbSortingMode?: string;
-  curatedMinVotes?: number;
-  curatedMinRating?: number;
+  maxMovieRating?: string | null;
+  maxTvRating?: string | null;
+  tmdbSortingMode?: string | null;
+  curatedMinVotes?: number | null;
+  curatedMinRating?: number | null;
 }
 
 interface UserHookResponse {

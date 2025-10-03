@@ -4,19 +4,22 @@ export class AddTmdbSortingAndCuratedColumns1751780113001 implements MigrationIn
   name = 'AddTmdbSortingAndCuratedColumns1751780113001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Add nullable columns without defaults for safe migration from vanilla Overseerr
+    // Defaults will be handled in application code
+    
     // Add tmdbSortingMode column
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "tmdbSortingMode" varchar DEFAULT 'curated'`
+      `ALTER TABLE "user_settings" ADD "tmdbSortingMode" varchar`
     );
     
     // Add curatedMinVotes column
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "curatedMinVotes" int DEFAULT 3000`
+      `ALTER TABLE "user_settings" ADD "curatedMinVotes" int`
     );
     
     // Add curatedMinRating column
     await queryRunner.query(
-      `ALTER TABLE "user_settings" ADD "curatedMinRating" float DEFAULT 6.0`
+      `ALTER TABLE "user_settings" ADD "curatedMinRating" float`
     );
   }
 
