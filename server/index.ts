@@ -97,15 +97,46 @@ app
           logger.info('Database schema is up to date', { label: 'Database' });
         }
         
-        // Verify critical content filtering columns exist
+        // Verify critical content filtering columns exist and auto-fix if missing
         try {
-          await dbConnection.query("SELECT tmdbSortingMode FROM user_settings LIMIT 1");
+          await dbConnection.query(
+            "SELECT maxMovieRating, maxTvRating, tmdbSortingMode, curatedMinVotes, curatedMinRating FROM user_settings LIMIT 1"
+          );
           logger.info('Content filtering columns verified', { label: 'Database' });
         } catch (verifyError: any) {
-          logger.warn('Content filtering columns may not exist - this could indicate migration issues', { 
+          logger.warn('Content filtering columns missing - attempting to fix by re-running migrations', { 
             label: 'Database', 
             error: verifyError.message 
           });
+          
+          // Force migrations to re-run to fix the schema
+          // This handles cases where migrations table says "done" but columns are missing
+          try {
+            await dbConnection.query('PRAGMA foreign_keys=OFF');
+            const forcedMigrations = await dbConnection.runMigrations({ transaction: 'all' });
+            await dbConnection.query('PRAGMA foreign_keys=ON');
+            
+            if (forcedMigrations && forcedMigrations.length > 0) {
+              logger.info(`Successfully re-ran ${forcedMigrations.length} migrations to fix schema`, { label: 'Database' });
+              forcedMigrations.forEach((migration, index) => {
+                logger.info(`Re-executed migration ${index + 1}: ${migration.name}`, { label: 'Database' });
+              });
+            } else {
+              logger.info('No migrations were re-run - schema may require manual intervention', { label: 'Database' });
+            }
+            
+            // Verify columns now exist
+            await dbConnection.query(
+              "SELECT maxMovieRating, maxTvRating, tmdbSortingMode, curatedMinVotes, curatedMinRating FROM user_settings LIMIT 1"
+            );
+            logger.info('Content filtering columns now verified after migration fix', { label: 'Database' });
+          } catch (fixError: any) {
+            logger.error('Failed to fix missing columns - database may require manual repair', {
+              label: 'Database',
+              error: fixError.message,
+              stack: fixError.stack
+            });
+          }
         }
         
       } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {

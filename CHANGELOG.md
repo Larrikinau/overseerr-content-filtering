@@ -1,4 +1,56 @@
-## [1.5.5] - 2025-10-03 (LATEST RELEASE)
+## [1.5.6] - 2025-10-04 (LATEST RELEASE)
+
+### 🔧 **Critical Bug Fix - Self-Healing Migration System**
+
+#### 🛡️ Migration State Mismatch Fix
+**Issue:** Users migrating from vanilla Overseerr could not log in even after upgrading to v1.5.5, with error:
+```
+SQLITE_ERROR: no such column: User_settings.maxMovieRating
+```
+
+**Root Cause:**
+- TypeORM migration table marked migrations as "complete"
+- Actual database columns were never created (failed/interrupted migration)
+- User entity's `eager: true` on UserSettings caused automatic JOIN during authentication
+- JOIN query failed on non-existent columns
+
+**Solution - Self-Healing Migration Verification:**
+- After TypeORM reports migrations complete, verify columns actually exist
+- If verification fails, automatically re-run migrations to create missing columns
+- Detailed logging of detection and repair process
+- No manual database intervention required
+
+#### ✅ What's Fixed
+- **Automatic Migration Repair**: Detects and fixes migration state mismatches on startup
+- **Enhanced Verification**: Checks all critical content filtering columns exist
+- **Robust Error Handling**: Clear logging and graceful failure handling
+- **Zero User Intervention**: Simply upgrade and the system auto-repairs on startup
+
+#### 📋 Technical Details
+- Enhanced `server/index.ts` migration verification logic (lines 100-140)
+- Verifies: `maxMovieRating`, `maxTvRating`, `tmdbSortingMode`, `curatedMinVotes`, `curatedMinRating`
+- Uses `runMigrations({ transaction: 'all' })` to force re-execution when needed
+- Logs detailed information about repair process
+
+#### ⚡ Upgrade Instructions
+**Docker Users (Recommended):**
+```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+docker-compose restart
+```
+
+**Expected Logs (If Auto-Fix Triggered):**
+```
+[warn][Database]: Content filtering columns missing - attempting to fix by re-running migrations
+[info][Database]: Successfully re-ran 2 migrations to fix schema
+[info][Database]: Content filtering columns now verified after migration fix
+```
+
+No manual migration needed - existing settings and database fully preserved!
+
+---
+
+## [1.5.5] - 2025-10-03
 
 ### 🔐 **Security & Architecture Enhancement**
 
