@@ -112,7 +112,7 @@ None. This is a backward-compatible bug fix release.
 
 ## Contributors
 
-- Mark Vosatka (@Larrikinau)
+- Larrikinau
 
 ---
 
