@@ -71,7 +71,7 @@ const SettingsAbout = () => {
             </p>
             <p className="mt-3 text-sm leading-5 md:mt-0 md:ml-6">
               <a
-                href="http://github.com/sct/overseerr"
+                href="https://github.com/Larrikinau/overseerr-content-filtering"
                 className="whitespace-nowrap font-medium text-gray-100 transition duration-150 ease-in-out hover:text-white"
                 target="_blank"
                 rel="noreferrer"
@@ -105,8 +105,8 @@ const SettingsAbout = () => {
                 <a
                   href={
                     data.version.startsWith('develop-')
-                      ? `https://github.com/sct/overseerr/compare/${status.commitTag}...develop`
-                      : 'https://github.com/sct/overseerr/releases'
+                      ? `https://github.com/Larrikinau/overseerr-content-filtering/compare/${status.commitTag}...develop`
+                      : 'https://github.com/Larrikinau/overseerr-content-filtering/releases'
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -122,8 +122,8 @@ const SettingsAbout = () => {
                 <a
                   href={
                     data.version.startsWith('develop-')
-                      ? 'https://github.com/sct/overseerr/commits/develop'
-                      : 'https://github.com/sct/overseerr/releases'
+                      ? 'https://github.com/Larrikinau/overseerr-content-filtering/commits/develop'
+                      : 'https://github.com/Larrikinau/overseerr-content-filtering/releases'
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -167,12 +167,12 @@ const SettingsAbout = () => {
           </List.Item>
           <List.Item title={intl.formatMessage(messages.githubdiscussions)}>
             <a
-              href="https://github.com/sct/overseerr/discussions"
+              href="https://github.com/Larrikinau/overseerr-content-filtering/discussions"
               target="_blank"
               rel="noreferrer"
               className="text-indigo-500 transition duration-300 hover:underline"
             >
-              https://github.com/sct/overseerr/discussions
+              https://github.com/Larrikinau/overseerr-content-filtering/discussions
             </a>
           </List.Item>
           <List.Item title="Discord">

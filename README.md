@@ -290,8 +290,8 @@ yarn start
 
 - **Movies**: G → PG → PG-13 → R → NC-17 (admins set maximum allowed rating per user)
 - **TV Shows**: TV-Y → TV-Y7 → TV-G → TV-PG → TV-14 → TV-MA (admins set maximum allowed rating per user)
-- **Defaults**: New users start with PG-13 (movies) and TV-PG (TV shows) for family-safe browsing
-- **Smart Default**: Adult content blocked by default, with admin-configurable overrides per user
+- **Defaults**: New users have "Adult" for movies (blocks only XXX content) and no TV restrictions - admins configure per-user limits as needed
+- **Flexible Control**: Administrators set appropriate content restrictions for each individual user
 
 ## 🤝 Contributing
 
@@ -307,7 +307,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Original [Overseerr](https://github.com/sct/overseerr) project and contributors
+- Original [Overseerr](https://github.com/sct/overseerr) project and contributors - this fork builds upon their excellent foundation
 - The open-source community for inspiration and support
 
 ## 📞 Support

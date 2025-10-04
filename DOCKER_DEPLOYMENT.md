@@ -101,7 +101,7 @@ Use the provided build script for easy building:
 
 ```bash
 # Clone the repository
-git clone https://github.com/larrikinau/overseerr-content-filtering.git
+git clone https://github.com/Larrikinau/overseerr-content-filtering.git
 cd overseerr-content-filtering
 
 # Build the image
@@ -421,4 +421,4 @@ sudo docker pull --platform linux/arm64 larrikinau/overseerr-content-filtering:l
 
 ---
 
-For more information, visit the [project repository](https://github.com/larrikinau/overseerr-content-filtering).
+For more information, visit the [project repository](https://github.com/Larrikinau/overseerr-content-filtering).

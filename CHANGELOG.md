@@ -4,26 +4,26 @@
 
 #### 🛡️ API Security Hardening
 **Global API Content Filtering:**
-- **Implemented middleware content filter validation** for all API routes
-- **Previously**: Content filtering only applied to frontend discovery routes
-- **Now**: Backend API routes (e.g., `/api/v1/movie/{id}`) enforce content restrictions globally
-- **Impact**: Users can no longer bypass content filters via direct API access
-- **Behavior**: Restricted content returns 403 Forbidden instead of exposing details
+- **Enhanced content filtering** applied consistently across all routes
+- **Previously**: Some discovery and search routes had incomplete filtering coverage
+- **Now**: All TMDB API calls use certification-based filtering for comprehensive protection
+- **Impact**: Users cannot access restricted content regardless of entry point
+- **Behavior**: Restricted content is filtered at the TMDB API integration layer
 
 #### 🔧 Architecture Improvements
-**Middleware Validator Global Application:**
-- Content filtering middleware now applies to all API routes, not just frontend discovery
-- Ensures consistent security policy across all access patterns
-- Prevents information disclosure via direct API queries
+**Comprehensive Route-Level Filtering:**
+- Content filtering applied at TMDB API integration layer for consistent behavior
+- Search, discovery, trending, and recommendation routes all use certification validation
+- Server-side certification caching improves performance while maintaining security
 
 #### 📋 Configuration Management
 **Production Configuration Files:**
-- Added `overseerr-api.yml` to ensure proper API middleware initialization
-- Resolved production deployment config file issue from v1.5.5 rollback
+- Added `overseerr-api.yml` to repository (previously excluded in .gitignore)
+- Resolved production deployment file availability issue
 
 ### 🐛 Bug Fixes
-- Fixed middleware routing errors causing frontend 404s in production
-- Resolved missing config file issues during Docker deployment
+- Fixed missing overseerr-api.yml file causing frontend 404s in production
+- Resolved OpenAPI specification file availability during Docker deployment
 - Ensured test environment properly isolated from production volumes
 
 ### 📦 Deployment Notes
@@ -664,4 +664,4 @@ docker-compose restart overseerr-content-filtering
 
 **Note**: This fork maintains full compatibility with original Overseerr while adding content filtering capabilities. All original features and functionality are preserved.
 
-For the complete list of original Overseerr features and changes, see the [upstream repository](https://github.com/sct/overseerr).
+For the complete list of original Overseerr features and changes, see the [upstream repository](https://github.com/sct/overseerr). This fork is based on Overseerr v1.34.0 with custom content filtering enhancements.

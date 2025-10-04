@@ -25,8 +25,9 @@ Version 1.5.5 addresses three critical GitHub issues and includes an important i
 ### Issue #13: Search Filtering Not Using Certification Data
 **Problem:** Search results were using genre-based heuristics instead of proper TMDB certification data for content filtering.
 
-**Solution:** Implemented certification-based filtering in search:
-- Search now uses actual TMDB certification data
+**Solution:** Implemented certification-based filtering in search routes:
+- Search now uses actual TMDB certification lookups via API calls
+- Uses `filterMoviesByCertification()` and `filterTvByRating()` methods
 - Consistent with other discovery endpoints
 - More accurate content filtering
 - Properly handles NR (Not Rated) content according to user restrictions
