@@ -1,5 +1,9 @@
 # Settings
 
+{% hint style="info" %}
+**This is the Content Filtering Fork of Overseerr** - This documentation covers features specific to parental controls and content filtering that are not available in the upstream Overseerr project.
+{% endhint %}
+
 ## General
 
 ### API Key
@@ -64,11 +68,87 @@ Available media will still appear in search results, however, so it is possible 
 
 This setting is **disabled** by default.
 
+### Content Rating Filtering (Curated Quality Filters)
+
+{% hint style="warning" %}
+**Administrator Only Feature** - These settings can only be configured by users with Administrator permissions and apply globally to all content discovery.
+{% endhint %}
+
+This fork includes advanced content filtering capabilities to help administrators control content quality and appropriateness:
+
+#### Curated Minimum Rating
+
+Set a minimum TMDB rating (0.0-10.0) that content must meet to appear in discovery results. Content with ratings below this threshold will be hidden from:
+- Discover pages (Movies, TV Shows, Trending)
+- Network browsing (Netflix, HBO, etc.)
+- Search results
+- Person and Collection pages
+
+**Special Behavior**: Setting this to **0** disables rating filtering entirely, allowing all content regardless of rating.
+
+#### Curated Minimum Votes
+
+Set a minimum number of TMDB votes that content must have received to appear in discovery results. This helps filter out obscure or poorly-rated content.
+
+**Special Behavior**: Setting this to **0** disables vote filtering entirely.
+
+#### How It Works
+- Both filters work together - content must meet BOTH criteria to be shown
+- Setting either value to 0 disables that specific filter
+- Setting both to 0 provides unrestricted browsing
+- Filters apply to all discovery mechanisms except direct media detail page access
+- These settings complement per-user content rating restrictions (see [User Settings](../users/README.md#content-rating-filters))
+
 ### Allow Partial Series Requests
 
 When enabled, users will be able to submit requests for specific seasons of TV series. If disabled, users will only be able to submit requests for all unavailable seasons.
 
 This setting is **enabled** by default.
+
+## Content Rating Controls
+
+{% hint style="info" %}
+**Parental Control Features** - These settings enable administrators to enforce content rating restrictions on a per-user basis.
+{% endhint %}
+
+This fork includes comprehensive parental control features that allow administrators to restrict content based on official rating systems.
+
+### Per-User Content Filtering
+
+Administrators can configure individual content rating limits for each user through the [User Management](../users/README.md) interface. These restrictions control what content appears in:
+- All discovery pages
+- Search results  
+- Person and collection pages
+- Trending and recommendation sections
+
+### Supported Rating Systems
+
+**Movie Ratings (MPAA System):**
+- **G** - General Audiences
+- **PG** - Parental Guidance Suggested
+- **PG-13** - Parents Strongly Cautioned
+- **R** - Restricted
+- **NC-17** - Adults Only
+
+**TV Ratings (FCC System):**
+- **TV-Y** - Children
+- **TV-Y7** - Children 7+
+- **TV-G** - General Audiences
+- **TV-PG** - Parental Guidance Suggested
+- **TV-14** - Parents Strongly Cautioned
+- **TV-MA** - Mature Audiences
+
+### Rating Filter Behavior
+
+When a user has content rating restrictions:
+- Content with ratings above their limit is completely hidden
+- Only appropriately-rated content appears in all interface areas
+- The filtering is applied server-side for security
+- Users cannot override these restrictions themselves
+
+{% hint style="warning" %}
+**Administrator Control Only** - Content rating filters can only be modified by users with Administrator permissions. Regular users cannot change their own rating restrictions.
+{% endhint %}
 
 ## Users
 

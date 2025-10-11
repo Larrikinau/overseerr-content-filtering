@@ -1,16 +1,28 @@
 # Frequently Asked Questions (FAQ)
 
 {% hint style="info" %}
-If you can't find the solution to your problem here, please read [Need Help?](./need-help.md) and reach out to us on [Discord](https://discord.gg/overseerr).
+**Content Filtering Fork** - This FAQ covers the Content Filtering Fork of Overseerr with parental controls and content filtering features.
 
-_Please do not post questions or support requests on the GitHub issue tracker!_
+If you can't find the solution to your problem here, please [open an issue on GitHub](https://github.com/Larrikinau/overseerr-content-filtering/issues).
 {% endhint %}
 
 ## General
 
-### How do I keep Overseerr up-to-date?
+### How do I keep the Content Filtering Fork up-to-date?
 
-Use a third-party update mechanism (such as [Watchtower](https://github.com/containrrr/watchtower), [Ouroboros](https://github.com/pyouroboros/ouroboros), or [Pullio](https://hotio.dev/pullio)) to keep Overseerr up-to-date automatically.
+Use a third-party update mechanism (such as [Watchtower](https://github.com/containrrr/watchtower), [Ouroboros](https://github.com/pyouroboros/ouroboros), or [Pullio](https://hotio.dev/pullio)) to keep the Content Filtering Fork up-to-date automatically.
+
+**Docker Image**: Use `larrikinau/overseerr-content-filtering:latest` - see [Docker Hub](https://hub.docker.com/r/larrikinau/overseerr-content-filtering) for available tags.
+
+### What's the difference between this fork and upstream Overseerr?
+
+This Content Filtering Fork adds comprehensive parental control features:
+- **Per-user content rating restrictions** (G/PG/PG-13/R/NC-17 for movies, TV-Y/TV-Y7/TV-G/TV-PG/TV-14/TV-MA for TV)
+- **Quality-based content filtering** (minimum TMDB rating/votes)
+- **Enhanced content discovery filtering** across all interface areas
+- Server-side security enforcement that users cannot bypass
+
+All upstream Overseerr features remain fully functional.
 
 ### How can I access Overseerr outside of my home network?
 
@@ -26,15 +38,15 @@ Since Overseerr has an almost native app experience when installed as a Progress
 
 Out of the box, Overseerr already fulfills most of the [PWA install criteria](https://web.dev/install-criteria/). You simply need to make sure that your Overseerr instance is being served over HTTPS (e.g., via a [reverse proxy](../extending-overseerr/reverse-proxy.md)).
 
-### Overseerr is amazing! But it is not translated in my language yet! Can I help with translations?
+### Can I help with translations for the Content Filtering Fork?
 
-You sure can! We are using [Weblate](https://hosted.weblate.org/engage/overseerr/) for translations. If your language is not listed, please [open a feature request on GitHub](https://github.com/sct/overseerr/issues/new/choose).
+Currently, the Content Filtering Fork uses the same translation system as upstream Overseerr. For translation requests specific to content filtering features, please [open an issue on our GitHub repository](https://github.com/Larrikinau/overseerr-content-filtering/issues).
 
 ### Where can I find the changelog?
 
-You can find the changelog for your version (stable/`latest`,s or `develop`) in the **Settings &rarr; About** page in your Overseerr instance.
+You can find the changelog for your version in the **Settings → About** page in your Content Filtering Fork instance.
 
-You can alternatively review the [stable release history](https://github.com/sct/overseerr/releases) and [`develop` branch commit history](https://github.com/sct/overseerr/commits/develop) on GitHub.
+You can alternatively review the [release history](https://github.com/Larrikinau/overseerr-content-filtering/releases) and [commit history](https://github.com/Larrikinau/overseerr-content-filtering/commits/main) on GitHub.
 
 ### Some media is missing from Overseerr that I know is in Plex!
 
@@ -76,6 +88,49 @@ You can also perform the following to verify the media item has a GUID Overseerr
 
 Please see [these instructions on how to locate and share your logs](./need-help.md#how-can-i-share-my-logs).
 
+## Content Filtering
+
+### How do content rating filters work?
+
+Content rating filters are applied server-side and completely hide restricted content from users. When a user has rating restrictions:
+
+- Content above their rating limit is hidden from ALL interface areas
+- This includes discover pages, search results, person pages, collections, and network browsing
+- The filtering cannot be bypassed or overridden by users
+- Only administrators can modify user rating restrictions
+
+### Can users see what content is being filtered?
+
+No. Restricted content is completely hidden from the user's interface. They have no indication that content is being filtered - it simply doesn't appear in their results.
+
+### Do curated quality filters work with content rating filters?
+
+Yes! Curated quality filters (minimum TMDB rating/votes) work alongside per-user content rating filters. Content must pass BOTH filters to be visible to users.
+
+### Why can't I see some content that I know is in Plex?
+
+If you're a restricted user, content above your rating limit is intentionally hidden. If you're an administrator and content is missing:
+
+1. Check your **Curated Quality Filters** in Settings - you may have minimum rating/vote thresholds set
+2. Set both Curated Min Rating and Min Votes to **0** to disable quality filtering
+3. Follow the standard [Plex content troubleshooting steps](#some-media-is-missing-from-overseerr-that-i-know-is-in-plex)
+
+### How do I set up parental controls?
+
+1. Go to **User List** and click **Edit** for the user
+2. Find the **Content Rating Filters** section
+3. Set appropriate **Maximum Movie Rating** and **Maximum TV Rating**
+4. Save the user settings
+
+Example: For a child, set Movie Rating to **PG** and TV Rating to **TV-PG**.
+
+### Can I disable content filtering entirely?
+
+Yes! As an administrator:
+- Set all users' content ratings to the highest levels (NC-17 for movies, TV-MA for TV)
+- Set Curated Min Rating and Min Votes to **0** in Settings
+- This provides the same experience as upstream Overseerr
+
 ## Users
 
 ### Why can't I see all of my Plex users?
@@ -86,9 +141,9 @@ Please see the [documentation for importing users from Plex](../using-overseerr/
 
 Yes! Please see the [documentation for creating local users](../using-overseerr/users/README.md#creating-local-users).
 
-### Is is possible to set user roles in Overseerr?
+### Is is possible to set user roles in the Content Filtering Fork?
 
-Permissions can be configured for each user via the **User List** or their **User Settings** page. The list of assignable permissions is still growing, so if you have any suggestions, [submit a feature request](https://github.com/sct/overseerr/issues/new/choose)!
+Permissions can be configured for each user via the **User List** or their **User Settings** page. The Content Filtering Fork includes all upstream permissions plus content rating controls. If you have suggestions for additional features, [submit a feature request](https://github.com/Larrikinau/overseerr-content-filtering/issues)!
 
 ## Requests
 
