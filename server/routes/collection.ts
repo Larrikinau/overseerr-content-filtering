@@ -3,11 +3,12 @@ import Media from '@server/entity/Media';
 import logger from '@server/logger';
 import { mapCollection } from '@server/models/Collection';
 import { Router } from 'express';
+import { createTmdbWithRegionLanguage } from './discover';
 
 const collectionRoutes = Router();
 
 collectionRoutes.get<{ id: string }>('/:id', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const collection = await tmdb.getCollection({

@@ -401,11 +401,20 @@ class TheMovieDb extends ExternalAPI {
     
     // Map movie-style ratings to TV ratings for consistency in the UI
     // These are the exact TV rating values used by TMDB for US content
+    // Support both movie-style (G, PG, etc.) and TV-style (TV-G, TV-PG, etc.) ratings
     const tvRatingMapping: { [key: string]: string[] } = {
+      // Movie-style ratings (legacy support)
       'G': ['TV-Y', 'TV-Y7', 'TV-G'],
       'PG': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'], 
       'PG-13': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
       'R': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
+      // TV-style ratings (primary - used by UI)
+      'TV-Y': ['TV-Y'],
+      'TV-Y7': ['TV-Y', 'TV-Y7'],
+      'TV-G': ['TV-Y', 'TV-Y7', 'TV-G'],
+      'TV-PG': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'],
+      'TV-14': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14'],
+      'TV-MA': ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA'],
     };
     
     const allowedRatings = tvRatingMapping[this.maxTvRating];
@@ -435,7 +444,7 @@ class TheMovieDb extends ExternalAPI {
     }
     
     // Apply admin-configured minimum rating if set
-    if (this.curatedMinRating !== null && this.curatedMinRating !== undefined) {
+    if (this.curatedMinRating && this.curatedMinRating > 0) {
       params['vote_average.gte'] = this.curatedMinRating.toString();
     }
     
@@ -1809,44 +1818,47 @@ class TheMovieDb extends ExternalAPI {
       // Check if this network has a known watch provider mapping
       const providerIdForMovies = networkId ? this.NETWORK_TO_PROVIDER[networkId] : undefined;
       
+      // Only skip curated filters if user has set both to 0 or undefined
+      const shouldSkipCurated = !this.curatedMinVotes && !this.curatedMinRating;
+      
       // Always fetch TV shows by network
       const tvPromise = this.getDiscoverTv({
-        page: 1,
+        page: page,
         language,
         network: networkId,
         sortBy: 'popularity.desc',
+        skipCuratedFilters: shouldSkipCurated,
       });
       
       // Fetch movies if we have a watch provider mapping
       const moviesPromise = providerIdForMovies
         ? this.getDiscoverMovies({
-            page: 1,
+            page: page,
             language,
             watchProviders: providerIdForMovies.toString(),
             watchRegion: region,
             sortBy: 'popularity.desc',
-            skipCuratedFilters: true, // Skip curated filters for network browsing
+            skipCuratedFilters: shouldSkipCurated,
           }).catch(() => ({ page: 1, results: [], total_pages: 0, total_results: 0 }))
         : Promise.resolve({ page: 1, results: [], total_pages: 0, total_results: 0 });
       
       const [moviesData, tvData] = await Promise.all([moviesPromise, tvPromise]);
 
-      // Combine results
+      // Combine results from the same page of both TV and movies
       const allResults = [
         ...moviesData.results.map((movie) => ({ ...movie, media_type: 'movie' as const })),
         ...tvData.results.map((tv) => ({ ...tv, media_type: 'tv' as const })),
       ].sort((a, b) => b.popularity - a.popularity);
 
-      // Paginate combined results
-      const startIdx = (page - 1) * 20;
-      const endIdx = startIdx + 20;
-      const paginatedResults = allResults.slice(startIdx, endIdx);
+      // Return combined results with max total from TMDB
+      const maxTotalPages = Math.max(moviesData.total_pages, tvData.total_pages);
+      const maxTotalResults = moviesData.total_results + tvData.total_results;
 
       return {
         page,
-        results: paginatedResults,
-        total_pages: Math.ceil(allResults.length / 20),
-        total_results: allResults.length,
+        results: allResults,
+        total_pages: maxTotalPages,
+        total_results: maxTotalResults,
       };
     } catch (e) {
       throw new Error(

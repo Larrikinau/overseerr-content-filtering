@@ -7,11 +7,12 @@ import {
   mapPersonDetails,
 } from '@server/models/Person';
 import { Router } from 'express';
+import { createTmdbWithRegionLanguage } from './discover';
 
 const personRoutes = Router();
 
 personRoutes.get('/:id', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const person = await tmdb.getPerson({
@@ -33,7 +34,7 @@ personRoutes.get('/:id', async (req, res, next) => {
 });
 
 personRoutes.get('/:id/combined_credits', async (req, res, next) => {
-  const tmdb = new TheMovieDb();
+  const tmdb = createTmdbWithRegionLanguage(req.user);
 
   try {
     const combinedCredits = await tmdb.getPersonCombinedCredits({

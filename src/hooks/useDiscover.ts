@@ -108,7 +108,7 @@ const useDiscover = <
   const isReachingEnd =
     isEmpty ||
     (!!data && (data[data?.length - 1]?.results.length ?? 0) < 20) ||
-    (!!data && (data[data?.length - 1]?.totalResults ?? 0) < 41);
+    (!!data && size >= (data[data?.length - 1]?.totalPages ?? 0));
 
   return {
     isLoadingInitialData,
