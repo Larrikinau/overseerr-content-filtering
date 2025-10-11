@@ -1,14 +1,14 @@
 # Installation
 
-{% hint style="danger" %}
-**Overseerr is currently in BETA.** If you would like to help test the bleeding edge, please use the image **`sctx/overseerr:develop`**!
-{% endhint %}
-
 {% hint style="info" %}
-After running Overseerr for the first time, configure it by visiting the web UI at `http://[address]:5055` and completing the setup steps.
+**Welcome to Overseerr Content Filtering!** This fork adds admin-controlled parental controls and content rating filters to Overseerr. Version 1.5.7 is stable and production-ready.
 {% endhint %}
 
-## Docker
+{% hint style="success" %}
+After running Overseerr Content Filtering for the first time, configure it by visiting the web UI at `http://[address]:5055` and completing the setup steps. Then, configure content filtering in **Settings → Users** for each user.
+{% endhint %}
+
+## Docker (Recommended)
 
 {% hint style="warning" %}
 Be sure to replace `/path/to/appdata/config` in the below examples with a valid host directory path. If this volume mount is not configured correctly, your Overseerr settings/data will not be persisted when the container is recreated (e.g., when updating the image or rebooting your machine).
@@ -25,15 +25,20 @@ For details on the Docker CLI, please [review the official `docker run` document
 
 ```bash
 docker run -d \
-  --name overseerr \
-  -e LOG_LEVEL=debug \
+  --name overseerr-content-filtering \
+  -e LOG_LEVEL=info \
   -e TZ=Asia/Tokyo \
-  -e PORT=5055 `#optional` \
+  -e PORT=5055 \
+  -e TMDB_API_KEY=db55323b8d3e4154498498a75642b381 \
   -p 5055:5055 \
   -v /path/to/appdata/config:/app/config \
   --restart unless-stopped \
-  sctx/overseerr
+  larrikinau/overseerr-content-filtering:latest
 ```
+
+{% hint style="info" %}
+**TMDB API Key:** The key shown above (`db55323b8d3e4154498498a75642b381`) is the standard Overseerr community key and works immediately. For better performance, get your own free API key from https://www.themoviedb.org/settings/api
+{% endhint %}
 
 To run the container as a specific user/group, you may optionally add `--user=[ user | user:group | uid | uid:gid | user:gid | uid:group ]` to the above command.
 
@@ -42,13 +47,13 @@ To run the container as a specific user/group, you may optionally add `--user=[ 
 Stop and remove the existing container:
 
 ```bash
-docker stop overseerr && docker rm overseerr
+docker stop overseerr-content-filtering && docker rm overseerr-content-filtering
 ```
 
 Pull the latest image:
 
 ```bash
-docker pull sctx/overseerr
+docker pull larrikinau/overseerr-content-filtering:latest
 ```
 
 Finally, run the container with the same parameters originally used to create the container:
@@ -77,8 +82,8 @@ version: '3'
 
 services:
   overseerr:
-    image: sctx/overseerr:latest
-    container_name: overseerr
+    image: larrikinau/overseerr-content-filtering:latest
+    container_name: overseerr-content-filtering
     environment:
       - LOG_LEVEL=debug
       - TZ=Asia/Tokyo
@@ -101,7 +106,7 @@ docker-compose up -d
 Pull the latest image:
 
 ```bash
-docker-compose pull overseerr
+docker-compose pull overseerr-content-filtering
 ```
 
 Then, restart all services defined in the Compose file:
@@ -145,7 +150,7 @@ or the Docker Desktop app:
 Then, create and start the Overseerr container:
 
 ```bash
-docker run -d --name overseerr -e LOG_LEVEL=debug -e TZ=Asia/Tokyo -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped sctx/overseerr:latest
+docker run -d --name overseerr -e LOG_LEVEL=debug -e TZ=Asia/Tokyo -p 5055:5055 -v "overseerr-data:/app/config" --restart unless-stopped larrikinau/overseerr-content-filtering:latest
 ```
 
 To access the files inside the volume created above, navigate to `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes\overseerr-data\_data` using File Explorer.
