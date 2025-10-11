@@ -1,4 +1,91 @@
-## [1.5.6] - 2025-10-04 (LATEST RELEASE)
+## [1.5.7] - 2025-10-11 (LATEST RELEASE)
+
+### 🎯 **Fix Issue #16 - Content Filtering Gaps**
+
+#### 🐛 Issues Fixed
+
+**1. Person Pages - Content Rating Filters Not Applied**
+- **Issue:** Clicking on actors/persons showed unfiltered content regardless of user rating restrictions
+- **Root Cause:** `server/routes/person.ts` used `new TheMovieDb()` without user context
+- **Fix:** Changed to use `createTmdbWithRegionLanguage(req.user)` to pass user's rating settings
+- **Result:** Person pages now respect maxMovieRating and maxTvRating restrictions
+
+**2. Collection Pages - Content Rating Filters Not Applied**
+- **Issue:** Movie collections displayed content exceeding user's rating limits
+- **Root Cause:** `server/routes/collection.ts` used `new TheMovieDb()` without user context
+- **Fix:** Changed to use `createTmdbWithRegionLanguage(req.user)` to apply certification filtering
+- **Result:** Collection pages now properly filter based on user settings
+
+**3. Trending/Series Pages - TV Rating Filtering Broken**
+- **Issue:** Users with TV-PG max rating were seeing TV-14 shows (Desperate Housewives, Big Bang Theory)
+- **Root Cause:** Backend only had movie-style rating mappings (G, PG, R) but UI sends TV-style ratings (TV-PG, TV-14)
+- **Symptom:** When user set TV-PG, it didn't match any mapping, fell through to exact-match only, filtering failed
+- **Fix:** Added complete TV-style rating mappings to `tvRatingMapping` in `server/api/themoviedb/index.ts`:
+  - TV-Y: ['TV-Y']
+  - TV-Y7: ['TV-Y', 'TV-Y7']
+  - TV-G: ['TV-Y', 'TV-Y7', 'TV-G']
+  - TV-PG: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG']
+  - TV-14: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14']
+  - TV-MA: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
+- **Result:** TV certification filtering now works correctly for Trending and Series discovery
+
+**4. Network Browsing - Curated Filters Applied Incorrectly**
+- **Issue:** Unrestricted users (TV-MA, Block XXX Adult) saw very limited content on networks
+- **Example:** Kids genre showed 2 results, Netflix showed minimal catalog
+- **Root Cause:** v1.5.6 over-filtered by applying curated filters to all users
+- **Fix:** Made `skipCuratedFilters` conditional based on user's curated filter settings:
+  - If both curatedMinVotes and curatedMinRating are 0 or undefined → skip curated filters
+  - If either value is set → apply curated filters
+- **Result:** Unrestricted users see full catalogs, users with quality filters see filtered content
+
+#### ✨ Additional Improvements
+
+**Curated Filter 0 Values**
+- Setting minimum votes/rating to 0 now properly disables those filters
+- Changed discover.ts defaults from `?? 3000` and `?? 6.0` to `?? undefined`
+- Fixed rating check in getCuratedFilteringParams from `!== null && !== undefined` to `> 0`
+- Consistent behavior: 0 means "no filter" not "use default"
+
+**Network Browsing Infinite Scroll Pagination**
+- **Backend Fix:** getNetworkAll now uses `page` parameter instead of hardcoded `page: 1`
+- **Frontend Fix:** Changed isReachingEnd logic from checking `totalResults < 41` to `size >= totalPages`
+- **Result:** Full Netflix catalog loads with infinite scroll instead of stopping at ~80 items
+
+#### 📝 Technical Details
+
+**Files Changed:**
+- `server/routes/person.ts` - Import and use createTmdbWithRegionLanguage (lines 10, 15, 37)
+- `server/routes/collection.ts` - Import and use createTmdbWithRegionLanguage (lines 6, 11)
+- `server/routes/discover.ts` - Change curated defaults from 3000/6.0 to undefined (lines 52-53)
+- `server/api/themoviedb/index.ts` - Add TV-style rating mappings (lines 403-417), fix pagination (lines 1813, 1822), fix rating check (line 438), conditional skipCuratedFilters (line 1813)
+- `src/hooks/useDiscover.ts` - Fix isReachingEnd pagination logic (line 111)
+- `package.json` - Bump version to 1.5.7
+
+**Commits:**
+- 737f31e: Initial Person/Collection/Network/Curated fixes
+- 04119ae: Fix curated rating 0 check (> 0 instead of !== null)
+- 61884ac: Fix getNetworkAll pagination (use page parameter)
+- 0f76841: Fix frontend pagination (totalPages not totalResults)
+- b690942: Fix network curated filters (conditional based on settings)
+- 4de7280: Add TV-style rating mappings (TV-Y through TV-MA)
+
+#### ⚡ Upgrade Instructions
+
+**Docker Users:**
+```bash
+docker pull larrikinau/overseerr-content-filtering:latest
+docker-compose up -d
+```
+
+No database migrations required - fully compatible with v1.5.6 database.
+
+#### 🙏 Credits
+
+Thanks to @mattmcspirit for detailed testing and reporting in Issue #16.
+
+---
+
+## [1.5.6] - 2025-10-04
 
 ### 🔧 **Critical Bug Fix - Self-Healing Migration System**
 
