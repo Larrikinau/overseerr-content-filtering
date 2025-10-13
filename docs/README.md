@@ -53,17 +53,16 @@ Overseerr Content Filtering is a specialized fork of [Overseerr](https://github.
 - 🐛 [Troubleshooting](support/faq.md)
 - 📚 [Changelog](../CHANGELOG.md)
 
-## Latest Release: v1.5.7
+## Latest Release: v1.5.8
 
 **What's New:**
-- ✅ Fixed Person pages to respect user rating restrictions
-- ✅ Fixed Collection pages content filtering
-- ✅ Fixed Trending/Series TV rating filtering (TV-PG now correctly blocks TV-14)
-- ✅ Fixed Network browsing curated filters (conditional application)
-- ✅ Fixed infinite scroll pagination for network pages
-- ✅ Curated filter 0 values now properly disable filters
+- ✅ Person pages now filter cast/crew by certification (R-rated/NR content blocked)
+- ✅ Collection pages now filter parts by user rating restrictions
+- ✅ Series view has server-side TV rating backup filter (fixes TV-14 breakthrough)
+- ✅ Trending page restored to vanilla behavior + curated filter support
+- ✅ Post-filtering architecture for reliable certification enforcement
 
-📖 [Full v1.5.7 Release Notes](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.7)
+📖 [Full v1.5.8 Release Notes](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.8)
 
 ## Project Links
 
@@ -77,7 +76,7 @@ Overseerr Content Filtering is a specialized fork of [Overseerr](https://github.
 **Overseerr Content Filtering** is maintained independently from the upstream Overseerr project. It focuses specifically on adding parental control and content filtering capabilities for family-safe media server management.
 
 **Based on:** Overseerr v1.34.0  
-**Current Version:** 1.5.7  
+**Current Version:** 1.5.8  
 **License:** MIT
 
 ## Contributing

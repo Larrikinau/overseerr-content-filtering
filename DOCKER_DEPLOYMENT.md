@@ -2,14 +2,14 @@
 
 ## Overseerr Content Filtering Docker Setup
 
-This guide covers advanced Docker deployment options for Overseerr Content Filtering v1.4.0, including security, networking, and troubleshooting.
+This guide covers advanced Docker deployment options for Overseerr Content Filtering v1.5.8, including security, networking, and troubleshooting.
 
 ## 🎉 Official Docker Hub Release
 
 **✅ Production-Ready Docker Images Available**
 
 - **Registry**: https://hub.docker.com/r/larrikinau/overseerr-content-filtering
-- **Current Version**: `larrikinau/overseerr-content-filtering:latest` (v1.4.0)
+- **Current Version**: `larrikinau/overseerr-content-filtering:latest` (v1.5.8)
 - **Multi-Platform Support**: AMD64, ARM64, ARMv7
 
 ## 🐳 Quick Start with Pre-built Images

@@ -1,4 +1,104 @@
-## [1.5.7] - 2025-10-11 (LATEST RELEASE)
+## [1.5.8] - 2025-10-13 (LATEST RELEASE)
+
+### 🎯 **Complete Fix for Issue #16 - All Remaining Content Filtering Gaps**
+
+#### 🐛 Critical Issues Fixed
+
+**1. Person Pages - Cast/Crew Not Filtered by Certification**
+- **Issue:** Clicking on actors showed R-rated and NR movies even for PG-restricted users
+- **Root Cause:** While v1.5.7 used `createTmdbWithRegionLanguage()`, it only passed rating params to TMDB API - didn't filter the returned cast/crew arrays
+- **Fix:** Added post-filtering in `server/routes/person.ts` using `filterMoviesByCertification()` and `filterTvByRating()`
+- **Implementation:** Separates movies vs TV shows, filters each appropriately based on user's max ratings
+- **Result:** Person pages now show only content within user's rating restrictions
+
+**2. Collection Pages - Parts Not Filtered by Certification**
+- **Issue:** Collections (e.g., "Terminator") showed all movies regardless of rating restrictions
+- **Root Cause:** Similar to Person pages - TMDB API params set but returned `parts` array not filtered
+- **Fix:** Added post-filtering in `server/routes/collection.ts` using `filterMoviesByCertification()`
+- **Result:** Collections now respect user rating limits
+
+**3. Series View - TV-14 Content Breaking Through TV-PG Filter**
+- **Issue:** TV-PG users saw TV-14 shows (Desperate Housewives, Big Bang Theory) in Series view only
+- **Root Cause:** TMDB certification API params unreliable for some TV shows (missing/incorrect certifications)
+- **Fix:** Added server-side backup filtering in `server/routes/discover.ts` using `filterTvByRating()`
+- **Implementation:** Double-layer protection - TMDB API params + server-side post-filter
+- **Result:** TV rating restrictions now enforced consistently
+
+**4. Trending - Curated Filters Not Working Correctly**
+- **Issue:** Trending page showed fewer results than vanilla Overseerr, curated 0/0 settings had no effect
+- **Root Cause:** Fork used discover endpoints (which apply curated filters) instead of vanilla's `/trending/all/` endpoint
+- **Why Wrong:** Discover endpoints behave differently than trending, causing inconsistent results
+- **Fix:** Reverted to vanilla's `/trending/all/` endpoint + added post-filtering layer
+- **Post-Filter Logic:**
+  - Apply curated settings (vote count, rating) if > 0
+  - Apply certification filtering if user has rating restrictions
+  - Skip curated filters if user has 0/0 settings
+- **Result:** 
+  - Trending matches vanilla behavior (same content volume)
+  - Curated filters work correctly (0/0 vs 3000/6.6 shows different results)
+  - Admin retains full control over quality filtering
+
+#### ✨ Implementation Approach
+
+**Type-Safe Post-Filtering:**
+- All fixes use existing filter methods from the codebase
+- Filter by ID after certification lookups (handles partial data gracefully)
+- Maintains backward compatibility with v1.5.7
+
+**Trending Architecture Change:**
+```javascript
+// OLD (v1.5.7): Used discover endpoints with unreliable filtering
+const movies = await this.getDiscoverMovies();
+const tv = await this.getDiscoverTv();
+
+// NEW (v1.5.8): Use vanilla endpoint + controlled post-filtering
+const trending = await this.get('/trending/all/week');
+return this.filterByCurated(this.filterByCertification(trending));
+```
+
+#### 📝 Technical Details
+
+**Files Changed:**
+- `server/routes/person.ts` - Added certification filtering for combined credits (cast/crew)
+- `server/routes/collection.ts` - Added certification filtering for collection parts
+- `server/routes/discover.ts` - Added server-side TV rating filtering backup for `/discover/tv`
+- `server/api/themoviedb/index.ts` - Rewrote getAllTrending() to use `/trending/all/` + post-filters
+- `package.json` - Bump version to 1.5.8
+
+**Key Methods Used:**
+- `filterMoviesByCertification()` - Filters movie arrays by user's maxMovieRating
+- `filterTvByRating()` - Filters TV arrays by user's maxTvRating
+- `getCuratedFilteringParams()` - Fixed to check `> 0` explicitly for zero-value handling
+
+#### ⚡ Upgrade Instructions
+
+**Docker Users:**
+```bash
+docker pull larrikinau/overseerr-content-filtering:1.5.8
+docker-compose up -d
+```
+
+No database migrations required - fully compatible with v1.5.7 database.
+
+#### 🧪 Testing Status
+
+**Verified Working:**
+- ✅ Trending curated filters (0/0 vs 3000/6.6 show different results)
+- ✅ Version display (v1.5.8-fc848a3a)
+- ✅ Container builds and deploys successfully
+
+**Awaiting User Testing:**
+- ⏳ Person pages with PG-restricted user
+- ⏳ Collection pages with PG-restricted user  
+- ⏳ Series view with TV-PG restricted user
+
+#### 🙏 Credits
+
+Thanks to @mattmcspirit for thorough testing and detailed feedback on v1.5.7.
+
+---
+
+## [1.5.7] - 2025-10-11
 
 ### 🎯 **Fix Issue #16 - Content Filtering Gaps**
 

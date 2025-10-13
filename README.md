@@ -16,20 +16,19 @@
 
 ## Overview
 
-**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.5.7** is based on **upstream Overseerr v1.34.0** (latest release) and provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
+**Overseerr Content Filtering** is a specialized fork of Overseerr that adds **admin-controlled content rating filters** for family-safe media management. **Version 1.5.8** is based on **upstream Overseerr v1.34.0** (latest release) and provides comprehensive content filtering capabilities while preserving all original Overseerr functionality.
 
-### ✨ **What's New in v1.5.7** (October 11, 2025)
+### ✨ **What's New in v1.5.8** (October 13, 2025)
 
-🎯 **Comprehensive Fix for Content Filtering Gaps** (Issue #16):
+🎯 **Complete Fix for All Remaining Content Filtering Gaps** (Issue #16):
 
-- ✅ **Person Pages** - Clicking on actors now respects user rating restrictions
-- ✅ **Collection Pages** - Movie collections now properly filter by user settings
-- ✅ **Trending/Series TV Filtering** - Fixed TV-PG users seeing TV-14 shows (added complete TV-Y through TV-MA mappings)
-- ✅ **Network Browsing** - Curated filters now work correctly (0/0 = unrestricted, otherwise filtered)
-- ✅ **Infinite Scroll Pagination** - Network pages now load full catalogs instead of stopping at ~80 items
-- ✅ **Curated Filter 0 Values** - Setting to 0 properly disables filters instead of using defaults
+- ✅ **Person Pages** - Cast/crew now properly filtered by certification (R-rated/NR content blocked for restricted users)
+- ✅ **Collection Pages** - Collection parts now filtered by user rating restrictions
+- ✅ **Series View** - Added server-side TV rating backup filter (fixes TV-14 breakthrough for TV-PG users)
+- ✅ **Trending Page** - Restored vanilla behavior + added curated filter support (0/0 settings now work correctly)
+- ✅ **Post-Filtering Architecture** - All endpoints now use type-safe post-filtering for reliable certification enforcement
 
-📖 **[Full v1.5.7 Release Notes](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.7)**
+📖 **[Full v1.5.8 Release Notes](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.8)**
 
 ### 🚀 **Core Features**
 

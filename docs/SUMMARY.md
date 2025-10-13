@@ -33,7 +33,7 @@
 ## Release Information
 
 - 📦 [Changelog](../CHANGELOG.md)
-- 🚀 [Latest Release (v1.5.7)](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.7)
+- 🚀 [Latest Release (v1.5.8)](https://github.com/Larrikinau/overseerr-content-filtering/releases/tag/v1.5.8)
 - 🐳 [Docker Hub](https://hub.docker.com/r/larrikinau/overseerr-content-filtering)
 
 ## Support

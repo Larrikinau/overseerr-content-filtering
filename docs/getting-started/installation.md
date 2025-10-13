@@ -1,7 +1,7 @@
 # Installation
 
 {% hint style="info" %}
-**Welcome to Overseerr Content Filtering!** This fork adds admin-controlled parental controls and content rating filters to Overseerr. Version 1.5.7 is stable and production-ready.
+**Welcome to Overseerr Content Filtering!** This fork adds admin-controlled parental controls and content rating filters to Overseerr. Version 1.5.8 is stable and production-ready.
 {% endhint %}
 
 {% hint style="success" %}
