@@ -16,11 +16,17 @@ collectionRoutes.get<{ id: string }>('/:id', async (req, res, next) => {
       language: (req.query.language as string) ?? req.locale,
     });
 
+    // Apply certification filtering for restricted users (v1.5.8)
+    let filteredParts = collection.parts;
+    if (req.user?.settings?.maxMovieRating && req.user.settings.maxMovieRating !== 'Adult') {
+      filteredParts = await tmdb.filterMoviesByCertification(collection.parts);
+    }
+
     const media = await Media.getRelatedMedia(
-      collection.parts.map((part) => part.id)
+      filteredParts.map((part) => part.id)
     );
 
-    return res.status(200).json(mapCollection(collection, media));
+    return res.status(200).json(mapCollection({ ...collection, parts: filteredParts }, media));
   } catch (e) {
     logger.debug('Something went wrong retrieving collection', {
       label: 'API',

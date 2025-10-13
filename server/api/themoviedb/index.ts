@@ -439,7 +439,7 @@ class TheMovieDb extends ExternalAPI {
     
     // Always apply curated filtering when values are set (not just in 'curated' mode)
     // This ensures consistent quality filtering across all discovery and recommendation methods
-    if (this.curatedMinVotes) {
+    if (this.curatedMinVotes && this.curatedMinVotes > 0) {
       params['vote_count.gte'] = this.curatedMinVotes.toString();
     }
     
@@ -1244,36 +1244,57 @@ class TheMovieDb extends ExternalAPI {
     language?: string;
   } = {}): Promise<TmdbSearchMultiResponse> => {
     try {
-      // TMDB's /trending endpoint doesn't support certification filtering
-      // Instead, use discover endpoints sorted by popularity which DO support filtering
-      const [moviesData, tvData] = await Promise.all([
-        this.getDiscoverMovies({
-          page,
-          language,
-          sortBy: 'popularity.desc',
-        }),
-        this.getDiscoverTv({
-          page,
-          language,
-          sortBy: 'popularity.desc',
-        }),
-      ]);
+      // Use TMDB's native /trending/all/ endpoint (matches vanilla Overseerr)
+      // This returns popular content without curated filtering (v1.5.8 fix)
+      const data = await this.get<TmdbSearchMultiResponse>(
+        `/trending/all/${timeWindow}`,
+        {
+          params: {
+            page,
+            language,
+            region: this.region,
+          },
+        }
+      );
 
-      // Combine and sort results by popularity
-      const combinedResults: (TmdbMovieResult | TmdbTvResult)[] = [
-        ...moviesData.results.map((movie) => ({ ...movie, media_type: 'movie' as const })),
-        ...tvData.results.map((tv) => ({ ...tv, media_type: 'tv' as const })),
-      ].sort((a, b) => b.popularity - a.popularity);
-
-      // Calculate combined pagination info
-      const totalResults = moviesData.total_results + tvData.total_results;
-      const totalPages = Math.ceil(totalResults / 20);
+      // Apply curated filtering first (vote count, rating)
+      let filteredResults = data.results;
+      
+      // Filter by curated settings if they exist
+      if (this.curatedMinVotes && this.curatedMinVotes > 0) {
+        filteredResults = filteredResults.filter((r: any) => 
+          (r.vote_count || 0) >= this.curatedMinVotes!
+        );
+      }
+      
+      if (this.curatedMinRating && this.curatedMinRating > 0) {
+        filteredResults = filteredResults.filter((r: any) => 
+          (r.vote_average || 0) >= this.curatedMinRating!
+        );
+      }
+      
+      // Then apply certification filtering
+      if (this.maxMovieRating || this.maxTvRating) {
+        const movies = filteredResults.filter((r: any) => r.media_type === 'movie');
+        const tvShows = filteredResults.filter((r: any) => r.media_type === 'tv');
+        const others = filteredResults.filter((r: any) => r.media_type !== 'movie' && r.media_type !== 'tv');
+        
+        // Filter movies if user has movie restrictions
+        const filteredMovies = this.maxMovieRating && this.maxMovieRating !== 'Adult'
+          ? await this.filterMoviesByCertification(movies as any[])
+          : movies;
+          
+        // Filter TV shows if user has TV restrictions  
+        const filteredTv = this.maxTvRating && this.maxTvRating !== 'Adult'
+          ? await this.filterTvByRating(tvShows as any[])
+          : tvShows;
+          
+        filteredResults = [...filteredMovies, ...filteredTv, ...others];
+      }
 
       return {
-        page,
-        results: combinedResults,
-        total_pages: totalPages,
-        total_results: totalResults,
+        ...data,
+        results: filteredResults,
       };
     } catch (e) {
       throw new Error(`[TMDB] Failed to fetch all trending: ${e.message}`);

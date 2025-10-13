@@ -420,6 +420,12 @@ discoverRoutes.get('/tv', async (req, res, next) => {
       skipCuratedFilters: isUpcoming, // Skip vote/rating filters for upcoming TV
     });
 
+    // Apply server-side TV rating filtering as backup (v1.5.8)
+    // TMDB certification params are unreliable - some shows have incorrect/missing data
+    if (req.user?.settings?.maxTvRating && req.user.settings.maxTvRating !== 'Adult') {
+      data.results = await tmdb.filterTvByRating(data.results);
+    }
+
     const media = await Media.getRelatedMedia(
       data.results.map((result) => result.id)
     );
